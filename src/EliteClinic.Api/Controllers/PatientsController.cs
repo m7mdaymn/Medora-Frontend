@@ -30,7 +30,7 @@ public class PatientsController : ControllerBase
     /// Create a new patient (ClinicOwner, ClinicManager)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<CreatePatientResponse>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<CreatePatientResponse>>> CreatePatient([FromBody] CreatePatientRequest request)
@@ -40,7 +40,11 @@ public class PatientsController : ControllerBase
 
         var result = await _patientService.CreatePatientAsync(_tenantContext.TenantId, request);
         if (!result.Success)
+        {
+            if (result.Message.Contains("already exists"))
+                return Conflict(result);
             return BadRequest(result);
+        }
 
         _logger.LogInformation("Patient created: {Name} for tenant {TenantId}", request.Name, _tenantContext.TenantId);
         return StatusCode(201, result);
@@ -50,7 +54,7 @@ public class PatientsController : ControllerBase
     /// List all patients (paginated, searchable)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetAllPatients(
         [FromQuery] int pageNumber = 1,
@@ -68,7 +72,7 @@ public class PatientsController : ControllerBase
     /// Get patient by ID (with sub-profiles)
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<PatientDto>>> GetPatientById(Guid id)
@@ -87,7 +91,7 @@ public class PatientsController : ControllerBase
     /// Update patient profile
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<PatientDto>>> UpdatePatient(Guid id, [FromBody] UpdatePatientRequest request)
@@ -103,10 +107,29 @@ public class PatientsController : ControllerBase
     }
 
     /// <summary>
+    /// Partially update a patient (PATCH — only provided fields are changed)
+    /// </summary>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<PatientDto>>> PatchPatient(Guid id, [FromBody] PatchPatientRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PatientDto>.Error("Tenant context not resolved"));
+
+        var result = await _patientService.PatchPatientAsync(_tenantContext.TenantId, id, request);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Add sub-profile (child/dependent) to a patient
     /// </summary>
     [HttpPost("{id:guid}/profiles")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PatientDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<PatientDto>>> AddSubProfile(Guid id, [FromBody] AddSubProfileRequest request)
@@ -125,7 +148,7 @@ public class PatientsController : ControllerBase
     /// Reset patient password (staff-initiated)
     /// </summary>
     [HttpPost("{id:guid}/reset-password")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponse>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<ResetPasswordResponse>>> ResetPassword(Guid id)
@@ -144,7 +167,7 @@ public class PatientsController : ControllerBase
     /// Soft-delete a patient (ClinicOwner only)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<object>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<object>>> DeletePatient(Guid id)

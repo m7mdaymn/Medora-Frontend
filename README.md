@@ -1,6 +1,6 @@
 # Elite Clinic — Multi-Tenant Clinic Management API
 
-> **.NET 9 Web API** | **EF Core 9** | **SQL Server** | **JWT Auth** | **Multi-Tenant** | **109 Endpoints**
+> **.NET 9 Web API** | **EF Core 9** | **SQL Server** | **JWT Auth** | **Multi-Tenant** | **119 Endpoints** | **7 Roles**
 
 A production-ready RESTful API for managing multi-tenant dental/medical clinics. Supports full clinical workflow from patient registration through queue management, medical visits, prescriptions, invoicing, WhatsApp messaging, and online booking.
 
@@ -75,7 +75,7 @@ powershell -ExecutionPolicy Bypass -File tests/Phase5_Tests.ps1
 
 ---
 
-## API Endpoints (109 total)
+## API Endpoints (119 total)
 
 | Module | Endpoints | Controller |
 |--------|-----------|------------|
@@ -84,17 +84,18 @@ powershell -ExecutionPolicy Bypass -File tests/Phase5_Tests.ps1
 | Tenants | 8 | TenantsController |
 | Subscriptions | 5 | SubscriptionsController |
 | Feature Flags | 2 | FeatureFlagsController |
-| Clinic Settings | 2 | ClinicSettingsController |
-| Staff | 6 | StaffController |
-| Doctors | 8 | DoctorsController |
-| Patients | 7 | PatientsController |
-| Queue Sessions | 5 | QueueSessionsController |
+| Clinic Settings | 3 | ClinicSettingsController |
+| Staff | 7 | StaffController |
+| Doctors | 9 | DoctorsController |
+| Patients | 8 | PatientsController |
+| Clinic Services | 5 | ClinicServicesController |
+| Queue Sessions | 6 | QueueSessionsController |
 | Queue Tickets | 7 | QueueTicketsController |
 | Queue Board | 3 | QueueBoardController |
 | Visits | 6 | VisitsController |
 | Prescriptions | 4 | PrescriptionsController |
 | Lab Requests | 4 | LabRequestsController |
-| Invoices & Payments | 6 | InvoicesController |
+| Invoices & Payments | 7 | InvoicesController |
 | Expenses | 4 | ExpensesController |
 | Finance Reports | 5 | FinanceController |
 | Public SEO | 4 | PublicController |
@@ -105,15 +106,16 @@ powershell -ExecutionPolicy Bypass -File tests/Phase5_Tests.ps1
 
 ---
 
-## Roles (6 Seeded Roles)
+## Roles (7 Seeded Roles)
 
 | Role | Scope | Description |
 |------|-------|-------------|
 | **SuperAdmin** | Platform | Manages tenants, subscriptions, feature flags. Cross-tenant access. |
 | **ClinicOwner** | Tenant | Full clinic control — staff, doctors, settings, reports, all workflows. |
-| **ClinicManager** | Tenant | Daily operations — patients, queue, payments, expenses. |
-| **Receptionist** | Tenant | Front desk — bookings, messages, notifications, doctor notes. Cannot create doctors or change settings. |
+| **ClinicManager** | Tenant | Daily operations — patients, queue, payments, expenses. Can disable staff/doctors (except Owner). |
+| **Receptionist** | Tenant | Front desk — full patient CRUD, queue management, bookings, messages, notifications. |
 | **Doctor** | Tenant | Clinical — own queue, visits, prescriptions, labs, notes. |
+| **Nurse** | Tenant | Clinical support — read-only access to patients, queue board, doctors, settings. |
 | **Patient** | Tenant | Self-service — view own data, book appointments, check queue status. |
 
 ---
@@ -333,13 +335,14 @@ Paginated responses include:
 
 | File | Description |
 |------|-------------|
-| `spec-kit/SWAGGER_DOCUMENTATION.md` | Complete 109-endpoint API reference (v5.0) |
-| `spec-kit/FRONTEND_CONTRACT.md` | Frontend integration contract (v5.0) |
-| `spec-kit/PERMISSIONS_MATRIX.md` | Role/action access matrix with 6 roles (v5.0) |
+| `spec-kit/SWAGGER_DOCUMENTATION.md` | Complete 119-endpoint API reference (v6.0) |
+| `spec-kit/FRONTEND_CONTRACT.md` | Frontend integration contract (v6.0) |
+| `spec-kit/PERMISSIONS_MATRIX.md` | Role/action access matrix with 7 roles (v6.0) |
 | `spec-kit/PLAN.md` | Full project plan — all 5 phases complete |
 | `spec-kit/MESSAGE_SPEC.md` | WhatsApp & PWA message templates (v5.0) |
-| `docs/ROLES_GUIDE.md` | Comprehensive role & permission guide |
+| `docs/ROLES_GUIDE.md` | Comprehensive role & permission guide (7 roles) |
 | `docs/DEPLOYMENT.md` | Production deployment guide |
+| `docs/SYSTEM_SCENARIOS.md` | Step-by-step workflow scenarios |
 
 ---
 

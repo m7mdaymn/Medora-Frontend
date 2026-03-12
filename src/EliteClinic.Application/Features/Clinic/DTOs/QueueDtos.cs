@@ -56,6 +56,32 @@ public class CreateQueueTicketRequest
     public string? Notes { get; set; }
 }
 
+/// <summary>
+/// Issue ticket with optional immediate payment collection at reception.
+/// </summary>
+public class CreateQueueTicketWithPaymentRequest
+{
+    public Guid SessionId { get; set; }
+    public Guid PatientId { get; set; }
+    public Guid DoctorId { get; set; }
+    public Guid? DoctorServiceId { get; set; }
+    public string? Notes { get; set; }
+    // Payment info (optional)
+    public decimal? PaymentAmount { get; set; }
+    public string? PaymentMethod { get; set; }
+    public string? PaymentReference { get; set; }
+    public string? PaymentNotes { get; set; }
+}
+
+/// <summary>
+/// Response from start-visit that includes the VisitId.
+/// </summary>
+public class StartVisitResultDto
+{
+    public QueueTicketDto Ticket { get; set; } = null!;
+    public Guid VisitId { get; set; }
+}
+
 // ─── Queue Board DTOs ──────────────────────────────────────────────
 
 public class QueueBoardDto

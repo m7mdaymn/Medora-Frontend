@@ -139,6 +139,10 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IDoctorNoteService, DoctorNoteService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// Phase 5 Services
+builder.Services.AddScoped<IClinicServiceManager, ClinicServiceManager>();
+builder.Services.AddHostedService<EliteClinic.Infrastructure.Services.SessionClosureBackgroundService>();
+
 // RF06 Fix: Wrap model validation errors in ApiResponse format
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -219,7 +223,7 @@ async Task SeedDataAsync(EliteClinicDbContext dbContext, IServiceProvider servic
     var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
     // Seed roles
-    var roles = new[] { "SuperAdmin", "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Patient" };
+    var roles = new[] { "SuperAdmin", "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Patient", "Nurse" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

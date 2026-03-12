@@ -82,20 +82,26 @@ public class LabRequestService : ILabRequestService
         return ApiResponse<LabRequestDto>.Ok(MapToDto(labRequest), "Lab result recorded successfully");
     }
 
-    public async Task<ApiResponse<List<LabRequestDto>>> GetByVisitAsync(Guid tenantId, Guid visitId)
+    public async Task<ApiResponse<List<LabRequestDto>>> GetByVisitAsync(Guid tenantId, Guid visitId, LabRequestType? type = null)
     {
         var visit = await _context.Visits.FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);
         if (visit == null)
             return ApiResponse<List<LabRequestDto>>.Error("Visit not found");
 
-        var labs = await _context.LabRequests
-            .Where(l => l.VisitId == visitId && l.TenantId == tenantId && !l.IsDeleted)
+        var query = _context.LabRequests
+            .Where(l => l.VisitId == visitId && l.TenantId == tenantId && !l.IsDeleted);
+
+        if (type.HasValue)
+            query = query.Where(l => l.Type == type.Value);
+
+        var labs = await query
             .OrderBy(l => l.CreatedAt)
             .ToListAsync();
 
+        var label = type.HasValue ? type.Value.ToString().ToLower() : "lab";
         return ApiResponse<List<LabRequestDto>>.Ok(
             labs.Select(MapToDto).ToList(),
-            $"Retrieved {labs.Count} lab request(s)");
+            $"Retrieved {labs.Count} {label} request(s)");
     }
 
     private static LabRequestDto MapToDto(LabRequest l)

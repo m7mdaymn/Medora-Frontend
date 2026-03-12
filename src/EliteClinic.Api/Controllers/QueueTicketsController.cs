@@ -30,7 +30,7 @@ public class QueueTicketsController : ControllerBase
     /// Issue a ticket to a patient for a doctor in a session (reception)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueTicketDto>>> IssueTicket([FromBody] CreateQueueTicketRequest request)
@@ -39,6 +39,25 @@ public class QueueTicketsController : ControllerBase
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
         var result = await _queueService.IssueTicketAsync(_tenantContext.TenantId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    /// <summary>
+    /// Issue a ticket with immediate payment collection at reception
+    /// </summary>
+    [HttpPost("with-payment")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<QueueTicketDto>>> IssueTicketWithPayment([FromBody] CreateQueueTicketWithPaymentRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
+
+        var result = await _queueService.IssueTicketWithPaymentAsync(_tenantContext.TenantId, request);
         if (!result.Success)
             return BadRequest(result);
 
@@ -65,16 +84,17 @@ public class QueueTicketsController : ControllerBase
     }
 
     /// <summary>
-    /// Start visit — transitions ticket to InVisit and auto-creates a Visit entity
+    /// Start visit — transitions ticket to InVisit and auto-creates a Visit entity.
+    /// Returns visitId. Idempotent: calling twice returns same visit.
     /// </summary>
     [HttpPost("{id:guid}/start-visit")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
-    [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 200)]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Nurse,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<StartVisitResultDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
-    public async Task<ActionResult<ApiResponse<QueueTicketDto>>> StartVisit(Guid id)
+    public async Task<ActionResult<ApiResponse<StartVisitResultDto>>> StartVisit(Guid id)
     {
         if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
+            return BadRequest(ApiResponse<StartVisitResultDto>.Error("Tenant context not resolved"));
 
         var result = await _queueService.StartVisitFromTicketAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)

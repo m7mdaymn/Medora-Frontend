@@ -43,7 +43,7 @@ public class StaffService : IStaffService
         }
 
         // Determine role (default to ClinicManager)
-        var validRoles = new[] { "ClinicManager", "Receptionist" };
+        var validRoles = new[] { "ClinicManager", "Receptionist", "Nurse" };
         var role = !string.IsNullOrWhiteSpace(request.Role) && validRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase)
             ? request.Role
             : "ClinicManager";
@@ -133,6 +133,29 @@ public class StaffService : IStaffService
         return ApiResponse<StaffDto>.Ok(MapToDto(employee, employee.User), "Staff member updated successfully");
     }
 
+    public async Task<ApiResponse<StaffDto>> PatchStaffAsync(Guid tenantId, Guid id, PatchStaffRequest request)
+    {
+        var employee = await _context.Employees
+            .Include(e => e.User)
+            .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
+
+        if (employee == null)
+            return ApiResponse<StaffDto>.Error("Staff member not found");
+
+        if (request.Name != null) { employee.Name = request.Name; employee.User.DisplayName = request.Name; }
+        if (request.Phone != null) employee.Phone = request.Phone;
+        if (request.Salary.HasValue) employee.Salary = request.Salary;
+        if (request.HireDate.HasValue) employee.HireDate = request.HireDate;
+        if (request.Notes != null) employee.Notes = request.Notes;
+
+        if (request.Name != null)
+            await _userManager.UpdateAsync(employee.User);
+
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<StaffDto>.Ok(MapToDto(employee, employee.User), "Staff member patched successfully");
+    }
+
     public async Task<ApiResponse<StaffDto>> EnableStaffAsync(Guid tenantId, Guid id)
     {
         var employee = await _context.Employees
@@ -158,6 +181,11 @@ public class StaffService : IStaffService
 
         if (employee == null)
             return ApiResponse<StaffDto>.Error("Staff member not found");
+
+        // Protect: cannot disable a ClinicOwner through staff endpoints
+        var roles = await _userManager.GetRolesAsync(employee.User);
+        if (roles.Contains("ClinicOwner"))
+            return ApiResponse<StaffDto>.Error("Cannot disable the clinic owner");
 
         employee.IsEnabled = false;
         employee.User.IsActive = false;

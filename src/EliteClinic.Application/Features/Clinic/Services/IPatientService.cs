@@ -9,6 +9,7 @@ public interface IPatientService
     Task<ApiResponse<PagedResult<PatientDto>>> GetAllPatientsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10, string? search = null);
     Task<ApiResponse<PatientDto>> GetPatientByIdAsync(Guid tenantId, Guid id);
     Task<ApiResponse<PatientDto>> UpdatePatientAsync(Guid tenantId, Guid id, UpdatePatientRequest request);
+    Task<ApiResponse<PatientDto>> PatchPatientAsync(Guid tenantId, Guid id, PatchPatientRequest request);
     Task<ApiResponse<PatientDto>> AddSubProfileAsync(Guid tenantId, Guid parentId, AddSubProfileRequest request);
     Task<ApiResponse<ResetPasswordResponse>> ResetPasswordAsync(Guid tenantId, Guid id);
     Task<ApiResponse<object>> DeletePatientAsync(Guid tenantId, Guid id);

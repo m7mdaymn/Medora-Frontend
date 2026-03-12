@@ -85,6 +85,16 @@ public class AddSubProfileRequest
     public Gender Gender { get; set; } = Gender.Male;
 }
 
+public class PatchPatientRequest
+{
+    [StringLength(200)] public string? Name { get; set; }
+    [StringLength(20)] public string? Phone { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public Gender? Gender { get; set; }
+    public string? Address { get; set; }
+    public string? Notes { get; set; }
+}
+
 public class ResetPasswordResponse
 {
     public string NewPassword { get; set; } = string.Empty;

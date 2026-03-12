@@ -8,13 +8,15 @@ public interface IQueueService
     // Sessions
     Task<ApiResponse<QueueSessionDto>> OpenSessionAsync(Guid tenantId, CreateQueueSessionRequest request);
     Task<ApiResponse<QueueSessionDto>> CloseSessionAsync(Guid tenantId, Guid sessionId);
+    Task<ApiResponse<int>> CloseAllSessionsForDateAsync(Guid tenantId, DateTime date);
     Task<ApiResponse<PagedResult<QueueSessionDto>>> GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<QueueSessionDto>> GetSessionByIdAsync(Guid tenantId, Guid sessionId);
 
     // Tickets
     Task<ApiResponse<QueueTicketDto>> IssueTicketAsync(Guid tenantId, CreateQueueTicketRequest request);
+    Task<ApiResponse<QueueTicketDto>> IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request);
     Task<ApiResponse<QueueTicketDto>> CallTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId);
-    Task<ApiResponse<QueueTicketDto>> StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId);
+    Task<ApiResponse<StartVisitResultDto>> StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId);
     Task<ApiResponse<QueueTicketDto>> FinishTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId);
     Task<ApiResponse<QueueTicketDto>> SkipTicketAsync(Guid tenantId, Guid ticketId);
     Task<ApiResponse<QueueTicketDto>> CancelTicketAsync(Guid tenantId, Guid ticketId);

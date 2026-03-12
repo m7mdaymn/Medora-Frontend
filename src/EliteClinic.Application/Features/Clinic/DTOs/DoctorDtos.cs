@@ -73,6 +73,17 @@ public class UpdateDoctorRequest
     public int AvgVisitDurationMinutes { get; set; } = 15;
 }
 
+public class PatchDoctorRequest
+{
+    [StringLength(200)] public string? Name { get; set; }
+    [StringLength(100)] public string? Specialty { get; set; }
+    [StringLength(20)] public string? Phone { get; set; }
+    public string? Bio { get; set; }
+    public string? PhotoUrl { get; set; }
+    public UrgentCaseMode? UrgentCaseMode { get; set; }
+    [Range(1, 120)] public int? AvgVisitDurationMinutes { get; set; }
+}
+
 public class DoctorServiceDto
 {
     public Guid Id { get; set; }

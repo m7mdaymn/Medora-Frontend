@@ -98,6 +98,65 @@ public class ClinicSettingsService : IClinicSettingsService
         return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(updated), "Clinic settings updated successfully");
     }
 
+    public async Task<ApiResponse<ClinicSettingsDto>> PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request)
+    {
+        var settings = await _context.ClinicSettings
+            .Include(s => s.WorkingHours.Where(w => !w.IsDeleted))
+            .FirstOrDefaultAsync();
+
+        if (settings == null)
+            return ApiResponse<ClinicSettingsDto>.Error("Clinic settings not found");
+
+        if (request.ClinicName != null) settings.ClinicName = request.ClinicName;
+        if (request.Phone != null) settings.Phone = request.Phone;
+        if (request.WhatsAppSenderNumber != null) settings.WhatsAppSenderNumber = request.WhatsAppSenderNumber;
+        if (request.SupportWhatsAppNumber != null) settings.SupportWhatsAppNumber = request.SupportWhatsAppNumber;
+        if (request.SupportPhoneNumber != null) settings.SupportPhoneNumber = request.SupportPhoneNumber;
+        if (request.Address != null) settings.Address = request.Address;
+        if (request.City != null) settings.City = request.City;
+        if (request.LogoUrl != null) settings.LogoUrl = request.LogoUrl;
+        if (request.BookingEnabled.HasValue) settings.BookingEnabled = request.BookingEnabled.Value;
+        if (request.CancellationWindowHours.HasValue) settings.CancellationWindowHours = request.CancellationWindowHours.Value;
+
+        // Replace working hours if provided
+        if (request.WorkingHours != null)
+        {
+            foreach (var existing in settings.WorkingHours)
+            {
+                existing.IsDeleted = true;
+                existing.DeletedAt = DateTime.UtcNow;
+            }
+
+            foreach (var wh in request.WorkingHours)
+            {
+                if (!TimeSpan.TryParse(wh.StartTime, out var startTime) ||
+                    !TimeSpan.TryParse(wh.EndTime, out var endTime))
+                {
+                    return ApiResponse<ClinicSettingsDto>.ValidationError(
+                        new List<object> { new { field = "WorkingHours", message = $"Invalid time format for {wh.DayOfWeek}. Use HH:mm format." } });
+                }
+
+                _context.WorkingHours.Add(new WorkingHour
+                {
+                    TenantId = settings.TenantId,
+                    ClinicSettingsId = settings.Id,
+                    DayOfWeek = wh.DayOfWeek,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    IsActive = wh.IsActive
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        var patched = await _context.ClinicSettings
+            .Include(s => s.WorkingHours.Where(w => !w.IsDeleted))
+            .FirstAsync();
+
+        return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(patched), "Clinic settings patched successfully");
+    }
+
     private static ClinicSettingsDto MapToDto(ClinicSettings settings)
     {
         return new ClinicSettingsDto

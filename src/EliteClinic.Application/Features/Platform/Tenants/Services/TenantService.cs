@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Platform.Tenants.DTOs;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteClinic.Application.Features.Platform.Tenants.Services;
@@ -10,10 +11,12 @@ namespace EliteClinic.Application.Features.Platform.Tenants.Services;
 public class TenantService : ITenantService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public TenantService(EliteClinicDbContext context)
+    public TenantService(EliteClinicDbContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public async Task<ApiResponse<TenantDetailDto>> CreateTenantAsync(CreateTenantRequest request)
@@ -55,7 +58,45 @@ public class TenantService : ITenantService
 
         _context.TenantFeatureFlags.Add(featureFlags);
 
+        // Auto-create ClinicSettings for the tenant
+        var clinicSettings = new ClinicSettings
+        {
+            TenantId = tenant.Id,
+            ClinicName = request.Name,
+            Phone = request.ContactPhone,
+            BookingEnabled = false,
+            CancellationWindowHours = 2
+        };
+        _context.ClinicSettings.Add(clinicSettings);
+
         await _context.SaveChangesAsync();
+
+        // Auto-create ClinicOwner user if owner credentials provided
+        if (!string.IsNullOrWhiteSpace(request.OwnerUsername) && !string.IsNullOrWhiteSpace(request.OwnerPassword))
+        {
+            var ownerUser = new ApplicationUser
+            {
+                UserName = request.OwnerUsername,
+                DisplayName = request.OwnerName ?? request.Name + " Owner",
+                PhoneNumber = request.OwnerPhone,
+                TenantId = tenant.Id,
+                IsActive = true
+            };
+
+            var createResult = await _userManager.CreateAsync(ownerUser, request.OwnerPassword);
+            if (!createResult.Succeeded)
+            {
+                // Rollback: delete tenant and related records
+                _context.ClinicSettings.Remove(clinicSettings);
+                _context.TenantFeatureFlags.Remove(featureFlags);
+                _context.Tenants.Remove(tenant);
+                await _context.SaveChangesAsync();
+                return ApiResponse<TenantDetailDto>.Error(
+                    "Failed to create owner: " + string.Join("; ", createResult.Errors.Select(e => e.Description)));
+            }
+
+            await _userManager.AddToRoleAsync(ownerUser, "ClinicOwner");
+        }
 
         var dto = MapToDetailDto(tenant);
         return ApiResponse<TenantDetailDto>.Created(dto, "Tenant created successfully");

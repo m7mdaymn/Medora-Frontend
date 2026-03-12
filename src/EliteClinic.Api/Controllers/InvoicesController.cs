@@ -25,7 +25,7 @@ public class InvoicesController : ControllerBase
     /// Create an invoice for a visit
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<InvoiceDto>>> CreateInvoice([FromBody] CreateInvoiceRequest request)
@@ -44,7 +44,7 @@ public class InvoicesController : ControllerBase
     /// Update invoice (only while visit is Open)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<InvoiceDto>>> UpdateInvoice(Guid id, [FromBody] UpdateInvoiceRequest request)
@@ -60,10 +60,34 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
+    /// Partially update an invoice (PATCH — only provided fields are changed)
+    /// </summary>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<InvoiceDto>>> PatchInvoice(Guid id, [FromBody] PatchInvoiceRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<InvoiceDto>.Error("Tenant context not resolved"));
+
+        var result = await _invoiceService.PatchInvoiceAsync(_tenantContext.TenantId, id, request);
+        if (!result.Success)
+        {
+            if (result.Message.Contains("not found"))
+                return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Get invoice by ID with payments
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<InvoiceDto>>> GetInvoice(Guid id)
@@ -82,7 +106,7 @@ public class InvoicesController : ControllerBase
     /// List invoices (paginated, filterable by date & doctor)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<InvoiceDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<InvoiceDto>>>> GetInvoices(
         [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] Guid? doctorId,
@@ -99,7 +123,7 @@ public class InvoicesController : ControllerBase
     /// Record a payment against an invoice (partial payments allowed)
     /// </summary>
     [HttpPost("~/api/clinic/payments")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PaymentDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<PaymentDto>>> RecordPayment([FromBody] CreatePaymentRequest request)
@@ -118,7 +142,7 @@ public class InvoicesController : ControllerBase
     /// Get all payments for an invoice
     /// </summary>
     [HttpGet("{id:guid}/payments")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<PaymentDto>>), 200)]
     public async Task<ActionResult<ApiResponse<List<PaymentDto>>>> GetPayments(Guid id)
     {

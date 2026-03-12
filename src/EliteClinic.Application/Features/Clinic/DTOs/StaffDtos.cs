@@ -59,3 +59,12 @@ public class UpdateStaffRequest
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
 }
+
+public class PatchStaffRequest
+{
+    [StringLength(200)] public string? Name { get; set; }
+    [StringLength(20)] public string? Phone { get; set; }
+    public decimal? Salary { get; set; }
+    public DateTime? HireDate { get; set; }
+    public string? Notes { get; set; }
+}

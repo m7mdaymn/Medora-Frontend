@@ -264,17 +264,30 @@ public class AuthService : IAuthService
             },
             "ClinicOwner" => new List<string>
             {
-                "clinic.manage", "doctor.manage", "staff.manage", "patient.view",
-                "queue.manage", "visit.view", "finance.view", "report.export"
+                "clinic.manage", "doctor.manage", "staff.manage", "patient.view", "patient.manage",
+                "queue.manage", "visit.view", "finance.view", "report.export", "service.manage"
             },
             "ClinicManager" => new List<string>
             {
-                "queue.manage", "patient.register", "payment.record", "expense.add",
-                "finance.today"
+                "clinic.manage", "doctor.manage", "staff.manage", "queue.manage",
+                "patient.register", "patient.view", "payment.record", "expense.add",
+                "finance.today", "service.manage"
+            },
+            "Receptionist" => new List<string>
+            {
+                "patient.create", "patient.edit", "patient.delete", "patient.view",
+                "queue.manage", "queue.issue_ticket", "payment.record",
+                "booking.manage", "invoice.view"
+            },
+            "Nurse" => new List<string>
+            {
+                "patient.view", "queue.view", "queue.issue_ticket",
+                "visit.vitals", "visit.view"
             },
             "Doctor" => new List<string>
             {
-                "queue.my", "visit.create", "prescription.create", "lab.request"
+                "queue.my", "visit.create", "prescription.create", "lab.request",
+                "imaging.request", "invoice.modify"
             },
             "Patient" => new List<string>
             {

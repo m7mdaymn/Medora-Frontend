@@ -54,8 +54,57 @@ public class QueueService : IQueueService
         _context.QueueSessions.Add(session);
         await _context.SaveChangesAsync();
 
+        // ── Auto-convert confirmed bookings into waiting tickets ──
+        int convertedCount = 0;
+        if (request.DoctorId.HasValue)
+        {
+            var confirmedBookings = await _context.Bookings
+                .Where(b => b.TenantId == tenantId
+                    && b.DoctorId == request.DoctorId.Value
+                    && b.BookingDate.Date == today
+                    && b.Status == BookingStatus.Confirmed
+                    && b.QueueTicketId == null
+                    && !b.IsDeleted)
+                .OrderBy(b => b.BookingTime)
+                .ToListAsync();
+
+            int ticketNum = 0;
+            foreach (var booking in confirmedBookings)
+            {
+                // Skip if patient already has an active ticket
+                var hasActive = await _context.QueueTickets
+                    .AnyAsync(t => t.PatientId == booking.PatientId && t.TenantId == tenantId && !t.IsDeleted
+                        && (t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called || t.Status == TicketStatus.InVisit));
+                if (hasActive) continue;
+
+                ticketNum++;
+                var ticket = new QueueTicket
+                {
+                    TenantId = tenantId,
+                    SessionId = session.Id,
+                    PatientId = booking.PatientId,
+                    DoctorId = booking.DoctorId,
+                    DoctorServiceId = booking.DoctorServiceId,
+                    TicketNumber = ticketNum,
+                    Status = TicketStatus.Waiting,
+                    IsUrgent = false,
+                    IssuedAt = DateTime.UtcNow,
+                    Notes = $"Auto-created from booking on {booking.BookingDate:yyyy-MM-dd} at {booking.BookingTime:hh\\:mm}"
+                };
+                _context.QueueTickets.Add(ticket);
+                booking.QueueTicketId = ticket.Id;
+                convertedCount++;
+            }
+
+            if (convertedCount > 0)
+                await _context.SaveChangesAsync();
+        }
+
         var saved = await GetSessionWithIncludes(tenantId, session.Id);
-        return ApiResponse<QueueSessionDto>.Created(MapSessionToDto(saved!), "Queue session opened successfully");
+        var message = convertedCount > 0
+            ? $"Queue session opened successfully. {convertedCount} booking(s) auto-converted to tickets."
+            : "Queue session opened successfully";
+        return ApiResponse<QueueSessionDto>.Created(MapSessionToDto(saved!), message);
     }
 
     public async Task<ApiResponse<QueueSessionDto>> CloseSessionAsync(Guid tenantId, Guid sessionId)
@@ -87,6 +136,31 @@ public class QueueService : IQueueService
         await _context.SaveChangesAsync();
 
         return ApiResponse<QueueSessionDto>.Ok(MapSessionToDto(session), "Session closed. Remaining tickets marked as no-show.");
+    }
+
+    public async Task<ApiResponse<int>> CloseAllSessionsForDateAsync(Guid tenantId, DateTime date)
+    {
+        var targetDate = date.Date;
+        var sessions = await _context.QueueSessions
+            .Include(s => s.Tickets.Where(t => !t.IsDeleted))
+            .Where(s => s.TenantId == tenantId && s.IsActive && !s.IsDeleted && s.StartedAt.Date <= targetDate)
+            .ToListAsync();
+
+        if (!sessions.Any())
+            return ApiResponse<int>.Ok(0, "No active sessions found for the given date");
+
+        foreach (var session in sessions)
+        {
+            foreach (var ticket in session.Tickets.Where(t => t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called))
+            {
+                ticket.Status = TicketStatus.NoShow;
+            }
+            session.IsActive = false;
+            session.ClosedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return ApiResponse<int>.Ok(sessions.Count, $"Closed {sessions.Count} session(s). Remaining tickets marked as no-show.");
     }
 
     public async Task<ApiResponse<PagedResult<QueueSessionDto>>> GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)
@@ -179,6 +253,108 @@ public class QueueService : IQueueService
         return ApiResponse<QueueTicketDto>.Created(MapTicketToDto(saved!), "Ticket issued successfully");
     }
 
+    public async Task<ApiResponse<QueueTicketDto>> IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request)
+    {
+        // Validate session
+        var session = await _context.QueueSessions
+            .FirstOrDefaultAsync(s => s.Id == request.SessionId && s.TenantId == tenantId && !s.IsDeleted);
+        if (session == null)
+            return ApiResponse<QueueTicketDto>.Error("Session not found");
+        if (!session.IsActive)
+            return ApiResponse<QueueTicketDto>.Error("Session is closed");
+
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == request.PatientId && p.TenantId == tenantId && !p.IsDeleted);
+        if (patient == null)
+            return ApiResponse<QueueTicketDto>.Error("Patient not found");
+
+        var doctor = await _context.Doctors
+            .FirstOrDefaultAsync(d => d.Id == request.DoctorId && d.TenantId == tenantId && !d.IsDeleted);
+        if (doctor == null)
+            return ApiResponse<QueueTicketDto>.Error("Doctor not found");
+
+        var activeTicket = await _context.QueueTickets
+            .FirstOrDefaultAsync(t => t.PatientId == request.PatientId && t.TenantId == tenantId && !t.IsDeleted
+                && (t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called || t.Status == TicketStatus.InVisit));
+        if (activeTicket != null)
+            return ApiResponse<QueueTicketDto>.Error("Patient already has an active ticket");
+
+        var maxTicketNum = await _context.QueueTickets
+            .Where(t => t.SessionId == request.SessionId && !t.IsDeleted)
+            .MaxAsync(t => (int?)t.TicketNumber) ?? 0;
+
+        var ticket = new QueueTicket
+        {
+            TenantId = tenantId,
+            SessionId = request.SessionId,
+            PatientId = request.PatientId,
+            DoctorId = request.DoctorId,
+            DoctorServiceId = request.DoctorServiceId,
+            TicketNumber = maxTicketNum + 1,
+            Status = TicketStatus.Waiting,
+            IsUrgent = false,
+            IssuedAt = DateTime.UtcNow,
+            Notes = request.Notes
+        };
+        _context.QueueTickets.Add(ticket);
+
+        // If payment requested, create a visit + invoice + payment upfront
+        if (request.PaymentAmount.HasValue && request.PaymentAmount.Value > 0)
+        {
+            // Service price for invoice amount
+            decimal invoiceAmount = request.PaymentAmount.Value;
+            if (request.DoctorServiceId.HasValue)
+            {
+                var svc = await _context.DoctorServices
+                    .FirstOrDefaultAsync(ds => ds.Id == request.DoctorServiceId.Value && !ds.IsDeleted);
+                if (svc != null)
+                    invoiceAmount = Math.Max(invoiceAmount, svc.Price);
+            }
+
+            var visit = new Visit
+            {
+                TenantId = tenantId,
+                QueueTicketId = ticket.Id,
+                DoctorId = request.DoctorId,
+                PatientId = request.PatientId,
+                Status = VisitStatus.Open,
+                StartedAt = DateTime.UtcNow
+            };
+            _context.Visits.Add(visit);
+
+            var invoice = new Invoice
+            {
+                TenantId = tenantId,
+                VisitId = visit.Id,
+                PatientId = request.PatientId,
+                DoctorId = request.DoctorId,
+                Amount = invoiceAmount,
+                PaidAmount = request.PaymentAmount.Value,
+                RemainingAmount = invoiceAmount - request.PaymentAmount.Value,
+                Status = request.PaymentAmount.Value >= invoiceAmount ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid,
+                Notes = request.PaymentNotes
+            };
+            _context.Invoices.Add(invoice);
+
+            var payment = new Payment
+            {
+                TenantId = tenantId,
+                InvoiceId = invoice.Id,
+                Amount = request.PaymentAmount.Value,
+                PaymentMethod = request.PaymentMethod,
+                ReferenceNumber = request.PaymentReference,
+                Notes = request.PaymentNotes,
+                PaidAt = DateTime.UtcNow
+            };
+            _context.Payments.Add(payment);
+        }
+
+        await _context.SaveChangesAsync();
+
+        var saved = await GetTicketWithIncludes(tenantId, ticket.Id);
+        return ApiResponse<QueueTicketDto>.Created(MapTicketToDto(saved!), "Ticket issued with payment recorded successfully");
+    }
+
     public async Task<ApiResponse<QueueTicketDto>> CallTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)
     {
         var ticket = await GetTicketWithIncludes(tenantId, ticketId);
@@ -195,33 +371,58 @@ public class QueueService : IQueueService
         return ApiResponse<QueueTicketDto>.Ok(MapTicketToDto(ticket), "Patient called successfully");
     }
 
-    public async Task<ApiResponse<QueueTicketDto>> StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)
+    public async Task<ApiResponse<StartVisitResultDto>> StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)
     {
         var ticket = await GetTicketWithIncludes(tenantId, ticketId);
         if (ticket == null)
-            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+            return ApiResponse<StartVisitResultDto>.Error("Ticket not found");
+
+        // Idempotency: if already InVisit, return existing visit
+        if (ticket.Status == TicketStatus.InVisit)
+        {
+            var existingVisit = await _context.Visits
+                .FirstOrDefaultAsync(v => v.QueueTicketId == ticketId && v.TenantId == tenantId && !v.IsDeleted);
+            if (existingVisit != null)
+            {
+                return ApiResponse<StartVisitResultDto>.Ok(new StartVisitResultDto
+                {
+                    Ticket = MapTicketToDto(ticket),
+                    VisitId = existingVisit.Id
+                }, "Visit already started (idempotent)");
+            }
+        }
 
         if (ticket.Status != TicketStatus.Called)
-            return ApiResponse<QueueTicketDto>.Error($"Cannot start visit from {ticket.Status} status. Must be Called.");
+            return ApiResponse<StartVisitResultDto>.Error($"Cannot start visit from {ticket.Status} status. Must be Called.");
 
         ticket.Status = TicketStatus.InVisit;
         ticket.VisitStartedAt = DateTime.UtcNow;
 
-        // Auto-create visit linked to this ticket
-        var visit = new Visit
+        // Check if a visit already exists for this ticket (created via payment flow)
+        var visit = await _context.Visits
+            .FirstOrDefaultAsync(v => v.QueueTicketId == ticketId && v.TenantId == tenantId && !v.IsDeleted);
+
+        if (visit == null)
         {
-            TenantId = tenantId,
-            QueueTicketId = ticket.Id,
-            DoctorId = ticket.DoctorId,
-            PatientId = ticket.PatientId,
-            Status = VisitStatus.Open,
-            StartedAt = DateTime.UtcNow
-        };
-        _context.Visits.Add(visit);
+            visit = new Visit
+            {
+                TenantId = tenantId,
+                QueueTicketId = ticket.Id,
+                DoctorId = ticket.DoctorId,
+                PatientId = ticket.PatientId,
+                Status = VisitStatus.Open,
+                StartedAt = DateTime.UtcNow
+            };
+            _context.Visits.Add(visit);
+        }
 
         await _context.SaveChangesAsync();
 
-        return ApiResponse<QueueTicketDto>.Ok(MapTicketToDto(ticket), "Visit started successfully");
+        return ApiResponse<StartVisitResultDto>.Ok(new StartVisitResultDto
+        {
+            Ticket = MapTicketToDto(ticket),
+            VisitId = visit.Id
+        }, "Visit started successfully");
     }
 
     public async Task<ApiResponse<QueueTicketDto>> FinishTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)
@@ -243,6 +444,14 @@ public class QueueService : IQueueService
         {
             visit.Status = VisitStatus.Completed;
             visit.CompletedAt = DateTime.UtcNow;
+        }
+
+        // Also mark linked booking as Completed
+        var booking = await _context.Bookings
+            .FirstOrDefaultAsync(b => b.QueueTicketId == ticketId && b.TenantId == tenantId && !b.IsDeleted);
+        if (booking != null && booking.Status == BookingStatus.Confirmed)
+        {
+            booking.Status = BookingStatus.Completed;
         }
 
         await _context.SaveChangesAsync();

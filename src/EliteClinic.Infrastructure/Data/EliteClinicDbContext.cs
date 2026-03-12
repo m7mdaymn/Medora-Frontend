@@ -36,6 +36,10 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Expense> Expenses { get; set; }
 
+    // Phase 5 entities
+    public DbSet<ClinicService> ClinicServicesCatalog { get; set; }
+    public DbSet<DoctorServiceLink> DoctorServiceLinks { get; set; }
+
     // Phase 4 entities
     public DbSet<MessageLog> MessageLogs { get; set; }
     public DbSet<Booking> Bookings { get; set; }
@@ -203,6 +207,9 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Phone).IsRequired().HasMaxLength(20);
             entity.Property(e => e.Gender).HasConversion<int>();
+
+            // Prevent duplicate patients within a tenant (same phone + name)
+            entity.HasIndex(e => new { e.TenantId, e.Phone, e.Name }).IsUnique().HasFilter("[IsDeleted] = 0");
 
             entity.HasOne(e => e.User)
                 .WithMany()
@@ -397,6 +404,10 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.CancellationReason).HasMaxLength(500);
 
+            // Prevent double-booking a doctor at the same date/time
+            entity.HasIndex(e => new { e.DoctorId, e.BookingDate, e.BookingTime })
+                .IsUnique().HasFilter("[IsDeleted] = 0 AND [Status] <> 3"); // Status 3 = Cancelled
+
             entity.HasOne(e => e.Patient)
                 .WithMany()
                 .HasForeignKey(e => e.PatientId)
@@ -444,6 +455,36 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // === Phase 5 Entity Configurations ===
+
+        // ClinicService entity configuration (tenant-level service catalog)
+        builder.Entity<ClinicService>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.DefaultPrice).HasPrecision(18, 2);
+            entity.HasIndex(e => new { e.TenantId, e.Name }).IsUnique().HasFilter("[IsDeleted] = 0");
+
+            entity.HasMany(e => e.DoctorLinks)
+                .WithOne(l => l.ClinicService)
+                .HasForeignKey(l => l.ClinicServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // DoctorServiceLink entity configuration
+        builder.Entity<DoctorServiceLink>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OverridePrice).HasPrecision(18, 2);
+            entity.HasIndex(e => new { e.ClinicServiceId, e.DoctorId }).IsUnique().HasFilter("[IsDeleted] = 0");
+
+            entity.HasOne(e => e.Doctor)
+                .WithMany()
+                .HasForeignKey(e => e.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         // Global query filter for tenant-scoped entities
         // Uses property reference so EF Core parameterizes per-query (not captured once at model build)
         builder.Entity<ClinicSettings>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
@@ -467,6 +508,10 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<Booking>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<DoctorNote>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<NotificationSubscription>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+
+        // Phase 5 query filters
+        builder.Entity<ClinicService>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<DoctorServiceLink>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -7,6 +7,7 @@ public interface IInvoiceService
 {
     Task<ApiResponse<InvoiceDto>> CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> UpdateInvoiceAsync(Guid tenantId, Guid invoiceId, UpdateInvoiceRequest request);
+    Task<ApiResponse<InvoiceDto>> PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> GetInvoiceByIdAsync(Guid tenantId, Guid invoiceId);
     Task<ApiResponse<PagedResult<InvoiceDto>>> GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<PaymentDto>> RecordPaymentAsync(Guid tenantId, CreatePaymentRequest request);

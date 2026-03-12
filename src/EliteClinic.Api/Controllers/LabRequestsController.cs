@@ -1,6 +1,7 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Application.Features.Clinic.Services;
+using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -82,17 +83,17 @@ public class LabRequestsController : ControllerBase
     }
 
     /// <summary>
-    /// List all lab/imaging requests for a visit
+    /// List all lab/imaging requests for a visit (optionally filter by type: 0=Lab, 1=Imaging)
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "ClinicOwner,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<LabRequestDto>>), 200)]
-    public async Task<ActionResult<ApiResponse<List<LabRequestDto>>>> GetByVisit(Guid visitId)
+    public async Task<ActionResult<ApiResponse<List<LabRequestDto>>>> GetByVisit(Guid visitId, [FromQuery] LabRequestType? type = null)
     {
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<List<LabRequestDto>>.Error("Tenant context not resolved"));
 
-        var result = await _labRequestService.GetByVisitAsync(_tenantContext.TenantId, visitId);
+        var result = await _labRequestService.GetByVisitAsync(_tenantContext.TenantId, visitId, type);
         if (!result.Success)
             return BadRequest(result);
 

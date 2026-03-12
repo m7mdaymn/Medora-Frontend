@@ -48,7 +48,7 @@ public class ClinicSettingsController : ControllerBase
     /// Update clinic settings (ClinicOwner only)
     /// </summary>
     [HttpPut]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ClinicSettingsDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -58,6 +58,30 @@ public class ClinicSettingsController : ControllerBase
             return BadRequest(ApiResponse<ClinicSettingsDto>.Error("Tenant context not resolved"));
 
         var result = await _settingsService.UpdateSettingsAsync(_tenantContext.TenantId, request);
+        if (!result.Success)
+        {
+            if (result.Message.Contains("not found"))
+                return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Partially update clinic settings (PATCH — only provided fields are changed)
+    /// </summary>
+    [HttpPatch]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<ClinicSettingsDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<ClinicSettingsDto>>> PatchSettings([FromBody] PatchClinicSettingsRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<ClinicSettingsDto>.Error("Tenant context not resolved"));
+
+        var result = await _settingsService.PatchSettingsAsync(_tenantContext.TenantId, request);
         if (!result.Success)
         {
             if (result.Message.Contains("not found"))

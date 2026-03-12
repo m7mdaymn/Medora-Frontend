@@ -38,7 +38,11 @@ public class BookingsController : ControllerBase
 
         var result = await _bookingService.CreateAsync(_tenantContext.TenantId, GetCurrentUserId(), request);
         if (!result.Success)
+        {
+            if (result.Message.Contains("already exists"))
+                return Conflict(result);
             return BadRequest(result);
+        }
 
         return StatusCode(201, result);
     }

@@ -1,8 +1,8 @@
 # Roles & Permissions Guide
 
-> **Version:** 5.0 | **Last Updated:** 2026-02-07
+> **Version:** 6.0 | **Last Updated:** 2026-02-08
 
-Elite Clinic uses 6 roles with role-based access control (RBAC) enforced through ASP.NET Identity and `[Authorize(Roles = "...")]` attributes on every controller action.
+Elite Clinic uses 7 roles with role-based access control (RBAC) enforced through ASP.NET Identity and `[Authorize(Roles = "...")]` attributes on every controller action.
 
 ---
 
@@ -12,8 +12,9 @@ Elite Clinic uses 6 roles with role-based access control (RBAC) enforced through
 SuperAdmin (Platform-level)
 └── ClinicOwner (Tenant-level — full control)
     ├── ClinicManager (Daily operations)
-    ├── Receptionist (Front desk)
+    ├── Receptionist (Front desk + patient CRUD + queue)
     ├── Doctor (Clinical)
+    ├── Nurse (Clinical support, read-only)
     └── Patient (Self-service)
 ```
 
@@ -105,6 +106,9 @@ SuperAdmin (Platform-level)
 **Created via:** `POST /api/clinic/staff` with `"role": "Receptionist"`  
 
 ### Capabilities
+- Create, edit, and manage patients (full CRUD: create, edit via PUT/PATCH, list, view details, add sub-profile, reset password)
+- Manage queue (open/close sessions, issue tickets, issue tickets with payment, skip, cancel)
+- View reception board
 - Create, cancel, and reschedule bookings (on behalf of patients)
 - List and view bookings
 - Send WhatsApp messages (using templates)
@@ -115,16 +119,17 @@ SuperAdmin (Platform-level)
 - View doctor list (list only, not detail)
 - View staff list (read-only)
 - View clinic settings (read-only)
+- View clinic services catalog (read-only)
 - Subscribe to push notifications
 
 ### Cannot
 - Create doctors or staff
 - Update clinic settings
 - Manage subscriptions or feature flags
-- Access patients list (use owner token for patient lookup)
-- Access queue management
 - Access visits, prescriptions, or medical records
 - Access finance or expenses
+- Disable/enable staff or doctors (manager only)
+- Delete patients (owner only)
 
 ### Key Difference from ClinicManager
 The Receptionist role is focused on **communication and booking** while ClinicManager handles **daily clinical operations** (queue, payments, patients).
@@ -157,7 +162,33 @@ The Receptionist role is focused on **communication and booking** while ClinicMa
 
 ---
 
-## 6. Patient
+## 6. Nurse
+
+**Scope:** Single tenant (read-only clinical support)  
+**Token:** Includes `tenantId` claim  
+**Login:** `POST /api/auth/login` with `X-Tenant` header  
+**Created via:** `POST /api/clinic/staff` with `"role": "Nurse"`  
+
+### Capabilities
+- View patient list and details (read-only)
+- View reception board (read-only)
+- View doctor list (read-only)
+- View clinic settings (read-only)
+- View clinic services catalog (read-only)
+- Subscribe to push notifications
+
+### Cannot
+- Create, edit, or delete any records
+- Manage queue (open/close sessions, issue/call/skip/cancel tickets)
+- Access visits, prescriptions, or medical records
+- Access finance, payments, or expenses
+- Send messages or notifications
+- Manage bookings
+- Create staff or doctors
+
+---
+
+## 7. Patient
 
 **Scope:** Single tenant (own data only)  
 **Token:** Includes `tenantId` claim  
@@ -187,8 +218,8 @@ The Receptionist role is focused on **communication and booking** while ClinicMa
 ## Role Assignment
 
 ### During Seeding
-All 6 roles are automatically seeded on application startup:
-- SuperAdmin, ClinicOwner, ClinicManager, Receptionist, Doctor, Patient
+All 7 roles are automatically seeded on application startup:
+- SuperAdmin, ClinicOwner, ClinicManager, Receptionist, Doctor, Nurse, Patient
 
 ### Staff Creation
 ```json
@@ -197,7 +228,7 @@ POST /api/clinic/staff
   "username": "new_receptionist",
   "name": "Front Desk Person",
   "password": "SecurePassword@123",
-  "role": "Receptionist"   // "ClinicManager" or "Receptionist" — defaults to "ClinicManager"
+  "role": "Receptionist"   // "ClinicManager", "Receptionist", or "Nurse" — defaults to "ClinicManager"
 }
 ```
 
@@ -235,10 +266,11 @@ Feature flags are managed by SuperAdmin: `PUT /api/platform/feature-flags/{tenan
 | TenantsController | SuperAdmin | — |
 | SubscriptionsController | SuperAdmin | — |
 | FeatureFlagsController | SuperAdmin | — |
-| ClinicSettingsController | Authorize | GET: all auth'd, PUT: ClinicOwner |
+| ClinicServicesController | Authorize | Read: SuperAdmin,ClinicOwner,ClinicManager,Doctor,Receptionist,Nurse; Write: SuperAdmin,ClinicOwner,ClinicManager |
+| ClinicSettingsController | Authorize | GET: all auth'd, PUT/PATCH: ClinicOwner |
 | StaffController | Authorize | Most: ClinicOwner,SuperAdmin |
 | DoctorsController | Authorize | Create/edit: ClinicOwner,SuperAdmin; List: all auth'd |
-| PatientsController | Authorize | Create/edit: ClinicOwner,ClinicManager,SuperAdmin; List: same; Detail: adds Doctor,Patient |
+| PatientsController | Authorize | Create/edit/patch: ClinicOwner,ClinicManager,Receptionist,SuperAdmin; List: same; Detail: adds Doctor,Patient,Nurse |
 | QueueSessionsController | Authorize | ClinicOwner,ClinicManager,Doctor,SuperAdmin |
 | QueueTicketsController | Authorize | Issue/skip/cancel: ClinicOwner,ClinicManager,SuperAdmin; Call/visit: Doctor |
 | QueueBoardController | Authorize | Board: ClinicOwner,ClinicManager,SuperAdmin; My-queue: Doctor; My-ticket: Patient |

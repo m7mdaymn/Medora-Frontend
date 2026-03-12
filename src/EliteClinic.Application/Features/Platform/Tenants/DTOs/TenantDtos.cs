@@ -21,6 +21,14 @@ public class CreateTenantRequest
     public string? Address { get; set; }
 
     public string? LogoUrl { get; set; }
+
+    // Optional: auto-create ClinicOwner user on tenant creation
+    public string? OwnerName { get; set; }
+    public string? OwnerUsername { get; set; }
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be 6–100 characters")]
+    public string? OwnerPassword { get; set; }
+    [Phone(ErrorMessage = "Invalid phone number format")]
+    public string? OwnerPhone { get; set; }
 }
 
 public class UpdateTenantRequest

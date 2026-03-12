@@ -7,4 +7,5 @@ public interface IClinicSettingsService
 {
     Task<ApiResponse<ClinicSettingsDto>> GetSettingsAsync(Guid tenantId);
     Task<ApiResponse<ClinicSettingsDto>> UpdateSettingsAsync(Guid tenantId, UpdateClinicSettingsRequest request);
+    Task<ApiResponse<ClinicSettingsDto>> PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request);
 }

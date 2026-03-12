@@ -86,6 +86,40 @@ public class InvoiceService : IInvoiceService
         return ApiResponse<InvoiceDto>.Ok(MapToDto(updated!), "Invoice updated successfully");
     }
 
+    public async Task<ApiResponse<InvoiceDto>> PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request)
+    {
+        var invoice = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        if (invoice == null)
+            return ApiResponse<InvoiceDto>.Error("Invoice not found");
+
+        var visit = await _context.Visits.FirstOrDefaultAsync(v => v.Id == invoice.VisitId && !v.IsDeleted);
+        if (visit != null && visit.Status != VisitStatus.Open)
+            return ApiResponse<InvoiceDto>.Error("Cannot update invoice — visit is already completed");
+
+        if (request.Amount.HasValue)
+        {
+            if (request.Amount.Value <= 0)
+                return ApiResponse<InvoiceDto>.Error("Amount must be greater than zero");
+            if (request.Amount.Value < invoice.PaidAmount)
+                return ApiResponse<InvoiceDto>.Error("New amount cannot be less than already paid amount");
+
+            invoice.Amount = request.Amount.Value;
+            invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
+
+            invoice.Status = invoice.RemainingAmount <= 0 ? InvoiceStatus.Paid
+                : invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid
+                : InvoiceStatus.Unpaid;
+        }
+
+        if (request.Notes != null)
+            invoice.Notes = request.Notes;
+
+        await _context.SaveChangesAsync();
+
+        var patched = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        return ApiResponse<InvoiceDto>.Ok(MapToDto(patched!), "Invoice patched successfully");
+    }
+
     public async Task<ApiResponse<InvoiceDto>> GetInvoiceByIdAsync(Guid tenantId, Guid invoiceId)
     {
         var invoice = await GetInvoiceWithIncludes(tenantId, invoiceId);

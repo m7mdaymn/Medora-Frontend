@@ -34,6 +34,12 @@ public class UpdateInvoiceRequest
     public string? Notes { get; set; }
 }
 
+public class PatchInvoiceRequest
+{
+    public decimal? Amount { get; set; }
+    public string? Notes { get; set; }
+}
+
 // ─── Payment DTOs ──────────────────────────────────────────────────
 
 public class PaymentDto

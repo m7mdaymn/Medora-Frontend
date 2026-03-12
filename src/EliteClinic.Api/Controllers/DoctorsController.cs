@@ -30,7 +30,7 @@ public class DoctorsController : ControllerBase
     /// Create a new doctor (ClinicOwner only)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<DoctorDto>>> CreateDoctor([FromBody] CreateDoctorRequest request)
@@ -66,7 +66,7 @@ public class DoctorsController : ControllerBase
     /// Get doctor by ID (with services and visit field config)
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<DoctorDto>>> GetDoctorById(Guid id)
@@ -85,7 +85,7 @@ public class DoctorsController : ControllerBase
     /// Update doctor profile (ClinicOwner only)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<DoctorDto>>> UpdateDoctor(Guid id, [FromBody] UpdateDoctorRequest request)
@@ -101,10 +101,29 @@ public class DoctorsController : ControllerBase
     }
 
     /// <summary>
+    /// Partially update a doctor (PATCH — only provided fields are changed)
+    /// </summary>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<DoctorDto>>> PatchDoctor(Guid id, [FromBody] PatchDoctorRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<DoctorDto>.Error("Tenant context not resolved"));
+
+        var result = await _doctorService.PatchDoctorAsync(_tenantContext.TenantId, id, request);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Enable doctor (ClinicOwner only)
     /// </summary>
     [HttpPost("{id:guid}/enable")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<DoctorDto>>> EnableDoctor(Guid id)
@@ -123,7 +142,7 @@ public class DoctorsController : ControllerBase
     /// Disable doctor (ClinicOwner only)
     /// </summary>
     [HttpPost("{id:guid}/disable")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<DoctorDto>>> DisableDoctor(Guid id)
@@ -142,7 +161,7 @@ public class DoctorsController : ControllerBase
     /// Update doctor services (replace all)
     /// </summary>
     [HttpPut("{id:guid}/services")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<DoctorServiceDto>>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<List<DoctorServiceDto>>>> UpdateServices(Guid id, [FromBody] UpdateDoctorServicesRequest request)
@@ -161,7 +180,7 @@ public class DoctorsController : ControllerBase
     /// Update doctor visit field configuration
     /// </summary>
     [HttpPut("{id:guid}/visit-fields")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<DoctorVisitFieldConfigDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<DoctorVisitFieldConfigDto>>> UpdateVisitFields(Guid id, [FromBody] UpdateVisitFieldsRequest request)

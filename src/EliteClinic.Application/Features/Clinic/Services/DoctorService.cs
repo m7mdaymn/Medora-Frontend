@@ -134,6 +134,28 @@ public class DoctorServiceImpl : IDoctorService
         return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor updated successfully");
     }
 
+    public async Task<ApiResponse<DoctorDto>> PatchDoctorAsync(Guid tenantId, Guid id, PatchDoctorRequest request)
+    {
+        var doctor = await GetDoctorWithIncludes(tenantId, id);
+        if (doctor == null)
+            return ApiResponse<DoctorDto>.Error("Doctor not found");
+
+        if (request.Name != null) { doctor.Name = request.Name; doctor.User.DisplayName = request.Name; }
+        if (request.Specialty != null) doctor.Specialty = request.Specialty;
+        if (request.Phone != null) doctor.Phone = request.Phone;
+        if (request.Bio != null) doctor.Bio = request.Bio;
+        if (request.PhotoUrl != null) doctor.PhotoUrl = request.PhotoUrl;
+        if (request.UrgentCaseMode.HasValue) doctor.UrgentCaseMode = request.UrgentCaseMode.Value;
+        if (request.AvgVisitDurationMinutes.HasValue) doctor.AvgVisitDurationMinutes = request.AvgVisitDurationMinutes.Value;
+
+        if (request.Name != null)
+            await _userManager.UpdateAsync(doctor.User);
+
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor patched successfully");
+    }
+
     public async Task<ApiResponse<DoctorDto>> EnableDoctorAsync(Guid tenantId, Guid id)
     {
         var doctor = await GetDoctorWithIncludes(tenantId, id);
@@ -153,6 +175,11 @@ public class DoctorServiceImpl : IDoctorService
         var doctor = await GetDoctorWithIncludes(tenantId, id);
         if (doctor == null)
             return ApiResponse<DoctorDto>.Error("Doctor not found");
+
+        // Protect: cannot disable a ClinicOwner through doctor endpoints
+        var roles = await _userManager.GetRolesAsync(doctor.User);
+        if (roles.Contains("ClinicOwner"))
+            return ApiResponse<DoctorDto>.Error("Cannot disable the clinic owner");
 
         doctor.IsEnabled = false;
         doctor.User.IsActive = false;

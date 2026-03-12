@@ -30,7 +30,7 @@ public class StaffController : ControllerBase
     /// Create a new staff member (ClinicOwner only)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<StaffDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<StaffDto>>> CreateStaff([FromBody] CreateStaffRequest request)
@@ -66,7 +66,7 @@ public class StaffController : ControllerBase
     /// Get staff member by ID
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<StaffDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<StaffDto>>> GetStaffById(Guid id)
@@ -85,7 +85,7 @@ public class StaffController : ControllerBase
     /// Update staff member (ClinicOwner only)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<StaffDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<StaffDto>>> UpdateStaff(Guid id, [FromBody] UpdateStaffRequest request)
@@ -101,10 +101,29 @@ public class StaffController : ControllerBase
     }
 
     /// <summary>
+    /// Partially update a staff member (PATCH — only provided fields are changed)
+    /// </summary>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<StaffDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<StaffDto>>> PatchStaff(Guid id, [FromBody] PatchStaffRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<StaffDto>.Error("Tenant context not resolved"));
+
+        var result = await _staffService.PatchStaffAsync(_tenantContext.TenantId, id, request);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Enable staff member (ClinicOwner only)
     /// </summary>
     [HttpPost("{id:guid}/enable")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<StaffDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<StaffDto>>> EnableStaff(Guid id)
@@ -123,7 +142,7 @@ public class StaffController : ControllerBase
     /// Disable staff member (ClinicOwner only)
     /// </summary>
     [HttpPost("{id:guid}/disable")]
-    [Authorize(Roles = "ClinicOwner,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<StaffDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<StaffDto>>> DisableStaff(Guid id)

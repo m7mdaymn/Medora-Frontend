@@ -28,7 +28,7 @@ public class QueueBoardController : ControllerBase
     /// Reception board — all active sessions with ticket counts (today)
     /// </summary>
     [HttpGet("board")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueBoardDto>), 200)]
     public async Task<ActionResult<ApiResponse<QueueBoardDto>>> GetBoard()
     {

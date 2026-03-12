@@ -21,6 +21,12 @@ public class PatientService : IPatientService
 
     public async Task<ApiResponse<CreatePatientResponse>> CreatePatientAsync(Guid tenantId, CreatePatientRequest request)
     {
+        // Check for duplicate patient (same phone + name within tenant)
+        var duplicate = await _context.Patients
+            .AnyAsync(p => p.TenantId == tenantId && p.Phone == request.Phone && p.Name == request.Name);
+        if (duplicate)
+            return ApiResponse<CreatePatientResponse>.Error("A patient with this name and phone already exists in this clinic");
+
         // Resolve tenant slug for username generation
         var tenant = await _context.Tenants.IgnoreQueryFilters()
             .FirstOrDefaultAsync(t => t.Id == tenantId && !t.IsDeleted);
@@ -159,6 +165,31 @@ public class PatientService : IPatientService
         await _context.SaveChangesAsync();
 
         return ApiResponse<PatientDto>.Ok(MapToDto(patient, patient.User), "Patient updated successfully");
+    }
+
+    public async Task<ApiResponse<PatientDto>> PatchPatientAsync(Guid tenantId, Guid id, PatchPatientRequest request)
+    {
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .Include(p => p.SubProfiles.Where(sp => !sp.IsDeleted))
+            .FirstOrDefaultAsync(p => p.Id == id && p.TenantId == tenantId);
+
+        if (patient == null)
+            return ApiResponse<PatientDto>.Error("Patient not found");
+
+        if (request.Name != null) { patient.Name = request.Name; patient.User.DisplayName = request.Name; }
+        if (request.Phone != null) patient.Phone = request.Phone;
+        if (request.DateOfBirth.HasValue) patient.DateOfBirth = request.DateOfBirth;
+        if (request.Gender.HasValue) patient.Gender = request.Gender.Value;
+        if (request.Address != null) patient.Address = request.Address;
+        if (request.Notes != null) patient.Notes = request.Notes;
+
+        if (request.Name != null)
+            await _userManager.UpdateAsync(patient.User);
+
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<PatientDto>.Ok(MapToDto(patient, patient.User), "Patient patched successfully");
     }
 
     public async Task<ApiResponse<PatientDto>> AddSubProfileAsync(Guid tenantId, Guid parentId, AddSubProfileRequest request)

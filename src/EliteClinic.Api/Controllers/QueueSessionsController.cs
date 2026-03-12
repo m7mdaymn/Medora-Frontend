@@ -64,6 +64,27 @@ public class QueueSessionsController : ControllerBase
     }
 
     /// <summary>
+    /// Close ALL active sessions for a given date (end-of-day closure).
+    /// Remaining Waiting/Called tickets become NoShow.
+    /// </summary>
+    [HttpPost("close-all")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<int>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<int>>> CloseAllSessions([FromQuery] DateTime? date)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<int>.Error("Tenant context not resolved"));
+
+        var targetDate = date ?? DateTime.UtcNow.Date;
+        var result = await _queueService.CloseAllSessionsForDateAsync(_tenantContext.TenantId, targetDate);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// List all queue sessions (paginated)
     /// </summary>
     [HttpGet]

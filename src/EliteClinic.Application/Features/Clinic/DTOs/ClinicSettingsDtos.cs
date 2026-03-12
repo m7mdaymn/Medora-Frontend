@@ -53,6 +53,21 @@ public class UpdateClinicSettingsRequest
     public List<WorkingHourRequest>? WorkingHours { get; set; }
 }
 
+public class PatchClinicSettingsRequest
+{
+    [StringLength(200)] public string? ClinicName { get; set; }
+    [StringLength(20)] public string? Phone { get; set; }
+    [StringLength(20)] public string? WhatsAppSenderNumber { get; set; }
+    [StringLength(20)] public string? SupportWhatsAppNumber { get; set; }
+    [StringLength(20)] public string? SupportPhoneNumber { get; set; }
+    public string? Address { get; set; }
+    [StringLength(100)] public string? City { get; set; }
+    public string? LogoUrl { get; set; }
+    public bool? BookingEnabled { get; set; }
+    [Range(0, 168)] public int? CancellationWindowHours { get; set; }
+    public List<WorkingHourRequest>? WorkingHours { get; set; }
+}
+
 public class WorkingHourDto
 {
     public Guid Id { get; set; }
