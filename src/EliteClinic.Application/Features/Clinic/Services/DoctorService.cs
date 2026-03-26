@@ -1,6 +1,7 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
+using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,8 @@ public class DoctorServiceImpl : IDoctorService
             Bio = request.Bio,
             PhotoUrl = request.PhotoUrl,
             UrgentCaseMode = request.UrgentCaseMode,
+            UrgentEnabled = request.UrgentEnabled ?? (request.UrgentCaseMode != UrgentCaseMode.Disabled),
+            UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(request.UrgentInsertAfterCount, request.UrgentCaseMode),
             AvgVisitDurationMinutes = request.AvgVisitDurationMinutes,
             IsEnabled = true
         };
@@ -90,7 +93,8 @@ public class DoctorServiceImpl : IDoctorService
             .Take(pageSize)
             .ToListAsync();
 
-        var dtos = doctors.Select(d => MapToDto(d, d.User)).ToList();
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, doctors.Select(d => d.Id).ToList());
+        var dtos = doctors.Select(d => MapToDto(d, d.User, linkMap)).ToList();
 
         var result = new PagedResult<DoctorDto>
         {
@@ -109,7 +113,23 @@ public class DoctorServiceImpl : IDoctorService
         if (doctor == null)
             return ApiResponse<DoctorDto>.Error("Doctor not found");
 
-        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor retrieved successfully");
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor retrieved successfully");
+    }
+
+    public async Task<ApiResponse<DoctorDto>> GetMyProfileAsync(Guid tenantId, Guid doctorUserId)
+    {
+        var doctor = await _context.Doctors
+            .Include(d => d.User)
+            .Include(d => d.Services.Where(s => !s.IsDeleted))
+            .Include(d => d.VisitFieldConfig)
+            .FirstOrDefaultAsync(d => d.TenantId == tenantId && d.UserId == doctorUserId && !d.IsDeleted);
+
+        if (doctor == null)
+            return ApiResponse<DoctorDto>.Error("Doctor profile not found");
+
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { doctor.Id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor profile retrieved successfully");
     }
 
     public async Task<ApiResponse<DoctorDto>> UpdateDoctorAsync(Guid tenantId, Guid id, UpdateDoctorRequest request)
@@ -124,6 +144,8 @@ public class DoctorServiceImpl : IDoctorService
         doctor.Bio = request.Bio;
         doctor.PhotoUrl = request.PhotoUrl;
         doctor.UrgentCaseMode = request.UrgentCaseMode;
+        doctor.UrgentEnabled = request.UrgentEnabled ?? (request.UrgentCaseMode != UrgentCaseMode.Disabled);
+        doctor.UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(request.UrgentInsertAfterCount, request.UrgentCaseMode);
         doctor.AvgVisitDurationMinutes = request.AvgVisitDurationMinutes;
 
         doctor.User.DisplayName = request.Name;
@@ -131,7 +153,8 @@ public class DoctorServiceImpl : IDoctorService
 
         await _context.SaveChangesAsync();
 
-        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor updated successfully");
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { doctor.Id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor updated successfully");
     }
 
     public async Task<ApiResponse<DoctorDto>> PatchDoctorAsync(Guid tenantId, Guid id, PatchDoctorRequest request)
@@ -146,6 +169,11 @@ public class DoctorServiceImpl : IDoctorService
         if (request.Bio != null) doctor.Bio = request.Bio;
         if (request.PhotoUrl != null) doctor.PhotoUrl = request.PhotoUrl;
         if (request.UrgentCaseMode.HasValue) doctor.UrgentCaseMode = request.UrgentCaseMode.Value;
+        if (request.UrgentEnabled.HasValue) doctor.UrgentEnabled = request.UrgentEnabled.Value;
+        if (request.UrgentInsertAfterCount.HasValue)
+            doctor.UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(request.UrgentInsertAfterCount, request.UrgentCaseMode ?? doctor.UrgentCaseMode);
+        else if (request.UrgentCaseMode.HasValue)
+            doctor.UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(null, request.UrgentCaseMode.Value);
         if (request.AvgVisitDurationMinutes.HasValue) doctor.AvgVisitDurationMinutes = request.AvgVisitDurationMinutes.Value;
 
         if (request.Name != null)
@@ -153,7 +181,8 @@ public class DoctorServiceImpl : IDoctorService
 
         await _context.SaveChangesAsync();
 
-        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor patched successfully");
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { doctor.Id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor patched successfully");
     }
 
     public async Task<ApiResponse<DoctorDto>> EnableDoctorAsync(Guid tenantId, Guid id)
@@ -167,7 +196,8 @@ public class DoctorServiceImpl : IDoctorService
         await _userManager.UpdateAsync(doctor.User);
         await _context.SaveChangesAsync();
 
-        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor enabled successfully");
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { doctor.Id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor enabled successfully");
     }
 
     public async Task<ApiResponse<DoctorDto>> DisableDoctorAsync(Guid tenantId, Guid id)
@@ -186,7 +216,8 @@ public class DoctorServiceImpl : IDoctorService
         await _userManager.UpdateAsync(doctor.User);
         await _context.SaveChangesAsync();
 
-        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User), "Doctor disabled successfully");
+        var linkMap = await BuildDoctorLinkMapAsync(tenantId, new List<Guid> { doctor.Id });
+        return ApiResponse<DoctorDto>.Ok(MapToDto(doctor, doctor.User, linkMap), "Doctor disabled successfully");
     }
 
     public async Task<ApiResponse<List<DoctorServiceDto>>> UpdateServicesAsync(Guid tenantId, Guid doctorId, UpdateDoctorServicesRequest request)
@@ -282,6 +313,49 @@ public class DoctorServiceImpl : IDoctorService
         }, "Visit field config updated successfully");
     }
 
+    public async Task<ApiResponse<DoctorVisitFieldConfigDto>> GetMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId)
+    {
+        var doctor = await _context.Doctors
+            .Include(d => d.VisitFieldConfig)
+            .FirstOrDefaultAsync(d => d.TenantId == tenantId && d.UserId == doctorUserId && !d.IsDeleted);
+
+        if (doctor == null)
+            return ApiResponse<DoctorVisitFieldConfigDto>.Error("Doctor profile not found");
+
+        if (doctor.VisitFieldConfig == null)
+        {
+            return ApiResponse<DoctorVisitFieldConfigDto>.Ok(new DoctorVisitFieldConfigDto
+            {
+                Temperature = true,
+                Weight = true
+            }, "Doctor visit fields not configured, returning defaults");
+        }
+
+        return ApiResponse<DoctorVisitFieldConfigDto>.Ok(new DoctorVisitFieldConfigDto
+        {
+            BloodPressure = doctor.VisitFieldConfig.BloodPressure,
+            HeartRate = doctor.VisitFieldConfig.HeartRate,
+            Temperature = doctor.VisitFieldConfig.Temperature,
+            Weight = doctor.VisitFieldConfig.Weight,
+            Height = doctor.VisitFieldConfig.Height,
+            BMI = doctor.VisitFieldConfig.BMI,
+            BloodSugar = doctor.VisitFieldConfig.BloodSugar,
+            OxygenSaturation = doctor.VisitFieldConfig.OxygenSaturation,
+            RespiratoryRate = doctor.VisitFieldConfig.RespiratoryRate
+        }, "Doctor visit fields retrieved successfully");
+    }
+
+    public async Task<ApiResponse<DoctorVisitFieldConfigDto>> UpdateMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId, UpdateVisitFieldsRequest request)
+    {
+        var doctor = await _context.Doctors
+            .FirstOrDefaultAsync(d => d.TenantId == tenantId && d.UserId == doctorUserId && !d.IsDeleted);
+
+        if (doctor == null)
+            return ApiResponse<DoctorVisitFieldConfigDto>.Error("Doctor profile not found");
+
+        return await UpdateVisitFieldsAsync(tenantId, doctor.Id, request);
+    }
+
     private async Task<Doctor?> GetDoctorWithIncludes(Guid tenantId, Guid id)
     {
         return await _context.Doctors
@@ -291,8 +365,10 @@ public class DoctorServiceImpl : IDoctorService
             .FirstOrDefaultAsync(d => d.Id == id && d.TenantId == tenantId && !d.IsDeleted);
     }
 
-    private static DoctorDto MapToDto(Doctor doctor, ApplicationUser user)
+    private static DoctorDto MapToDto(Doctor doctor, ApplicationUser user, IReadOnlyDictionary<Guid, List<DoctorServiceDto>>? linkMap = null)
     {
+        var effectiveServices = ResolveEffectiveServices(doctor, linkMap);
+
         return new DoctorDto
         {
             Id = doctor.Id,
@@ -305,17 +381,11 @@ public class DoctorServiceImpl : IDoctorService
             IsEnabled = doctor.IsEnabled,
             Username = user.UserName ?? string.Empty,
             UrgentCaseMode = doctor.UrgentCaseMode,
+            UrgentEnabled = doctor.UrgentEnabled,
+            UrgentInsertAfterCount = doctor.UrgentInsertAfterCount,
+            SupportsUrgent = doctor.UrgentEnabled,
             AvgVisitDurationMinutes = doctor.AvgVisitDurationMinutes,
-            Services = doctor.Services
-                .Where(s => !s.IsDeleted)
-                .Select(s => new DoctorServiceDto
-                {
-                    Id = s.Id,
-                    ServiceName = s.ServiceName,
-                    Price = s.Price,
-                    DurationMinutes = s.DurationMinutes,
-                    IsActive = s.IsActive
-                }).ToList(),
+            Services = effectiveServices,
             VisitFieldConfig = doctor.VisitFieldConfig != null ? new DoctorVisitFieldConfigDto
             {
                 BloodPressure = doctor.VisitFieldConfig.BloodPressure,
@@ -330,5 +400,68 @@ public class DoctorServiceImpl : IDoctorService
             } : null,
             CreatedAt = doctor.CreatedAt
         };
+    }
+
+    private static int ResolveUrgentInsertAfterCount(int? requestedCount, UrgentCaseMode mode)
+    {
+        if (requestedCount.HasValue)
+            return Math.Max(0, Math.Min(3, requestedCount.Value));
+
+        return mode switch
+        {
+            UrgentCaseMode.UrgentBucket => 2,
+            UrgentCaseMode.UrgentFront => 0,
+            UrgentCaseMode.UrgentNext => 0,
+            _ => 0
+        };
+    }
+
+    private static List<DoctorServiceDto> ResolveEffectiveServices(Doctor doctor, IReadOnlyDictionary<Guid, List<DoctorServiceDto>>? linkMap)
+    {
+        if (linkMap != null && linkMap.TryGetValue(doctor.Id, out var linked) && linked.Count > 0)
+            return linked;
+
+        return doctor.Services
+            .Where(s => !s.IsDeleted)
+            .Select(s => new DoctorServiceDto
+            {
+                Id = s.Id,
+                ServiceName = s.ServiceName,
+                Price = s.Price,
+                DurationMinutes = s.DurationMinutes,
+                IsActive = s.IsActive
+            }).ToList();
+    }
+
+    private async Task<Dictionary<Guid, List<DoctorServiceDto>>> BuildDoctorLinkMapAsync(Guid tenantId, List<Guid> doctorIds)
+    {
+        if (!doctorIds.Any())
+            return new Dictionary<Guid, List<DoctorServiceDto>>();
+
+        var links = await _context.DoctorServiceLinks
+            .Include(l => l.ClinicService)
+            .Where(l => l.TenantId == tenantId
+                && !l.IsDeleted
+                && l.IsActive
+                && doctorIds.Contains(l.DoctorId)
+                && !l.ClinicService.IsDeleted
+                && l.ClinicService.IsActive)
+            .Select(l => new
+            {
+                l.DoctorId,
+                Service = new DoctorServiceDto
+                {
+                    Id = l.Id,
+                    ServiceName = l.ClinicService.Name,
+                    Price = l.OverridePrice ?? l.ClinicService.DefaultPrice,
+                    DurationMinutes = l.OverrideDurationMinutes ?? l.ClinicService.DefaultDurationMinutes,
+                    IsActive = l.IsActive
+                }
+            })
+            .ToListAsync();
+
+        return links
+            .GroupBy(x => x.DoctorId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Service).ToList());
     }
 }

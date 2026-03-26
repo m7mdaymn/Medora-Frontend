@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
 
@@ -51,8 +52,11 @@ public class ClinicSettingsService : IClinicSettingsService
         settings.Address = request.Address;
         settings.City = request.City;
         settings.LogoUrl = request.LogoUrl;
+        settings.Description = request.Description;
+        settings.SocialLinksJson = SerializeSocialLinks(request.SocialLinks);
         settings.BookingEnabled = request.BookingEnabled;
         settings.CancellationWindowHours = request.CancellationWindowHours;
+        settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow;
 
         // Replace working hours if provided
         if (request.WorkingHours != null)
@@ -115,7 +119,10 @@ public class ClinicSettingsService : IClinicSettingsService
         if (request.Address != null) settings.Address = request.Address;
         if (request.City != null) settings.City = request.City;
         if (request.LogoUrl != null) settings.LogoUrl = request.LogoUrl;
+        if (request.Description != null) settings.Description = request.Description;
+        if (request.SocialLinks != null) settings.SocialLinksJson = SerializeSocialLinks(request.SocialLinks);
         if (request.BookingEnabled.HasValue) settings.BookingEnabled = request.BookingEnabled.Value;
+        if (request.RetainCreditOnNoShow.HasValue) settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow.Value;
         if (request.CancellationWindowHours.HasValue) settings.CancellationWindowHours = request.CancellationWindowHours.Value;
 
         // Replace working hours if provided
@@ -171,8 +178,12 @@ public class ClinicSettingsService : IClinicSettingsService
             Address = settings.Address,
             City = settings.City,
             LogoUrl = settings.LogoUrl,
+            ImgUrl = settings.ImgUrl,
+            Description = settings.Description,
+            SocialLinks = ParseSocialLinks(settings.SocialLinksJson),
             BookingEnabled = settings.BookingEnabled,
             CancellationWindowHours = settings.CancellationWindowHours,
+            RetainCreditOnNoShow = settings.RetainCreditOnNoShow,
             WorkingHours = settings.WorkingHours
                 .Where(w => !w.IsDeleted)
                 .Select(w => new WorkingHourDto
@@ -184,5 +195,28 @@ public class ClinicSettingsService : IClinicSettingsService
                     IsActive = w.IsActive
                 }).ToList()
         };
+    }
+
+    private static string? SerializeSocialLinks(Dictionary<string, string>? socialLinks)
+    {
+        if (socialLinks == null || socialLinks.Count == 0)
+            return null;
+
+        return JsonSerializer.Serialize(socialLinks);
+    }
+
+    private static Dictionary<string, string> ParseSocialLinks(string? socialLinksJson)
+    {
+        if (string.IsNullOrWhiteSpace(socialLinksJson))
+            return new Dictionary<string, string>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(socialLinksJson) ?? new Dictionary<string, string>();
+        }
+        catch
+        {
+            return new Dictionary<string, string>();
+        }
     }
 }

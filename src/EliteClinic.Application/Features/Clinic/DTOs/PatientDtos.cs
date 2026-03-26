@@ -52,7 +52,23 @@ public class CreatePatientResponse
 {
     public PatientDto Patient { get; set; } = null!;
     public string Username { get; set; } = string.Empty;
+    public string InitialPassword { get; set; } = string.Empty;
+    // Backward-compat field for older clients.
     public string Password { get; set; } = string.Empty;
+}
+
+public class SendPatientCredentialsRequest
+{
+    public bool RegeneratePassword { get; set; } = true;
+    public bool UsePhoneAsPassword { get; set; } = false;
+}
+
+public class SendPatientCredentialsResponse
+{
+    public Guid PatientId { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string IssuedPassword { get; set; } = string.Empty;
+    public bool MessageQueued { get; set; }
 }
 
 public class UpdatePatientRequest

@@ -130,6 +130,80 @@ public class ClinicServiceManager : IClinicServiceManager
         return ApiResponse<bool>.Ok(true, "Clinic service deleted successfully");
     }
 
+    public async Task<ApiResponse<List<DoctorClinicServiceLinkDto>>> GetDoctorLinksAsync(Guid tenantId, Guid doctorId)
+    {
+        var doctorExists = await _context.Doctors.AnyAsync(d => d.Id == doctorId && d.TenantId == tenantId && !d.IsDeleted);
+        if (!doctorExists)
+            return ApiResponse<List<DoctorClinicServiceLinkDto>>.Error("Doctor not found");
+
+        var links = await _context.DoctorServiceLinks
+            .Include(l => l.ClinicService)
+            .Where(l => l.TenantId == tenantId && l.DoctorId == doctorId && !l.IsDeleted && !l.ClinicService.IsDeleted)
+            .OrderBy(l => l.ClinicService.Name)
+            .ToListAsync();
+
+        var dtos = links.Select(MapLinkToDto).ToList();
+        return ApiResponse<List<DoctorClinicServiceLinkDto>>.Ok(dtos, $"Retrieved {dtos.Count} doctor service link(s)");
+    }
+
+    public async Task<ApiResponse<DoctorClinicServiceLinkDto>> UpsertDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId, UpsertDoctorClinicServiceLinkRequest request)
+    {
+        var doctorExists = await _context.Doctors.AnyAsync(d => d.Id == doctorId && d.TenantId == tenantId && !d.IsDeleted);
+        if (!doctorExists)
+            return ApiResponse<DoctorClinicServiceLinkDto>.Error("Doctor not found");
+
+        var clinicService = await _context.ClinicServicesCatalog
+            .FirstOrDefaultAsync(s => s.Id == clinicServiceId && s.TenantId == tenantId && !s.IsDeleted);
+        if (clinicService == null)
+            return ApiResponse<DoctorClinicServiceLinkDto>.Error("Clinic service not found");
+
+        var link = await _context.DoctorServiceLinks
+            .Include(l => l.ClinicService)
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.DoctorId == doctorId && l.ClinicServiceId == clinicServiceId && !l.IsDeleted);
+
+        if (link == null)
+        {
+            link = new DoctorServiceLink
+            {
+                TenantId = tenantId,
+                DoctorId = doctorId,
+                ClinicServiceId = clinicServiceId,
+                OverridePrice = request.OverridePrice,
+                OverrideDurationMinutes = request.OverrideDurationMinutes,
+                IsActive = request.IsActive
+            };
+            _context.DoctorServiceLinks.Add(link);
+        }
+        else
+        {
+            link.OverridePrice = request.OverridePrice;
+            link.OverrideDurationMinutes = request.OverrideDurationMinutes;
+            link.IsActive = request.IsActive;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var saved = await _context.DoctorServiceLinks
+            .Include(l => l.ClinicService)
+            .FirstAsync(l => l.Id == link.Id);
+
+        return ApiResponse<DoctorClinicServiceLinkDto>.Ok(MapLinkToDto(saved), "Doctor service link saved successfully");
+    }
+
+    public async Task<ApiResponse<bool>> RemoveDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId)
+    {
+        var link = await _context.DoctorServiceLinks
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.DoctorId == doctorId && l.ClinicServiceId == clinicServiceId && !l.IsDeleted);
+
+        if (link == null)
+            return ApiResponse<bool>.Error("Doctor service link not found");
+
+        _context.DoctorServiceLinks.Remove(link);
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<bool>.Ok(true, "Doctor service link removed successfully");
+    }
+
     private static ClinicServiceDto MapToDto(ClinicService entity) => new()
     {
         Id = entity.Id,
@@ -139,5 +213,18 @@ public class ClinicServiceManager : IClinicServiceManager
         DefaultDurationMinutes = entity.DefaultDurationMinutes,
         IsActive = entity.IsActive,
         CreatedAt = entity.CreatedAt
+    };
+
+    private static DoctorClinicServiceLinkDto MapLinkToDto(DoctorServiceLink link) => new()
+    {
+        LinkId = link.Id,
+        DoctorId = link.DoctorId,
+        ClinicServiceId = link.ClinicServiceId,
+        ServiceName = link.ClinicService.Name,
+        EffectivePrice = link.OverridePrice ?? link.ClinicService.DefaultPrice,
+        EffectiveDurationMinutes = link.OverrideDurationMinutes ?? link.ClinicService.DefaultDurationMinutes,
+        OverridePrice = link.OverridePrice,
+        OverrideDurationMinutes = link.OverrideDurationMinutes,
+        IsActive = link.IsActive
     };
 }

@@ -200,7 +200,7 @@ public class StaffService : IStaffService
         return new StaffDto
         {
             Id = employee.Id,
-            UserId = employee.UserId,
+            UserId = employee.UserId ?? Guid.Empty,
             Name = employee.Name,
             Phone = employee.Phone,
             Role = employee.Role,

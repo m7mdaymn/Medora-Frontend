@@ -9,7 +9,10 @@ public interface IInvoiceService
     Task<ApiResponse<InvoiceDto>> UpdateInvoiceAsync(Guid tenantId, Guid invoiceId, UpdateInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> GetInvoiceByIdAsync(Guid tenantId, Guid invoiceId);
-    Task<ApiResponse<PagedResult<InvoiceDto>>> GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponse<PagedResult<InvoiceDto>>> GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, string? invoiceNumber = null, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<PaymentDto>> RecordPaymentAsync(Guid tenantId, CreatePaymentRequest request);
+    Task<ApiResponse<InvoiceDto>> AddAdjustmentAsync(Guid tenantId, Guid invoiceId, AddInvoiceAdjustmentRequest request, Guid performedByUserId);
+    Task<ApiResponse<InvoiceDto>> AddLineItemAsync(Guid tenantId, Guid invoiceId, AddInvoiceLineItemRequest request, Guid performedByUserId);
+    Task<ApiResponse<PaymentDto>> RefundPaymentAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid performedByUserId);
     Task<ApiResponse<List<PaymentDto>>> GetPaymentsByInvoiceAsync(Guid tenantId, Guid invoiceId);
 }

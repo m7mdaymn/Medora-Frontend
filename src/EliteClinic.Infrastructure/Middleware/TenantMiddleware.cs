@@ -91,26 +91,55 @@ public class TenantMiddleware
             // SuperAdmin (tenantId claim = null or missing) bypasses this check
             if (context.User.Identity?.IsAuthenticated == true)
             {
+                var isSuperAdmin = context.User.Claims
+                    .Any(c => c.Type == ClaimTypes.Role && c.Value == "SuperAdmin");
                 var jwtTenantIdClaim = context.User.FindFirst("tenantId")?.Value;
+                var jwtTenantSlugClaim = context.User.FindFirst("tenantSlug")?.Value;
                 
-                // If user has tenantId claim (not SuperAdmin), validate it matches X-Tenant header
-                if (!string.IsNullOrEmpty(jwtTenantIdClaim))
+                if (!isSuperAdmin)
                 {
-                    if (Guid.TryParse(jwtTenantIdClaim, out var jwtTenantId))
+                    // Tenant-scoped users must carry tenant identity in token.
+                    if (string.IsNullOrEmpty(jwtTenantIdClaim))
                     {
-                        if (jwtTenantId != tenant.Id)
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+                        var errorResponse = JsonSerializer.Serialize(new
                         {
-                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                            context.Response.ContentType = "application/json";
-                            var errorResponse = JsonSerializer.Serialize(new
-                            {
-                                success = false,
-                                message = "Access denied. You cannot access resources from another tenant.",
-                                errors = new object[] { }
-                            });
-                            await context.Response.WriteAsync(errorResponse);
-                            return;
-                        }
+                            success = false,
+                            message = "Access denied. Missing tenant identity in token.",
+                            errors = new object[] { }
+                        });
+                        await context.Response.WriteAsync(errorResponse);
+                        return;
+                    }
+
+                    if (!Guid.TryParse(jwtTenantIdClaim, out var jwtTenantId) || jwtTenantId != tenant.Id)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+                        var errorResponse = JsonSerializer.Serialize(new
+                        {
+                            success = false,
+                            message = "Access denied. You cannot access resources from another tenant.",
+                            errors = new object[] { }
+                        });
+                        await context.Response.WriteAsync(errorResponse);
+                        return;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(jwtTenantSlugClaim) &&
+                        !string.Equals(jwtTenantSlugClaim, tenant.Slug, StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+                        var errorResponse = JsonSerializer.Serialize(new
+                        {
+                            success = false,
+                            message = "Access denied. Token tenant slug does not match the requested tenant.",
+                            errors = new object[] { }
+                        });
+                        await context.Response.WriteAsync(errorResponse);
+                        return;
                     }
                 }
                 // If jwtTenantIdClaim is null or empty, user is SuperAdmin - allow access to any tenant

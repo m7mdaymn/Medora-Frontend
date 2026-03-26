@@ -7,6 +7,7 @@ public interface IPublicService
 {
     Task<ApiResponse<PublicClinicDto>> GetClinicProfileAsync(string tenantSlug);
     Task<ApiResponse<List<PublicDoctorDto>>> GetDoctorsAsync(string tenantSlug);
+    Task<ApiResponse<List<PublicDoctorDto>>> GetAvailableDoctorsNowAsync(string tenantSlug);
     Task<ApiResponse<List<PublicDoctorServiceDto>>> GetServicesAsync(string tenantSlug);
     Task<ApiResponse<List<PublicWorkingHourDto>>> GetWorkingHoursAsync(string tenantSlug);
 }

@@ -12,6 +12,8 @@ public class Doctor : TenantBaseEntity
     public string? PhotoUrl { get; set; }
     public bool IsEnabled { get; set; }
     public UrgentCaseMode UrgentCaseMode { get; set; }
+    public bool UrgentEnabled { get; set; }
+    public int UrgentInsertAfterCount { get; set; }
     public int AvgVisitDurationMinutes { get; set; }
 
     // Navigation
@@ -23,6 +25,8 @@ public class Doctor : TenantBaseEntity
     {
         IsEnabled = true;
         UrgentCaseMode = UrgentCaseMode.UrgentNext;
+        UrgentEnabled = true;
+        UrgentInsertAfterCount = 0;
         AvgVisitDurationMinutes = 15;
     }
 }

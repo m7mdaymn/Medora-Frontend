@@ -1,6 +1,7 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Auth.Services;
 using EliteClinic.Application.Features.Clinic.Services;
+using EliteClinic.Api.Services;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Infrastructure.Data;
 using EliteClinic.Infrastructure.Middleware;
@@ -8,11 +9,13 @@ using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,8 +68,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-    "Server=db40278.public.databaseasp.net;Database=db40278;User Id=db40278;Password=5Fq@k+D3-N9c;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required");
+
 builder.Services.AddDbContext<EliteClinicDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -84,7 +89,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? "your-secret-key-that-is-very-long-and-secure-at-least-256-bits";
+var secretKey = jwtSettings["SecretKey"];
+if (string.IsNullOrWhiteSpace(secretKey))
+    throw new InvalidOperationException("JwtSettings:SecretKey is required");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -129,19 +137,67 @@ builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 builder.Services.AddScoped<ILabRequestService, LabRequestService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IInvoiceNumberService, InvoiceNumberService>();
+builder.Services.AddScoped<IPatientCreditService, PatientCreditService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
+builder.Services.AddScoped<IPatientMedicalService, PatientMedicalService>();
+builder.Services.AddScoped<IWorkforceService, WorkforceService>();
 
 // Phase 4 Services
 builder.Services.AddScoped<IPublicService, PublicService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IMessageTemplateRenderer, MessageTemplateRenderer>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddHttpClient<IMessageDeliveryProvider, Whats360MessageDeliveryProvider>();
 builder.Services.AddScoped<IDoctorNoteService, DoctorNoteService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Phase 5 Services
 builder.Services.AddScoped<IClinicServiceManager, ClinicServiceManager>();
 builder.Services.AddHostedService<EliteClinic.Infrastructure.Services.SessionClosureBackgroundService>();
+builder.Services.AddHostedService<EliteClinic.Api.Services.MessageDispatchBackgroundService>();
+
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+builder.Services.Configure<MessagingProviderOptions>(builder.Configuration.GetSection("MessagingProvider"));
+
+var messagingOptions = builder.Configuration.GetSection("MessagingProvider").Get<MessagingProviderOptions>() ?? new MessagingProviderOptions();
+if (builder.Environment.IsProduction() && messagingOptions.Whats360Enabled)
+{
+    if (string.IsNullOrWhiteSpace(messagingOptions.Whats360BaseUrl)
+        || string.IsNullOrWhiteSpace(messagingOptions.Whats360ApiKey)
+        || string.IsNullOrWhiteSpace(messagingOptions.Whats360ClientId))
+    {
+        throw new InvalidOperationException("MessagingProvider is enabled but Whats360BaseUrl/Whats360ApiKey/Whats360ClientId are missing");
+    }
+}
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AuthPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 15,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy("PublicPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 // RF06 Fix: Wrap model validation errors in ApiResponse format
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -194,6 +250,17 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseRateLimiter();
+
+var storageRoot = builder.Configuration.GetSection("Storage")["RootPath"] ?? "media";
+var mediaPhysicalPath = Path.Combine(app.Environment.ContentRootPath, storageRoot);
+Directory.CreateDirectory(mediaPhysicalPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(mediaPhysicalPath),
+    RequestPath = "/media"
+});
+
 app.UseMiddleware<EliteClinic.Infrastructure.Middleware.TenantMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -261,6 +328,58 @@ async Task SeedDataAsync(EliteClinicDbContext dbContext, IServiceProvider servic
 
     // Phase 3: Seed queue sessions, visits, invoices, expenses (idempotent)
     await SeedPhase3WorkflowAsync(dbContext);
+
+    // Phase 8: Seed default Arabic messaging templates per business scenarios (idempotent)
+    await SeedDefaultMessageTemplatesAsync(dbContext);
+}
+
+async Task SeedDefaultMessageTemplatesAsync(EliteClinicDbContext dbContext)
+{
+    var tenants = await dbContext.Tenants.IgnoreQueryFilters()
+        .Where(t => !t.IsDeleted)
+        .ToListAsync();
+
+    if (!tenants.Any())
+        return;
+
+    var defaults = new Dictionary<string, string>
+    {
+        ["PatientAccountCreated"] = "مرحباً {{patientName}}، تم إنشاء حسابك في {{clinicName}}. اسم المستخدم: {{username}} وكلمة المرور: {{password}}. يمكنك تسجيل الدخول عبر {{accountLink}}.",
+        ["QueueTicketIssued"] = "مرحباً {{patientName}}، تم إصدار تذكرتك رقم {{ticketNumber}} لدى {{doctorName}} في {{clinicName}}.",
+        ["QueueTurnReady"] = "{{patientName}}، دورك الآن لدى {{doctorName}} في {{clinicName}}. رقم التذكرة {{ticketNumber}}.",
+        ["MedicationReminder"] = "تذكير دواء: {{medicationName}} الجرعة {{dosage}} بمعدل {{frequency}}. {{notes}}",
+        ["CreditIssued"] = "تم إضافة رصيد بقيمة {{creditAmount}} جنيه إلى حسابك في {{clinicName}}. السبب: {{creditReason}}.",
+        ["BookingConfirmed"] = "تم تأكيد حجزك في {{clinicName}} مع {{doctorName}} يوم {{bookingDate}} الساعة {{bookingTime}}. رابط الحجز: {{bookingLink}}.",
+        ["BookingCancelled"] = "تم إلغاء حجزك في {{clinicName}} مع {{doctorName}} يوم {{bookingDate}} الساعة {{bookingTime}}. السبب: {{cancelReason}}."
+    };
+
+    foreach (var tenant in tenants)
+    {
+        foreach (var pair in defaults)
+        {
+            var exists = await dbContext.MessageTemplates.IgnoreQueryFilters()
+                .AnyAsync(t => t.TenantId == tenant.Id
+                    && !t.IsDeleted
+                    && t.TemplateKey == pair.Key
+                    && t.Channel == EliteClinic.Domain.Enums.MessageChannel.WhatsApp
+                    && t.Language == "ar");
+
+            if (exists)
+                continue;
+
+            dbContext.MessageTemplates.Add(new EliteClinic.Domain.Entities.MessageTemplate
+            {
+                TenantId = tenant.Id,
+                TemplateKey = pair.Key,
+                Channel = EliteClinic.Domain.Enums.MessageChannel.WhatsApp,
+                Language = "ar",
+                BodyTemplate = pair.Value,
+                IsActive = true
+            });
+        }
+    }
+
+    await dbContext.SaveChangesAsync();
 }
 
 async Task SeedPhase1TenantsAsync(EliteClinicDbContext dbContext)
@@ -319,7 +438,13 @@ async Task SeedPhase1TenantsAsync(EliteClinicDbContext dbContext)
             ExpensesModule = true,
             AdvancedMedicalTemplates = false,
             Ratings = false,
-            Export = false
+            Export = false,
+            ConsultationVisitTypeEnabled = false,
+            UrgentInsertPolicyEnabled = false,
+            EncounterPendingSettlementEnabled = false,
+            PatientDocumentsEnabled = false,
+            CompensationRulesEnabled = false,
+            DailyClosingSnapshotEnabled = false
         };
         dbContext.TenantFeatureFlags.Add(featureFlags);
     }

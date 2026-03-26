@@ -2,6 +2,7 @@ using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Application.Features.Clinic.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EliteClinic.Api.Controllers;
 
@@ -12,6 +13,7 @@ namespace EliteClinic.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/public")]
+[EnableRateLimiting("PublicPolicy")]
 public class PublicController : ControllerBase
 {
     private readonly IPublicService _publicService;
@@ -44,6 +46,20 @@ public class PublicController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<PublicDoctorDto>>>> GetDoctors(string slug)
     {
         var result = await _publicService.GetDoctorsAsync(slug);
+        if (!result.Success)
+            return NotFound(result);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get doctors currently available in active sessions (immediate booking)
+    /// </summary>
+    [HttpGet("{slug}/doctors/available-now")]
+    [ProducesResponseType(typeof(ApiResponse<List<PublicDoctorDto>>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<List<PublicDoctorDto>>), 404)]
+    public async Task<ActionResult<ApiResponse<List<PublicDoctorDto>>>> GetAvailableDoctorsNow(string slug)
+    {
+        var result = await _publicService.GetAvailableDoctorsNowAsync(slug);
         if (!result.Success)
             return NotFound(result);
         return Ok(result);

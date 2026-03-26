@@ -4,7 +4,9 @@ using EliteClinic.Domain.Entities;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
 
@@ -12,11 +14,13 @@ public class PatientService : IPatientService
 {
     private readonly EliteClinicDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMessageService _messageService;
 
-    public PatientService(EliteClinicDbContext context, UserManager<ApplicationUser> userManager)
+    public PatientService(EliteClinicDbContext context, UserManager<ApplicationUser> userManager, IMessageService messageService)
     {
         _context = context;
         _userManager = userManager;
+        _messageService = messageService;
     }
 
     public async Task<ApiResponse<CreatePatientResponse>> CreatePatientAsync(Guid tenantId, CreatePatientRequest request)
@@ -34,22 +38,10 @@ public class PatientService : IPatientService
         if (tenant == null)
             return ApiResponse<CreatePatientResponse>.Error("Tenant not found");
 
-        // Generate unique username: patient_{tenantSlug}_{sequence}
-        var patientCount = await _context.Patients
-            .Where(p => p.TenantId == tenantId)
-            .CountAsync();
-        var seq = patientCount + 1;
-        var username = $"patient_{tenant.Slug}_{seq}";
-
-        // Ensure uniqueness
-        while (await _userManager.FindByNameAsync(username) != null)
-        {
-            seq++;
-            username = $"patient_{tenant.Slug}_{seq}";
-        }
-
-        // Generate random password
-        var password = GeneratePassword();
+        var username = await GenerateUniquePatientUsernameAsync(request.Name, tenant.Slug);
+        var initialPassword = BuildInitialPasswordFromPhone(request.Phone);
+        if (string.IsNullOrWhiteSpace(initialPassword))
+            return ApiResponse<CreatePatientResponse>.Error("Patient phone is required for initial password issuance");
 
         // Create ApplicationUser
         var user = new ApplicationUser(username, request.Name)
@@ -58,11 +50,22 @@ public class PatientService : IPatientService
             IsActive = true
         };
 
-        var createResult = await _userManager.CreateAsync(user, password);
+        // User record is created first, then password hash is set explicitly to keep
+        // the issuance rule (password = phone) while preserving secure hashing.
+        var createResult = await _userManager.CreateAsync(user);
         if (!createResult.Succeeded)
         {
             var errors = createResult.Errors.Select(e => (object)new { field = "User", message = e.Description }).ToList();
             return ApiResponse<CreatePatientResponse>.ValidationError(errors, "Failed to create patient account");
+        }
+
+        user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, initialPassword);
+        user.SecurityStamp = Guid.NewGuid().ToString();
+        var passwordUpdate = await _userManager.UpdateAsync(user);
+        if (!passwordUpdate.Succeeded)
+        {
+            var errors = passwordUpdate.Errors.Select(e => (object)new { field = "Password", message = e.Description }).ToList();
+            return ApiResponse<CreatePatientResponse>.ValidationError(errors, "Failed to set initial password");
         }
 
         await _userManager.AddToRoleAsync(user, "Patient");
@@ -85,13 +88,26 @@ public class PatientService : IPatientService
         _context.Patients.Add(patient);
         await _context.SaveChangesAsync();
 
+        await _messageService.LogWorkflowEventAsync(
+            tenantId,
+            nameof(EliteClinic.Domain.Enums.MessageScenario.PatientAccountCreated),
+            recipientUserId: user.Id,
+            recipientPhone: request.Phone,
+            variables: new Dictionary<string, string>
+            {
+                ["patientName"] = request.Name,
+                ["username"] = username,
+                ["password"] = initialPassword
+            });
+
         var dto = MapToDto(patient, user);
 
         return ApiResponse<CreatePatientResponse>.Created(new CreatePatientResponse
         {
             Patient = dto,
             Username = username,
-            Password = password
+            InitialPassword = initialPassword,
+            Password = initialPassword
         }, "Patient created successfully");
     }
 
@@ -251,6 +267,82 @@ public class PatientService : IPatientService
         }, "Password reset successfully");
     }
 
+    public async Task<ApiResponse<SendPatientCredentialsResponse>> SendCredentialsAsync(Guid tenantId, Guid id, SendPatientCredentialsRequest request)
+    {
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == id && p.TenantId == tenantId && p.ParentPatientId == null);
+
+        if (patient == null)
+            return ApiResponse<SendPatientCredentialsResponse>.Error("Patient not found");
+
+        var username = patient.User.UserName ?? string.Empty;
+        var issuedPassword = request.UsePhoneAsPassword
+            ? BuildInitialPasswordFromPhone(patient.Phone)
+            : GeneratePassword();
+
+        if (string.IsNullOrWhiteSpace(issuedPassword))
+            return ApiResponse<SendPatientCredentialsResponse>.Error("Unable to issue credentials because patient phone is missing");
+
+        if (request.RegeneratePassword)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(patient.User);
+            var resetResult = await _userManager.ResetPasswordAsync(patient.User, token, issuedPassword);
+            if (!resetResult.Succeeded)
+            {
+                // Fallback for phone-based issuance when password validators reject weak values.
+                if (request.UsePhoneAsPassword)
+                {
+                    patient.User.PasswordHash = _userManager.PasswordHasher.HashPassword(patient.User, issuedPassword);
+                    patient.User.SecurityStamp = Guid.NewGuid().ToString();
+                    var update = await _userManager.UpdateAsync(patient.User);
+                    if (!update.Succeeded)
+                        return ApiResponse<SendPatientCredentialsResponse>.Error("Failed to regenerate password for credential sending");
+                }
+                else
+                {
+                    return ApiResponse<SendPatientCredentialsResponse>.Error("Failed to regenerate password for credential sending");
+                }
+            }
+        }
+
+        await _messageService.LogWorkflowEventAsync(
+            tenantId,
+            nameof(EliteClinic.Domain.Enums.MessageScenario.PatientAccountCreated),
+            recipientUserId: patient.UserId,
+            recipientPhone: patient.Phone,
+            variables: new Dictionary<string, string>
+            {
+                ["patientName"] = patient.Name,
+                ["username"] = username,
+                ["password"] = issuedPassword
+            });
+
+        return ApiResponse<SendPatientCredentialsResponse>.Ok(new SendPatientCredentialsResponse
+        {
+            PatientId = patient.Id,
+            Username = username,
+            IssuedPassword = issuedPassword,
+            MessageQueued = true
+        }, "Credentials queued for WhatsApp delivery");
+    }
+
+    public async Task<ApiResponse<PatientDto>> GetOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)
+    {
+        var profile = await _context.Patients
+            .Include(p => p.User)
+            .Include(p => p.SubProfiles.Where(sp => !sp.IsDeleted))
+            .FirstOrDefaultAsync(p => p.Id == patientId && p.TenantId == tenantId && !p.IsDeleted);
+
+        if (profile == null)
+            return ApiResponse<PatientDto>.Error("Patient profile not found");
+
+        if (profile.UserId != patientUserId)
+            return ApiResponse<PatientDto>.Error("Access denied to requested patient profile");
+
+        return ApiResponse<PatientDto>.Ok(MapToDto(profile, profile.User), "Patient profile retrieved successfully");
+    }
+
     public async Task<ApiResponse<object>> DeletePatientAsync(Guid tenantId, Guid id)
     {
         var patient = await _context.Patients
@@ -280,6 +372,57 @@ public class PatientService : IPatientService
         var random = new Random();
         var rng = random.Next(1000, 9999);
         return $"Patient@{rng}";
+    }
+
+    private string BuildInitialPasswordFromPhone(string phone)
+    {
+        // Keep only digits and leading plus for predictable issuance format.
+        var normalized = string.IsNullOrWhiteSpace(phone)
+            ? string.Empty
+            : Regex.Replace(phone.Trim(), @"[^0-9+]", string.Empty);
+
+        return normalized;
+    }
+
+    private async Task<string> GenerateUniquePatientUsernameAsync(string patientName, string tenantSlug)
+    {
+        var baseName = NormalizeUsernamePart(patientName);
+        var normalizedTenant = NormalizeUsernamePart(tenantSlug);
+        var baseUsername = $"{baseName}_{normalizedTenant}";
+        var candidate = baseUsername;
+        var suffix = 1;
+
+        while (await _userManager.FindByNameAsync(candidate) != null)
+        {
+            suffix++;
+            candidate = $"{baseUsername}_{suffix}";
+        }
+
+        return candidate;
+    }
+
+    private static string NormalizeUsernamePart(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "patient";
+
+        var normalized = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (var c in normalized)
+        {
+            var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (uc == UnicodeCategory.NonSpacingMark)
+                continue;
+
+            if (char.IsLetterOrDigit(c))
+                sb.Append(c);
+            else if (c == ' ' || c == '-' || c == '_')
+                sb.Append('_');
+        }
+
+        var collapsed = Regex.Replace(sb.ToString(), "_+", "_").Trim('_');
+        return string.IsNullOrWhiteSpace(collapsed) ? "patient" : collapsed;
     }
 
     private static PatientDto MapToDto(Patient patient, ApplicationUser user)

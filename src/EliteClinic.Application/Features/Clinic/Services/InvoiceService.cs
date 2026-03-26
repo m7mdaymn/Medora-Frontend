@@ -4,16 +4,19 @@ using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
 
 public class InvoiceService : IInvoiceService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly IInvoiceNumberService _invoiceNumberService;
 
-    public InvoiceService(EliteClinicDbContext context)
+    public InvoiceService(EliteClinicDbContext context, IInvoiceNumberService invoiceNumberService)
     {
         _context = context;
+        _invoiceNumberService = invoiceNumberService;
     }
 
     public async Task<ApiResponse<InvoiceDto>> CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request)
@@ -37,13 +40,18 @@ public class InvoiceService : IInvoiceService
         var invoice = new Invoice
         {
             TenantId = tenantId,
+            InvoiceNumber = await _invoiceNumberService.GenerateNextAsync(tenantId),
             VisitId = request.VisitId,
             PatientId = visit.PatientId,
+            PatientNameSnapshot = visit.Patient?.Name ?? string.Empty,
+            PatientPhoneSnapshot = visit.Patient?.Phone,
             DoctorId = visit.DoctorId,
             Amount = request.Amount,
             PaidAmount = 0,
             RemainingAmount = request.Amount,
             Status = InvoiceStatus.Unpaid,
+            HasPendingSettlement = false,
+            PendingSettlementAmount = 0,
             Notes = request.Notes
         };
 
@@ -130,7 +138,7 @@ public class InvoiceService : IInvoiceService
     }
 
     public async Task<ApiResponse<PagedResult<InvoiceDto>>> GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to,
-        Guid? doctorId, int pageNumber = 1, int pageSize = 10)
+        Guid? doctorId, string? invoiceNumber = null, int pageNumber = 1, int pageSize = 10)
     {
         var query = _context.Invoices
             .Include(i => i.Patient)
@@ -144,6 +152,11 @@ public class InvoiceService : IInvoiceService
             query = query.Where(i => i.CreatedAt <= to.Value.AddDays(1));
         if (doctorId.HasValue)
             query = query.Where(i => i.DoctorId == doctorId.Value);
+        if (!string.IsNullOrWhiteSpace(invoiceNumber))
+        {
+            var normalized = invoiceNumber.Trim().ToUpperInvariant();
+            query = query.Where(i => i.InvoiceNumber.Contains(normalized));
+        }
 
         var totalCount = await query.CountAsync();
         var invoices = await query
@@ -192,6 +205,30 @@ public class InvoiceService : IInvoiceService
         invoice.PaidAmount += request.Amount;
         invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
         invoice.Status = invoice.RemainingAmount <= 0 ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid;
+        invoice.HasPendingSettlement = invoice.IsServiceRendered && invoice.RemainingAmount > 0;
+        invoice.PendingSettlementAmount = invoice.HasPendingSettlement ? invoice.RemainingAmount : 0;
+
+        var visit = await _context.Visits
+            .FirstOrDefaultAsync(v => v.Id == invoice.VisitId && v.TenantId == tenantId && !v.IsDeleted);
+        if (visit != null)
+        {
+            if (invoice.RemainingAmount <= 0)
+            {
+                visit.FinancialState = EncounterFinancialState.FinanciallySettled;
+                visit.FinanciallySettledAt = DateTime.UtcNow;
+
+                if (visit.LifecycleState == EncounterLifecycleState.MedicallyCompleted
+                    || visit.Status == VisitStatus.Completed)
+                {
+                    visit.LifecycleState = EncounterLifecycleState.FullyClosed;
+                    visit.FullyClosedAt = DateTime.UtcNow;
+                }
+            }
+            else if (invoice.IsServiceRendered)
+            {
+                visit.FinancialState = EncounterFinancialState.PendingSettlement;
+            }
+        }
 
         await _context.SaveChangesAsync();
 
@@ -204,8 +241,213 @@ public class InvoiceService : IInvoiceService
             ReferenceNumber = payment.ReferenceNumber,
             PaidAt = payment.PaidAt,
             Notes = payment.Notes,
+            IsRefund = payment.Amount < 0,
             CreatedAt = payment.CreatedAt
         }, "Payment recorded successfully");
+    }
+
+    public async Task<ApiResponse<InvoiceDto>> AddLineItemAsync(Guid tenantId, Guid invoiceId, AddInvoiceLineItemRequest request, Guid performedByUserId)
+    {
+        var invoice = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        if (invoice == null)
+            return ApiResponse<InvoiceDto>.Error("Invoice not found");
+
+        if (request.Quantity <= 0)
+            return ApiResponse<InvoiceDto>.Error("Quantity must be greater than zero");
+
+        if (request.UnitPrice < 0)
+            return ApiResponse<InvoiceDto>.Error("Unit price must be non-negative");
+
+        if (string.IsNullOrWhiteSpace(request.ItemName))
+            return ApiResponse<InvoiceDto>.Error("Item name is required");
+
+        var lineTotal = request.UnitPrice * request.Quantity;
+
+        var lineItem = new InvoiceLineItem
+        {
+            TenantId = tenantId,
+            InvoiceId = invoice.Id,
+            ClinicServiceId = request.ClinicServiceId,
+            AddedByUserId = performedByUserId,
+            ItemName = request.ItemName.Trim(),
+            UnitPrice = request.UnitPrice,
+            Quantity = request.Quantity,
+            TotalPrice = lineTotal,
+            Notes = request.Notes
+        };
+
+        _context.Set<InvoiceLineItem>().Add(lineItem);
+
+        invoice.Amount += lineTotal;
+        invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
+        invoice.Status = invoice.RemainingAmount <= 0
+            ? InvoiceStatus.Paid
+            : invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid : InvoiceStatus.Unpaid;
+
+        var visit = await _context.Visits
+            .FirstOrDefaultAsync(v => v.Id == invoice.VisitId && v.TenantId == tenantId && !v.IsDeleted);
+        if (visit != null && visit.Status == VisitStatus.Completed && invoice.RemainingAmount > 0)
+        {
+            invoice.HasPendingSettlement = true;
+            invoice.PendingSettlementAmount = invoice.RemainingAmount;
+            visit.LifecycleState = EncounterLifecycleState.MedicallyCompleted;
+            visit.FinancialState = EncounterFinancialState.PendingSettlement;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var updated = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        return ApiResponse<InvoiceDto>.Ok(MapToDto(updated!), "Invoice line item added successfully");
+    }
+
+    public async Task<ApiResponse<InvoiceDto>> AddAdjustmentAsync(Guid tenantId, Guid invoiceId, AddInvoiceAdjustmentRequest request, Guid performedByUserId)
+    {
+        var invoice = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        if (invoice == null)
+            return ApiResponse<InvoiceDto>.Error("Invoice not found");
+
+        var visit = await _context.Visits.FirstOrDefaultAsync(v => v.Id == invoice.VisitId && !v.IsDeleted);
+        if (visit != null && visit.Status != VisitStatus.Open)
+            return ApiResponse<InvoiceDto>.Error("Cannot add extra charges — visit is already completed");
+
+        if (request.ExtraAmount <= 0)
+            return ApiResponse<InvoiceDto>.Error("Extra amount must be greater than zero");
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+            return ApiResponse<InvoiceDto>.Error("Adjustment reason is required");
+
+        var oldValues = new
+        {
+            invoice.Amount,
+            invoice.PaidAmount,
+            invoice.RemainingAmount,
+            invoice.Status
+        };
+
+        invoice.Amount += request.ExtraAmount;
+        invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
+        invoice.Status = invoice.RemainingAmount <= 0 ? InvoiceStatus.Paid
+            : invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid
+            : InvoiceStatus.Unpaid;
+        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
+            ? $"Adjustment +{request.ExtraAmount:0.##}: {request.Reason}"
+            : $"{invoice.Notes} | Adjustment +{request.ExtraAmount:0.##}: {request.Reason}";
+
+        _context.AuditLogs.Add(new AuditLog(performedByUserId, tenantId, nameof(Invoice), invoice.Id.ToString(), "FinancialAdjustment")
+        {
+            OldValues = JsonSerializer.Serialize(oldValues),
+            NewValues = JsonSerializer.Serialize(new
+            {
+                invoice.Amount,
+                invoice.PaidAmount,
+                invoice.RemainingAmount,
+                invoice.Status,
+                request.ExtraAmount,
+                request.Reason
+            })
+        });
+
+        await _context.SaveChangesAsync();
+
+        var updated = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        return ApiResponse<InvoiceDto>.Ok(MapToDto(updated!), "Invoice adjusted successfully");
+    }
+
+    public async Task<ApiResponse<PaymentDto>> RefundPaymentAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid performedByUserId)
+    {
+        var invoice = await GetInvoiceWithIncludes(tenantId, invoiceId);
+        if (invoice == null)
+            return ApiResponse<PaymentDto>.Error("Invoice not found");
+
+        if (request.Amount <= 0)
+            return ApiResponse<PaymentDto>.Error("Refund amount must be greater than zero");
+
+        if (request.Amount > invoice.PaidAmount)
+            return ApiResponse<PaymentDto>.Error("Refund amount cannot exceed current paid amount");
+
+        var refund = new Payment
+        {
+            TenantId = tenantId,
+            InvoiceId = invoice.Id,
+            Amount = -request.Amount,
+            PaymentMethod = "Refund",
+            ReferenceNumber = request.ReferenceNumber,
+            Notes = string.IsNullOrWhiteSpace(request.Reason)
+                ? "Refund issued"
+                : $"Refund issued: {request.Reason}",
+            PaidAt = DateTime.UtcNow
+        };
+
+        _context.Payments.Add(refund);
+
+        var oldValues = new
+        {
+            invoice.Amount,
+            invoice.PaidAmount,
+            invoice.RemainingAmount,
+            invoice.CreditAmount,
+            invoice.Status
+        };
+
+        var paidBeforeRefund = invoice.PaidAmount;
+        invoice.PaidAmount -= request.Amount;
+        if (invoice.PaidAmount < 0)
+            invoice.PaidAmount = 0;
+        var isFullRefund = request.Amount >= paidBeforeRefund && paidBeforeRefund > 0;
+        if (isFullRefund)
+        {
+            invoice.Amount = 0;
+            invoice.PaidAmount = 0;
+            invoice.RemainingAmount = 0;
+            invoice.CreditAmount = 0;
+            invoice.CreditIssuedAt = null;
+            invoice.HasPendingSettlement = false;
+            invoice.PendingSettlementAmount = 0;
+        }
+        else
+        {
+            invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
+            invoice.CreditAmount += request.Amount;
+            invoice.CreditIssuedAt = DateTime.UtcNow;
+        }
+        invoice.Status = isFullRefund
+            ? InvoiceStatus.Refunded
+            : invoice.RemainingAmount <= 0 ? InvoiceStatus.Paid
+            : invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid
+            : InvoiceStatus.Unpaid;
+        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
+            ? $"Refund -{request.Amount:0.##} issued"
+            : $"{invoice.Notes} | Refund -{request.Amount:0.##} issued";
+
+        _context.AuditLogs.Add(new AuditLog(performedByUserId, tenantId, nameof(Invoice), invoice.Id.ToString(), "Refund")
+        {
+            OldValues = JsonSerializer.Serialize(oldValues),
+            NewValues = JsonSerializer.Serialize(new
+            {
+                invoice.Amount,
+                invoice.PaidAmount,
+                invoice.RemainingAmount,
+                invoice.CreditAmount,
+                invoice.Status,
+                RefundAmount = request.Amount,
+                request.Reason
+            })
+        });
+
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<PaymentDto>.Created(new PaymentDto
+        {
+            Id = refund.Id,
+            InvoiceId = refund.InvoiceId,
+            Amount = refund.Amount,
+            PaymentMethod = refund.PaymentMethod,
+            ReferenceNumber = refund.ReferenceNumber,
+            PaidAt = refund.PaidAt,
+            Notes = refund.Notes,
+            IsRefund = true,
+            CreatedAt = refund.CreatedAt
+        }, "Refund recorded successfully");
     }
 
     public async Task<ApiResponse<List<PaymentDto>>> GetPaymentsByInvoiceAsync(Guid tenantId, Guid invoiceId)
@@ -229,6 +471,7 @@ public class InvoiceService : IInvoiceService
                 ReferenceNumber = p.ReferenceNumber,
                 PaidAt = p.PaidAt,
                 Notes = p.Notes,
+                IsRefund = p.Amount < 0,
                 CreatedAt = p.CreatedAt
             }).ToList(),
             $"Retrieved {payments.Count} payment(s)");
@@ -241,26 +484,60 @@ public class InvoiceService : IInvoiceService
         return await _context.Invoices
             .Include(i => i.Patient)
             .Include(i => i.Doctor)
+            .Include(i => i.LineItems.Where(li => !li.IsDeleted))
             .Include(i => i.Payments.Where(p => !p.IsDeleted))
             .FirstOrDefaultAsync(i => i.Id == id && i.TenantId == tenantId && !i.IsDeleted);
     }
 
     private static InvoiceDto MapToDto(Invoice i)
     {
+        var activePayments = i.Payments?.Where(p => !p.IsDeleted).ToList() ?? new List<Payment>();
+        var hasPaymentRows = activePayments.Count > 0;
+        var paidAmount = hasPaymentRows
+            ? Math.Max(activePayments.Sum(p => p.Amount), 0m)
+            : i.PaidAmount;
+        var totalRefunded = activePayments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+        var isFullyRefunded = totalRefunded >= i.Amount && paidAmount <= 0m;
+        var remainingAmount = isFullyRefunded ? 0m : Math.Max(i.Amount - paidAmount, 0m);
+        var status = isFullyRefunded
+            ? InvoiceStatus.Refunded
+            : remainingAmount <= 0 ? InvoiceStatus.Paid
+            : paidAmount > 0 ? InvoiceStatus.PartiallyPaid : InvoiceStatus.Unpaid;
+
         return new InvoiceDto
         {
             Id = i.Id,
+            InvoiceNumber = i.InvoiceNumber,
             VisitId = i.VisitId,
             PatientId = i.PatientId,
-            PatientName = i.Patient?.Name ?? string.Empty,
+            PatientName = i.Patient?.Name ?? i.PatientNameSnapshot,
+            PatientPhone = i.Patient?.Phone ?? i.PatientPhoneSnapshot,
             DoctorId = i.DoctorId,
             DoctorName = i.Doctor?.Name ?? string.Empty,
             Amount = i.Amount,
-            PaidAmount = i.PaidAmount,
-            RemainingAmount = i.RemainingAmount,
-            Status = i.Status,
+            PaidAmount = paidAmount,
+            RemainingAmount = remainingAmount,
+            Status = status,
+            IsServiceRendered = i.IsServiceRendered,
+            CreditAmount = i.CreditAmount,
+            HasPendingSettlement = i.HasPendingSettlement,
+            PendingSettlementAmount = i.PendingSettlementAmount,
+            TotalRefunded = totalRefunded,
+            CreditIssuedAt = i.CreditIssuedAt,
             Notes = i.Notes,
-            Payments = i.Payments?.Where(p => !p.IsDeleted).Select(p => new PaymentDto
+            LineItems = i.LineItems?.Where(li => !li.IsDeleted).Select(li => new InvoiceLineItemDto
+            {
+                Id = li.Id,
+                InvoiceId = li.InvoiceId,
+                ClinicServiceId = li.ClinicServiceId,
+                ItemName = li.ItemName,
+                UnitPrice = li.UnitPrice,
+                Quantity = li.Quantity,
+                TotalPrice = li.TotalPrice,
+                Notes = li.Notes,
+                CreatedAt = li.CreatedAt
+            }).ToList() ?? new(),
+            Payments = activePayments.Select(p => new PaymentDto
             {
                 Id = p.Id,
                 InvoiceId = p.InvoiceId,
@@ -269,6 +546,7 @@ public class InvoiceService : IInvoiceService
                 ReferenceNumber = p.ReferenceNumber,
                 PaidAt = p.PaidAt,
                 Notes = p.Notes,
+                IsRefund = p.Amount < 0,
                 CreatedAt = p.CreatedAt
             }).ToList() ?? new(),
             CreatedAt = i.CreatedAt

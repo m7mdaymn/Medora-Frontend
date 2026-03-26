@@ -33,8 +33,18 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<LabRequest> LabRequests { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceLineItem> InvoiceLineItems { get; set; }
+    public DbSet<InvoiceNumberCounter> InvoiceNumberCounters { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Expense> Expenses { get; set; }
+    public DbSet<PatientMedicalDocument> PatientMedicalDocuments { get; set; }
+    public DbSet<PatientChronicProfile> PatientChronicProfiles { get; set; }
+    public DbSet<DoctorCompensationRule> DoctorCompensationRules { get; set; }
+    public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    public DbSet<DailyClosingSnapshot> DailyClosingSnapshots { get; set; }
+    public DbSet<PatientCreditBalance> PatientCreditBalances { get; set; }
+    public DbSet<PatientCreditTransaction> PatientCreditTransactions { get; set; }
+    public DbSet<MediaFile> MediaFiles { get; set; }
 
     // Phase 5 entities
     public DbSet<ClinicService> ClinicServicesCatalog { get; set; }
@@ -42,6 +52,7 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
 
     // Phase 4 entities
     public DbSet<MessageLog> MessageLogs { get; set; }
+    public DbSet<MessageTemplate> MessageTemplates { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<DoctorNote> DoctorNotes { get; set; }
     public DbSet<NotificationSubscription> NotificationSubscriptions { get; set; }
@@ -123,6 +134,8 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.SupportWhatsAppNumber).HasMaxLength(20);
             entity.Property(e => e.SupportPhoneNumber).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.SocialLinksJson).HasMaxLength(4000);
 
             entity.HasOne(e => e.Tenant)
                 .WithOne()
@@ -167,6 +180,8 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.Specialty).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.UrgentCaseMode).HasConversion<int>();
+            entity.Property(e => e.UrgentEnabled).HasDefaultValue(true);
+            entity.Property(e => e.UrgentInsertAfterCount).HasDefaultValue(0);
 
             entity.HasOne(e => e.User)
                 .WithOne()
@@ -266,7 +281,10 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<Visit>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.VisitType).HasConversion<int>();
             entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.LifecycleState).HasConversion<int>();
+            entity.Property(e => e.FinancialState).HasConversion<int>();
             entity.Property(e => e.Complaint).HasMaxLength(2000);
             entity.Property(e => e.Diagnosis).HasMaxLength(2000);
             entity.Property(e => e.Notes).HasMaxLength(4000);
@@ -310,6 +328,14 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+            builder.Entity<InvoiceNumberCounter>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.Year }).IsUnique().HasFilter("[IsDeleted] = 0");
+                entity.Property(e => e.NextNumber).IsRequired();
+                entity.Property(e => e.RowVersion).IsRowVersion();
+            });
+
         // Prescription entity configuration
         builder.Entity<Prescription>(entity =>
         {
@@ -336,9 +362,15 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.VisitId).IsUnique();
+            entity.HasIndex(e => new { e.TenantId, e.InvoiceNumber }).IsUnique().HasFilter("[IsDeleted] = 0 AND [InvoiceNumber] <> ''");
+            entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(30);
+            entity.Property(e => e.PatientNameSnapshot).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.PatientPhoneSnapshot).HasMaxLength(20);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.PaidAmount).HasPrecision(18, 2);
             entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
+            entity.Property(e => e.CreditAmount).HasPrecision(18, 2);
+            entity.Property(e => e.PendingSettlementAmount).HasPrecision(18, 2);
             entity.Property(e => e.Status).HasConversion<int>();
             entity.Property(e => e.Notes).HasMaxLength(500);
 
@@ -356,6 +388,21 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .WithOne(p => p.Invoice)
                 .HasForeignKey(p => p.InvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.LineItems)
+                .WithOne(li => li.Invoice)
+                .HasForeignKey(li => li.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<InvoiceLineItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ItemName).IsRequired().HasMaxLength(250);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.TotalPrice).HasPrecision(18, 2);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => new { e.TenantId, e.InvoiceId, e.CreatedAt });
         });
 
         // Payment entity configuration (many per Invoice)
@@ -382,6 +429,140 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        builder.Entity<PatientMedicalDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).HasConversion<int>();
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.StoredFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RelativePath).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.PublicUrl).IsRequired().HasMaxLength(1200);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(120);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => new { e.TenantId, e.PatientId, e.CreatedAt });
+
+            entity.HasOne(e => e.Patient)
+                .WithMany()
+                .HasForeignKey(e => e.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<PatientChronicProfile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OtherNotes).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.TenantId, e.PatientId }).IsUnique().HasFilter("[IsDeleted] = 0");
+
+            entity.HasOne(e => e.Patient)
+                .WithMany()
+                .HasForeignKey(e => e.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<DoctorCompensationRule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Mode).HasConversion<int>();
+            entity.Property(e => e.Value).HasPrecision(18, 2);
+            entity.HasIndex(e => new { e.TenantId, e.DoctorId, e.EffectiveFrom });
+
+            entity.HasOne(e => e.Doctor)
+                .WithMany()
+                .HasForeignKey(e => e.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<AttendanceRecord>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.DoctorId, e.CheckInAt });
+            entity.HasIndex(e => new { e.TenantId, e.EmployeeId, e.CheckInAt });
+
+            entity.HasOne(e => e.Doctor)
+                .WithMany()
+                .HasForeignKey(e => e.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Employee)
+                .WithMany()
+                .HasForeignKey(e => e.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<DailyClosingSnapshot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MetricsJson).IsRequired().HasMaxLength(4000);
+            entity.HasIndex(e => new { e.TenantId, e.SnapshotDate }).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+        builder.Entity<PatientCreditBalance>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Balance).HasPrecision(18, 2);
+            entity.Property(e => e.RowVersion).IsRowVersion();
+            entity.HasIndex(e => new { e.TenantId, e.PatientId }).IsUnique().HasFilter("[IsDeleted] = 0");
+
+            entity.HasOne(e => e.Patient)
+                .WithMany()
+                .HasForeignKey(e => e.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<PatientCreditTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasConversion<int>();
+            entity.Property(e => e.Reason).HasConversion<int>();
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.BalanceAfter).HasPrecision(18, 2);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.TenantId, e.PatientId, e.CreatedAt });
+
+            entity.HasOne(e => e.CreditBalance)
+                .WithMany(b => b.Transactions)
+                .HasForeignKey(e => e.CreditBalanceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Patient)
+                .WithMany()
+                .HasForeignKey(e => e.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany()
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Payment)
+                .WithMany()
+                .HasForeignKey(e => e.PaymentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.QueueTicket)
+                .WithMany()
+                .HasForeignKey(e => e.QueueTicketId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.QueueSession)
+                .WithMany()
+                .HasForeignKey(e => e.QueueSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<MediaFile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.StoredFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RelativePath).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.PublicUrl).IsRequired().HasMaxLength(1200);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(120);
+            entity.HasIndex(e => new { e.TenantId, e.Category, e.EntityType, e.EntityId, e.IsActive });
+        });
+
         // === Phase 4 Entity Configurations ===
 
         // MessageLog entity configuration
@@ -392,8 +573,24 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.RecipientPhone).HasMaxLength(20);
             entity.Property(e => e.Channel).HasConversion<int>();
             entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.ProviderMessageId).HasMaxLength(200);
+            entity.Property(e => e.LastProviderStatus).HasMaxLength(200);
+            entity.Property(e => e.ProviderRawResponse).HasMaxLength(4000);
             entity.Property(e => e.FailureReason).HasMaxLength(1000);
             entity.Property(e => e.Variables).HasMaxLength(4000);
+            entity.Property(e => e.RenderedBody).HasMaxLength(4000);
+            entity.HasIndex(e => new { e.TenantId, e.Status, e.NextAttemptAt });
+        });
+
+        builder.Entity<MessageTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TemplateKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Language).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Channel).HasConversion<int>();
+            entity.Property(e => e.TitleTemplate).HasMaxLength(500);
+            entity.Property(e => e.BodyTemplate).IsRequired().HasMaxLength(4000);
+            entity.HasIndex(e => new { e.TenantId, e.TemplateKey, e.Channel, e.Language }).IsUnique().HasFilter("[IsDeleted] = 0");
         });
 
         // Booking entity configuration
@@ -502,6 +699,11 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<Invoice>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<Payment>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<Expense>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PatientMedicalDocument>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PatientChronicProfile>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<DoctorCompensationRule>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<AttendanceRecord>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<DailyClosingSnapshot>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
 
         // Phase 4 query filters
         builder.Entity<MessageLog>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
@@ -512,6 +714,12 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         // Phase 5 query filters
         builder.Entity<ClinicService>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<DoctorServiceLink>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<InvoiceNumberCounter>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PatientCreditBalance>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PatientCreditTransaction>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<MediaFile>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<MessageTemplate>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<InvoiceLineItem>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

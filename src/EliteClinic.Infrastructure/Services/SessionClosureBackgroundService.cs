@@ -1,4 +1,5 @@
 using EliteClinic.Domain.Enums;
+using EliteClinic.Domain.Entities;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,6 +77,60 @@ public class SessionClosureBackgroundService : BackgroundService
             {
                 ticket.Status = TicketStatus.NoShow;
                 ticket.UpdatedAt = DateTime.UtcNow;
+
+                var visit = await dbContext.Visits.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(v => !v.IsDeleted && v.QueueTicketId == ticket.Id, cancellationToken);
+                if (visit != null)
+                {
+                    var invoice = await dbContext.Invoices.IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(i => !i.IsDeleted && i.VisitId == visit.Id && i.TenantId == session.TenantId, cancellationToken);
+                    if (invoice != null && invoice.PaidAmount > 0 && !invoice.IsServiceRendered)
+                    {
+                        invoice.CreditAmount = invoice.PaidAmount;
+                        invoice.CreditIssuedAt = DateTime.UtcNow;
+                        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
+                            ? "Credit entitlement preserved by auto-session closure"
+                            : $"{invoice.Notes} | Credit entitlement preserved by auto-session closure";
+
+                        var balance = await dbContext.PatientCreditBalances.IgnoreQueryFilters()
+                            .FirstOrDefaultAsync(b => !b.IsDeleted && b.TenantId == session.TenantId && b.PatientId == visit.PatientId, cancellationToken);
+                        if (balance == null)
+                        {
+                            balance = new PatientCreditBalance
+                            {
+                                TenantId = session.TenantId,
+                                PatientId = visit.PatientId,
+                                Balance = 0
+                            };
+                            dbContext.PatientCreditBalances.Add(balance);
+                        }
+
+                        var alreadyIssued = await dbContext.PatientCreditTransactions.IgnoreQueryFilters()
+                            .AnyAsync(t => !t.IsDeleted && t.TenantId == session.TenantId
+                                && t.Type == CreditTransactionType.Issued
+                                && t.Reason == CreditReason.SessionAutoClosedUnserved
+                                && t.InvoiceId == invoice.Id, cancellationToken);
+
+                        if (!alreadyIssued)
+                        {
+                            balance.Balance += invoice.PaidAmount;
+                            dbContext.PatientCreditTransactions.Add(new PatientCreditTransaction
+                            {
+                                TenantId = session.TenantId,
+                                PatientId = visit.PatientId,
+                                CreditBalance = balance,
+                                Type = CreditTransactionType.Issued,
+                                Reason = CreditReason.SessionAutoClosedUnserved,
+                                Amount = invoice.PaidAmount,
+                                BalanceAfter = balance.Balance,
+                                InvoiceId = invoice.Id,
+                                QueueTicketId = ticket.Id,
+                                QueueSessionId = session.Id,
+                                Notes = invoice.Notes
+                            });
+                        }
+                    }
+                }
             }
 
             session.IsActive = false;

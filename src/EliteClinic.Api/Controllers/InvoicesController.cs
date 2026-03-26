@@ -4,6 +4,7 @@ using EliteClinic.Application.Features.Clinic.Services;
 using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EliteClinic.Api.Controllers;
 
@@ -20,6 +21,8 @@ public class InvoicesController : ControllerBase
         _invoiceService = invoiceService;
         _tenantContext = tenantContext;
     }
+
+    private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
     /// <summary>
     /// Create an invoice for a visit
@@ -109,13 +112,13 @@ public class InvoicesController : ControllerBase
     [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<InvoiceDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<InvoiceDto>>>> GetInvoices(
-        [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] Guid? doctorId,
+        [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] Guid? doctorId, [FromQuery] string? invoiceNumber,
         [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<PagedResult<InvoiceDto>>.Error("Tenant context not resolved"));
 
-        var result = await _invoiceService.GetInvoicesAsync(_tenantContext.TenantId, from, to, doctorId, pageNumber, pageSize);
+        var result = await _invoiceService.GetInvoicesAsync(_tenantContext.TenantId, from, to, doctorId, invoiceNumber, pageNumber, pageSize);
         return Ok(result);
     }
 
@@ -132,6 +135,63 @@ public class InvoicesController : ControllerBase
             return BadRequest(ApiResponse<PaymentDto>.Error("Tenant context not resolved"));
 
         var result = await _invoiceService.RecordPaymentAsync(_tenantContext.TenantId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    /// <summary>
+    /// Add a traceable extra charge adjustment to an invoice.
+    /// </summary>
+    [HttpPost("{id:guid}/adjustments")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<InvoiceDto>>> AddAdjustment(Guid id, [FromBody] AddInvoiceAdjustmentRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<InvoiceDto>.Error("Tenant context not resolved"));
+
+        var result = await _invoiceService.AddAdjustmentAsync(_tenantContext.TenantId, id, request, GetCurrentUserId());
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Add a line item to an existing invoice.
+    /// </summary>
+    [HttpPost("{id:guid}/line-items")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<InvoiceDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<InvoiceDto>>> AddLineItem(Guid id, [FromBody] AddInvoiceLineItemRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<InvoiceDto>.Error("Tenant context not resolved"));
+
+        var result = await _invoiceService.AddLineItemAsync(_tenantContext.TenantId, id, request, GetCurrentUserId());
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Record a refund while preserving payment history.
+    /// </summary>
+    [HttpPost("{id:guid}/refund")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PaymentDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<PaymentDto>>> Refund(Guid id, [FromBody] RefundInvoiceRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PaymentDto>.Error("Tenant context not resolved"));
+
+        var result = await _invoiceService.RefundPaymentAsync(_tenantContext.TenantId, id, request, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 

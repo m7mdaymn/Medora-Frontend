@@ -13,4 +13,12 @@ public class TenantFeatureFlag : BaseEntity
     public bool AdvancedMedicalTemplates { get; set; } = false;
     public bool Ratings { get; set; } = false;
     public bool Export { get; set; } = false;
+
+    // Operational feature flags
+    public bool ConsultationVisitTypeEnabled { get; set; } = false;
+    public bool UrgentInsertPolicyEnabled { get; set; } = false;
+    public bool EncounterPendingSettlementEnabled { get; set; } = false;
+    public bool PatientDocumentsEnabled { get; set; } = false;
+    public bool CompensationRulesEnabled { get; set; } = false;
+    public bool DailyClosingSnapshotEnabled { get; set; } = false;
 }

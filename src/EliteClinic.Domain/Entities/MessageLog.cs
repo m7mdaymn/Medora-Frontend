@@ -9,14 +9,19 @@ namespace EliteClinic.Domain.Entities;
 public class MessageLog : TenantBaseEntity
 {
     public string TemplateName { get; set; } = string.Empty;
+    public string? RenderedBody { get; set; }
     public string? RecipientPhone { get; set; }
     public Guid? RecipientUserId { get; set; }
     public MessageChannel Channel { get; set; }
     public MessageStatus Status { get; set; }
     public int AttemptCount { get; set; }
+    public DateTime? NextAttemptAt { get; set; }
     public DateTime? LastAttemptAt { get; set; }
     public DateTime? SentAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    public string? ProviderMessageId { get; set; }
+    public string? LastProviderStatus { get; set; }
+    public string? ProviderRawResponse { get; set; }
     public string? FailureReason { get; set; }
     public string? Variables { get; set; } // JSON snapshot of template variables
 

@@ -38,7 +38,7 @@ public class VisitsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<VisitDto>.Error("Tenant context not resolved"));
 
-        var result = await _visitService.CreateVisitAsync(_tenantContext.TenantId, request);
+        var result = await _visitService.CreateVisitAsync(_tenantContext.TenantId, request, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -96,7 +96,7 @@ public class VisitsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<VisitDto>.Error("Tenant context not resolved"));
 
-        var result = await _visitService.GetVisitByIdAsync(_tenantContext.TenantId, id);
+        var result = await _visitService.GetVisitByIdAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return NotFound(result);
 
@@ -115,7 +115,7 @@ public class VisitsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<PagedResult<VisitDto>>.Error("Tenant context not resolved"));
 
-        var result = await _visitService.GetPatientVisitsAsync(_tenantContext.TenantId, patientId, pageNumber, pageSize);
+        var result = await _visitService.GetPatientVisitsAsync(_tenantContext.TenantId, patientId, GetCurrentUserId(), pageNumber, pageSize);
         return Ok(result);
     }
 
@@ -131,9 +131,80 @@ public class VisitsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<PatientSummaryDto>.Error("Tenant context not resolved"));
 
-        var result = await _visitService.GetPatientSummaryAsync(_tenantContext.TenantId, patientId);
+        var result = await _visitService.GetPatientSummaryAsync(_tenantContext.TenantId, patientId, GetCurrentUserId());
         if (!result.Success)
             return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Doctor self endpoint: today's visits for the authenticated doctor.
+    /// </summary>
+    [HttpGet("my/today")]
+    [Authorize(Roles = "Doctor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<VisitDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<VisitDto>>>> GetMyTodayVisits()
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<VisitDto>>.Error("Tenant context not resolved"));
+
+        var result = await _visitService.GetMyTodayVisitsAsync(_tenantContext.TenantId, GetCurrentUserId());
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Doctor self endpoint: paginated list of own patients.
+    /// </summary>
+    [HttpGet("my/patients")]
+    [Authorize(Roles = "Doctor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetMyPatients(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PagedResult<PatientDto>>.Error("Tenant context not resolved"));
+
+        var result = await _visitService.GetMyPatientsAsync(_tenantContext.TenantId, GetCurrentUserId(), pageNumber, pageSize, search);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// List stale open visits for maintenance visibility.
+    /// </summary>
+    [HttpGet("maintenance/stale-open")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<StaleOpenVisitDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<StaleOpenVisitDto>>>> GetStaleOpenVisits([FromQuery] int olderThanHours = 12)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<StaleOpenVisitDto>>.Error("Tenant context not resolved"));
+
+        var result = await _visitService.GetStaleOpenVisitsAsync(_tenantContext.TenantId, olderThanHours);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Close a stale open visit safely and optionally mark queue ticket as no-show.
+    /// </summary>
+    [HttpPost("maintenance/{id:guid}/close")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<VisitDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<VisitDto>>> CloseStaleVisit(Guid id, [FromBody] CloseStaleVisitRequest? request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<VisitDto>.Error("Tenant context not resolved"));
+
+        var payload = request ?? new CloseStaleVisitRequest();
+        var result = await _visitService.CloseStaleVisitAsync(_tenantContext.TenantId, id, payload);
+        if (!result.Success)
+            return BadRequest(result);
 
         return Ok(result);
     }

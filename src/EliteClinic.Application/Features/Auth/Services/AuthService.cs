@@ -22,6 +22,7 @@ public interface IAuthService
 
 public class AuthService : IAuthService
 {
+    private const string NonPatientLoginError = "NON_PATIENT_LOGIN_FORBIDDEN";
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IConfiguration _configuration;
@@ -52,8 +53,11 @@ public class AuthService : IAuthService
         var role = roles.FirstOrDefault() ?? "Unknown";
 
         // Tenant-scoped validation for non-SuperAdmin users
-        if (role != "SuperAdmin" && !string.IsNullOrWhiteSpace(tenantSlug))
+        if (role != "SuperAdmin")
         {
+            if (string.IsNullOrWhiteSpace(tenantSlug))
+                return null;
+
             var tenant = await _dbContext.Tenants.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(t => t.Slug == tenantSlug && !t.IsDeleted);
             if (tenant == null) return null;
@@ -63,7 +67,7 @@ public class AuthService : IAuthService
                 return null;
         }
 
-        var token = GenerateJwtToken(user, roles, tokenExpiry: 8 * 60); // 8 hours for staff
+        var token = GenerateJwtToken(user, roles, tokenExpiry: 8 * 60, tenantSlug); // 8 hours for staff
         var refreshToken = GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
@@ -108,7 +112,11 @@ public class AuthService : IAuthService
             return null;
 
         var roles = await _userManager.GetRolesAsync(user);
-        var token = GenerateJwtToken(user, roles, tokenExpiry: 365 * 24 * 60); // 365 days for patient
+
+        if (!roles.Contains("Patient"))
+            throw new UnauthorizedAccessException(NonPatientLoginError);
+
+        var token = GenerateJwtToken(user, roles, tokenExpiry: 365 * 24 * 60, tenantSlug); // 365 days for patient
         var refreshToken = GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
@@ -164,7 +172,8 @@ public class AuthService : IAuthService
             return null;
 
         var roles = await _userManager.GetRolesAsync(user);
-        var newToken = GenerateJwtToken(user, roles, tokenExpiry: 8 * 60);
+        var resolvedTenantSlug = await ResolveTenantSlugAsync(user.TenantId);
+        var newToken = GenerateJwtToken(user, roles, tokenExpiry: 8 * 60, resolvedTenantSlug);
         var newRefreshToken = GenerateRefreshToken();
 
         user.RefreshToken = newRefreshToken;
@@ -183,6 +192,7 @@ public class AuthService : IAuthService
                 DisplayName = user.DisplayName,
                 Role = roles.FirstOrDefault() ?? "Unknown",
                 TenantId = user.TenantId,
+                TenantSlug = resolvedTenantSlug,
                 Permissions = GetPermissions(roles.FirstOrDefault())
             }
         };
@@ -199,6 +209,25 @@ public class AuthService : IAuthService
             return null;
 
         var roles = await _userManager.GetRolesAsync(user);
+
+        // Tenant users must always resolve to the same tenant in X-Tenant.
+        if (!roles.Contains("SuperAdmin"))
+        {
+            if (string.IsNullOrWhiteSpace(tenantSlug))
+                return null;
+
+            var tenant = await _dbContext.Tenants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Slug == tenantSlug && !t.IsDeleted);
+
+            if (tenant == null || !user.TenantId.HasValue || user.TenantId.Value != tenant.Id)
+                return null;
+        }
+
+        var resolved = tenantSlug;
+        if (string.IsNullOrWhiteSpace(resolved) && user.TenantId.HasValue)
+            resolved = await ResolveTenantSlugAsync(user.TenantId);
+
         return new UserInfoDto
         {
             Id = user.Id,
@@ -206,12 +235,12 @@ public class AuthService : IAuthService
             DisplayName = user.DisplayName,
             Role = roles.FirstOrDefault() ?? "Unknown",
             TenantId = user.TenantId,
-            TenantSlug = tenantSlug,
+            TenantSlug = resolved,
             Permissions = GetPermissions(roles.FirstOrDefault())
         };
     }
 
-    private string GenerateJwtToken(ApplicationUser user, IList<string> roles, int tokenExpiry)
+    private string GenerateJwtToken(ApplicationUser user, IList<string> roles, int tokenExpiry, string? tenantSlug = null)
     {
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
             _configuration["JwtSettings:SecretKey"] ?? "your-secret-key-that-is-very-long-and-secure"));
@@ -235,6 +264,11 @@ public class AuthService : IAuthService
             claims.Add(new Claim("tenantId", user.TenantId.ToString()));
         }
 
+        if (!string.IsNullOrWhiteSpace(tenantSlug))
+        {
+            claims.Add(new Claim("tenantSlug", tenantSlug));
+        }
+
         var token = new JwtSecurityToken(
             issuer: _configuration["JwtSettings:Issuer"] ?? "EliteClinic",
             audience: _configuration["JwtSettings:Audience"] ?? "EliteClinicUsers",
@@ -243,6 +277,17 @@ public class AuthService : IAuthService
             signingCredentials: signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private async Task<string?> ResolveTenantSlugAsync(Guid? tenantId)
+    {
+        if (!tenantId.HasValue)
+            return null;
+
+        return await _dbContext.Tenants.IgnoreQueryFilters()
+            .Where(t => t.Id == tenantId.Value && !t.IsDeleted)
+            .Select(t => t.Slug)
+            .FirstOrDefaultAsync();
     }
 
     private string GenerateRefreshToken()
@@ -277,7 +322,7 @@ public class AuthService : IAuthService
             {
                 "patient.create", "patient.edit", "patient.delete", "patient.view",
                 "queue.manage", "queue.issue_ticket", "payment.record",
-                "booking.manage", "invoice.view"
+                "booking.manage", "invoice.view", "doctor.view", "expense.view"
             },
             "Nurse" => new List<string>
             {

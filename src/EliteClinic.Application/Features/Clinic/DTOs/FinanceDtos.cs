@@ -19,6 +19,8 @@ public class DoctorRevenueDto
     public decimal TotalRevenue { get; set; }
     public decimal TotalPaid { get; set; }
     public int VisitCount { get; set; }
+    public decimal CommissionPercent { get; set; }
+    public decimal CommissionAmount { get; set; }
 }
 
 public class MonthlyRevenueDto
@@ -28,6 +30,8 @@ public class MonthlyRevenueDto
     public decimal TotalRevenue { get; set; }
     public decimal TotalPaid { get; set; }
     public decimal TotalExpenses { get; set; }
+    public decimal SalaryExpenses { get; set; }
+    public decimal NonSalaryExpenses { get; set; }
     public decimal NetProfit { get; set; }
     public int InvoiceCount { get; set; }
 }
@@ -38,6 +42,8 @@ public class YearlyRevenueDto
     public decimal TotalRevenue { get; set; }
     public decimal TotalPaid { get; set; }
     public decimal TotalExpenses { get; set; }
+    public decimal SalaryExpenses { get; set; }
+    public decimal NonSalaryExpenses { get; set; }
     public decimal NetProfit { get; set; }
     public int InvoiceCount { get; set; }
     public List<MonthlyRevenueDto> Months { get; set; } = new();
@@ -50,6 +56,8 @@ public class ProfitReportDto
     public decimal TotalRevenue { get; set; }
     public decimal TotalPaid { get; set; }
     public decimal TotalExpenses { get; set; }
+    public decimal SalaryExpenses { get; set; }
+    public decimal NonSalaryExpenses { get; set; }
     public decimal NetProfit { get; set; }
     public int InvoiceCount { get; set; }
     public int ExpenseCount { get; set; }

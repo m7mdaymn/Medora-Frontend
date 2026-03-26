@@ -141,4 +141,61 @@ public class ClinicServicesController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// List effective clinic service links for a doctor.
+    /// </summary>
+    [HttpGet("doctors/{doctorId:guid}/links")]
+    [Authorize(Roles = "SuperAdmin,ClinicOwner,ClinicManager,Doctor,Receptionist")]
+    [ProducesResponseType(typeof(ApiResponse<List<DoctorClinicServiceLinkDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<DoctorClinicServiceLinkDto>>>> GetDoctorLinks(Guid doctorId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<DoctorClinicServiceLinkDto>>.Error("Tenant context not resolved"));
+
+        var result = await _serviceManager.GetDoctorLinksAsync(_tenantContext.TenantId, doctorId);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Enable/disable a clinic service for a doctor and optionally set overrides.
+    /// </summary>
+    [HttpPut("doctors/{doctorId:guid}/links/{clinicServiceId:guid}")]
+    [Authorize(Roles = "SuperAdmin,ClinicOwner,ClinicManager")]
+    [ProducesResponseType(typeof(ApiResponse<DoctorClinicServiceLinkDto>), 200)]
+    public async Task<ActionResult<ApiResponse<DoctorClinicServiceLinkDto>>> UpsertDoctorLink(
+        Guid doctorId,
+        Guid clinicServiceId,
+        [FromBody] UpsertDoctorClinicServiceLinkRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<DoctorClinicServiceLinkDto>.Error("Tenant context not resolved"));
+
+        var result = await _serviceManager.UpsertDoctorLinkAsync(_tenantContext.TenantId, doctorId, clinicServiceId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Remove clinic service link from doctor.
+    /// </summary>
+    [HttpDelete("doctors/{doctorId:guid}/links/{clinicServiceId:guid}")]
+    [Authorize(Roles = "SuperAdmin,ClinicOwner,ClinicManager")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+    public async Task<ActionResult<ApiResponse<bool>>> RemoveDoctorLink(Guid doctorId, Guid clinicServiceId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<bool>.Error("Tenant context not resolved"));
+
+        var result = await _serviceManager.RemoveDoctorLinkAsync(_tenantContext.TenantId, doctorId, clinicServiceId);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
 }

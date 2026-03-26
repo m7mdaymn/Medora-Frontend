@@ -10,10 +10,12 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 public class BookingService : IBookingService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly IMessageService _messageService;
 
-    public BookingService(EliteClinicDbContext context)
+    public BookingService(EliteClinicDbContext context, IMessageService messageService)
     {
         _context = context;
+        _messageService = messageService;
     }
 
     public async Task<ApiResponse<BookingDto>> CreateAsync(Guid tenantId, Guid patientUserId, CreateBookingRequest request)
@@ -31,11 +33,16 @@ public class BookingService : IBookingService
             return ApiResponse<BookingDto>.Error("Booking is not enabled in clinic settings");
 
         // Find patient - either by PatientId (staff workflow) or by patientUserId (patient self-booking)
+        var callerIsPatient = await IsUserInRoleAsync(patientUserId, "Patient");
+
         Domain.Entities.Patient? patient;
         if (request.PatientId.HasValue)
         {
             patient = await _context.Patients
                 .FirstOrDefaultAsync(p => p.Id == request.PatientId.Value && p.TenantId == tenantId && !p.IsDeleted);
+
+            if (callerIsPatient && patient != null && patient.UserId != patientUserId)
+                return ApiResponse<BookingDto>.Error("Access denied to requested patient profile");
         }
         else
         {
@@ -51,13 +58,23 @@ public class BookingService : IBookingService
         if (doctor == null)
             return ApiResponse<BookingDto>.Error("Doctor not found or not enabled");
 
-        // Validate service if provided
+        // Validate service if provided (supports both legacy DoctorService and new DoctorServiceLink)
         DoctorService? service = null;
+        DoctorServiceLink? linkedService = null;
         if (request.DoctorServiceId.HasValue)
         {
             service = await _context.DoctorServices
                 .FirstOrDefaultAsync(ds => ds.Id == request.DoctorServiceId.Value && ds.DoctorId == request.DoctorId && !ds.IsDeleted && ds.IsActive);
+
             if (service == null)
+            {
+                linkedService = await _context.DoctorServiceLinks
+                    .Include(l => l.ClinicService)
+                    .FirstOrDefaultAsync(l => l.Id == request.DoctorServiceId.Value && l.DoctorId == request.DoctorId
+                        && !l.IsDeleted && l.IsActive && !l.ClinicService.IsDeleted && l.ClinicService.IsActive);
+            }
+
+            if (service == null && linkedService == null)
                 return ApiResponse<BookingDto>.Error("Doctor service not found or not active");
         }
 
@@ -83,21 +100,39 @@ public class BookingService : IBookingService
             TenantId = tenantId,
             PatientId = patient.Id,
             DoctorId = request.DoctorId,
-            DoctorServiceId = request.DoctorServiceId,
+            // Keep FK compatibility: only assign legacy DoctorServiceId when legacy service exists.
+            DoctorServiceId = service?.Id,
             BookingDate = request.BookingDate.Date,
             BookingTime = bookingTime,
             Status = BookingStatus.Confirmed,
-            Notes = request.Notes
+            Notes = linkedService != null
+                ? $"{request.Notes} | ClinicServiceLink:{linkedService.Id}".Trim(' ', '|')
+                : request.Notes
         };
 
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
 
+        await TryAttachToActiveSessionAsync(tenantId, booking, patient.Id, request.DoctorId);
+
+        await _messageService.LogWorkflowEventAsync(
+            tenantId,
+            nameof(MessageScenario.BookingConfirmed),
+            recipientUserId: patient.UserId,
+            recipientPhone: patient.Phone,
+            variables: new Dictionary<string, string>
+            {
+                ["patientName"] = patient.Name,
+                ["doctorName"] = doctor.Name,
+                ["bookingDate"] = booking.BookingDate.ToString("yyyy-MM-dd"),
+                ["bookingTime"] = booking.BookingTime.ToString(@"hh\:mm")
+            });
+
         var saved = await GetBookingWithIncludes(tenantId, booking.Id);
         return ApiResponse<BookingDto>.Created(MapToDto(saved!), "Booking created successfully");
     }
 
-    public async Task<ApiResponse<BookingDto>> CancelAsync(Guid tenantId, Guid bookingId, Guid callerUserId, CancelBookingRequest request)
+    public async Task<ApiResponse<BookingDto>> CancelAsync(Guid tenantId, Guid bookingId, Guid callerUserId, CancelBookingRequest request, bool isAdministrativeAction = false)
     {
         var booking = await GetBookingWithIncludes(tenantId, bookingId);
         if (booking == null)
@@ -106,26 +141,43 @@ public class BookingService : IBookingService
         if (booking.Status != BookingStatus.Confirmed)
             return ApiResponse<BookingDto>.Error("Only confirmed bookings can be cancelled");
 
-        // Check cancellation window
-        var settings = await _context.ClinicSettings
-            .FirstOrDefaultAsync(cs => cs.TenantId == tenantId && !cs.IsDeleted);
-        var cancellationHours = settings?.CancellationWindowHours ?? 2;
-        var bookingDateTime = booking.BookingDate.Date + booking.BookingTime;
-        var hoursUntilBooking = (bookingDateTime - DateTime.UtcNow).TotalHours;
+        if (!isAdministrativeAction)
+        {
+            // Patient-facing cancellation window policy.
+            var settings = await _context.ClinicSettings
+                .FirstOrDefaultAsync(cs => cs.TenantId == tenantId && !cs.IsDeleted);
+            var cancellationHours = settings?.CancellationWindowHours ?? 2;
+            var bookingDateTime = booking.BookingDate.Date + booking.BookingTime;
+            var hoursUntilBooking = (bookingDateTime - DateTime.UtcNow).TotalHours;
 
-        if (hoursUntilBooking < cancellationHours)
-            return ApiResponse<BookingDto>.Error($"Cancellation must be at least {cancellationHours} hour(s) before the appointment");
+            if (hoursUntilBooking < cancellationHours)
+                return ApiResponse<BookingDto>.Error($"Cancellation must be at least {cancellationHours} hour(s) before the appointment");
+        }
 
         booking.Status = BookingStatus.Cancelled;
         booking.CancelledAt = DateTime.UtcNow;
         booking.CancellationReason = request.CancellationReason;
         await _context.SaveChangesAsync();
 
+        await _messageService.LogWorkflowEventAsync(
+            tenantId,
+            nameof(MessageScenario.BookingCancelled),
+            recipientUserId: booking.Patient?.UserId,
+            recipientPhone: booking.Patient?.Phone,
+            variables: new Dictionary<string, string>
+            {
+                ["patientName"] = booking.Patient?.Name ?? string.Empty,
+                ["doctorName"] = booking.Doctor?.Name ?? string.Empty,
+                ["bookingDate"] = booking.BookingDate.ToString("yyyy-MM-dd"),
+                ["bookingTime"] = booking.BookingTime.ToString(@"hh\:mm"),
+                ["cancelReason"] = request.CancellationReason ?? string.Empty
+            });
+
         var updated = await GetBookingWithIncludes(tenantId, bookingId);
         return ApiResponse<BookingDto>.Ok(MapToDto(updated!), "Booking cancelled successfully");
     }
 
-    public async Task<ApiResponse<BookingDto>> RescheduleAsync(Guid tenantId, Guid bookingId, Guid callerUserId, RescheduleBookingRequest request)
+    public async Task<ApiResponse<BookingDto>> RescheduleAsync(Guid tenantId, Guid bookingId, Guid callerUserId, RescheduleBookingRequest request, bool isAdministrativeAction = false)
     {
         var booking = await GetBookingWithIncludes(tenantId, bookingId);
         if (booking == null)
@@ -141,15 +193,18 @@ public class BookingService : IBookingService
         if (newDateTime <= DateTime.UtcNow)
             return ApiResponse<BookingDto>.Error("New booking time must be in the future");
 
-        // Check cancellation window for rescheduling
-        var settings = await _context.ClinicSettings
-            .FirstOrDefaultAsync(cs => cs.TenantId == tenantId && !cs.IsDeleted);
-        var cancellationHours = settings?.CancellationWindowHours ?? 2;
-        var currentDateTime = booking.BookingDate.Date + booking.BookingTime;
-        var hoursUntilBooking = (currentDateTime - DateTime.UtcNow).TotalHours;
+        if (!isAdministrativeAction)
+        {
+            // Patient-facing cancellation window policy for self-reschedule.
+            var settings = await _context.ClinicSettings
+                .FirstOrDefaultAsync(cs => cs.TenantId == tenantId && !cs.IsDeleted);
+            var cancellationHours = settings?.CancellationWindowHours ?? 2;
+            var currentDateTime = booking.BookingDate.Date + booking.BookingTime;
+            var hoursUntilBooking = (currentDateTime - DateTime.UtcNow).TotalHours;
 
-        if (hoursUntilBooking < cancellationHours)
-            return ApiResponse<BookingDto>.Error($"Rescheduling must be at least {cancellationHours} hour(s) before the appointment");
+            if (hoursUntilBooking < cancellationHours)
+                return ApiResponse<BookingDto>.Error($"Rescheduling must be at least {cancellationHours} hour(s) before the appointment");
+        }
 
         booking.BookingDate = request.BookingDate.Date;
         booking.BookingTime = bookingTime;
@@ -159,6 +214,8 @@ public class BookingService : IBookingService
         // Re-confirm after reschedule
         booking.Status = BookingStatus.Confirmed;
         await _context.SaveChangesAsync();
+
+        await TryAttachToActiveSessionAsync(tenantId, booking, booking.PatientId, booking.DoctorId);
 
         var updated = await GetBookingWithIncludes(tenantId, bookingId);
         return ApiResponse<BookingDto>.Ok(MapToDto(updated!), "Booking rescheduled successfully");
@@ -215,11 +272,24 @@ public class BookingService : IBookingService
         if (patient == null)
             return ApiResponse<List<BookingDto>>.Error("Patient profile not found");
 
+        return await GetBookingsForOwnedProfileAsync(tenantId, patientUserId, patient.Id);
+    }
+
+    public async Task<ApiResponse<List<BookingDto>>> GetBookingsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)
+    {
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId && p.TenantId == tenantId && !p.IsDeleted);
+        if (patient == null)
+            return ApiResponse<List<BookingDto>>.Error("Patient profile not found");
+
+        if (patient.UserId != patientUserId)
+            return ApiResponse<List<BookingDto>>.Error("Access denied to requested patient profile");
+
         var bookings = await _context.Bookings
             .Include(b => b.Patient)
             .Include(b => b.Doctor)
             .Include(b => b.DoctorService)
-            .Where(b => b.TenantId == tenantId && b.PatientId == patient.Id && !b.IsDeleted)
+            .Where(b => b.TenantId == tenantId && b.PatientId == patientId && !b.IsDeleted)
             .OrderByDescending(b => b.BookingDate)
             .ThenByDescending(b => b.BookingTime)
             .ToListAsync();
@@ -255,6 +325,68 @@ public class BookingService : IBookingService
         QueueTicketId = b.QueueTicketId,
         CancelledAt = b.CancelledAt,
         CancellationReason = b.CancellationReason,
+        IsOperationalNow = b.Status == BookingStatus.Confirmed
+            && b.QueueTicketId == null
+            && b.BookingDate.Date == DateTime.UtcNow.Date
+            && (b.BookingDate.Date + b.BookingTime) <= DateTime.UtcNow.AddHours(2),
+        OperationalPurpose = b.BookingDate.Date > DateTime.UtcNow.Date
+            ? "FutureAppointment"
+            : b.QueueTicketId.HasValue ? "QueueBridged" : "ReadyForQueueBridge",
         CreatedAt = b.CreatedAt
     };
+
+    private async Task TryAttachToActiveSessionAsync(Guid tenantId, Booking booking, Guid patientId, Guid doctorId)
+    {
+        if (booking.QueueTicketId.HasValue)
+            return;
+
+        // Assumption for "current operational window": same day booking and booking time within 2 hours from now.
+        var now = DateTime.UtcNow;
+        var bookingDateTime = booking.BookingDate.Date + booking.BookingTime;
+        var isCurrentWindow = booking.BookingDate.Date == now.Date && bookingDateTime >= now.AddMinutes(-30) && bookingDateTime <= now.AddHours(2);
+        if (!isCurrentWindow)
+            return;
+
+        var activeSession = await _context.QueueSessions
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId && !s.IsDeleted && s.IsActive && s.DoctorId == doctorId);
+        if (activeSession == null)
+            return;
+
+        var hasActiveTicket = await _context.QueueTickets
+            .AnyAsync(t => t.TenantId == tenantId && !t.IsDeleted && t.PatientId == patientId
+                && (t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called || t.Status == TicketStatus.InVisit));
+        if (hasActiveTicket)
+            return;
+
+        var maxTicketNum = await _context.QueueTickets
+            .Where(t => t.SessionId == activeSession.Id && !t.IsDeleted)
+            .MaxAsync(t => (int?)t.TicketNumber) ?? 0;
+
+        var ticket = new QueueTicket
+        {
+            TenantId = tenantId,
+            SessionId = activeSession.Id,
+            PatientId = patientId,
+            DoctorId = doctorId,
+            DoctorServiceId = booking.DoctorServiceId,
+            TicketNumber = maxTicketNum + 1,
+            Status = TicketStatus.Waiting,
+            IssuedAt = DateTime.UtcNow,
+            Notes = "Auto-created from live booking"
+        };
+
+        _context.QueueTickets.Add(ticket);
+        booking.QueueTicketId = ticket.Id;
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task<bool> IsUserInRoleAsync(Guid userId, string roleName)
+    {
+        var normalizedRole = roleName.ToUpperInvariant();
+        return await (from ur in _context.UserRoles
+                      join r in _context.Roles on ur.RoleId equals r.Id
+                      where ur.UserId == userId && r.NormalizedName == normalizedRole
+                      select ur.UserId)
+            .AnyAsync();
+    }
 }

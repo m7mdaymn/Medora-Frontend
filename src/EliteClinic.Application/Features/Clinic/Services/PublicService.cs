@@ -4,6 +4,7 @@ using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
 
@@ -36,6 +37,9 @@ public class PublicService : IPublicService
             Address = settings?.Address ?? tenant.Address,
             City = settings?.City,
             LogoUrl = settings?.LogoUrl ?? tenant.LogoUrl,
+            ImgUrl = settings?.ImgUrl,
+            Description = settings?.Description,
+            SocialLinks = ParseSocialLinks(settings?.SocialLinksJson),
             BookingEnabled = settings?.BookingEnabled ?? false,
             TenantSlug = tenant.Slug,
             IsActive = tenant.Status == TenantStatus.Active
@@ -57,6 +61,11 @@ public class PublicService : IPublicService
             .Where(d => d.TenantId == tenant.Id && !d.IsDeleted && d.IsEnabled)
             .ToListAsync();
 
+        var links = await _context.DoctorServiceLinks.IgnoreQueryFilters()
+            .Include(l => l.ClinicService)
+            .Where(l => l.TenantId == tenant.Id && !l.IsDeleted && l.IsActive && !l.ClinicService.IsDeleted && l.ClinicService.IsActive)
+            .ToListAsync();
+
         var dtos = doctors.Select(d => new PublicDoctorDto
         {
             Id = d.Id,
@@ -66,13 +75,7 @@ public class PublicService : IPublicService
             PhotoUrl = d.PhotoUrl,
             IsEnabled = d.IsEnabled,
             AvgVisitDurationMinutes = d.AvgVisitDurationMinutes,
-            Services = d.Services.Where(s => s.IsActive && !s.IsDeleted).Select(s => new PublicDoctorServiceDto
-            {
-                Id = s.Id,
-                ServiceName = s.ServiceName,
-                Price = s.Price,
-                DurationMinutes = s.DurationMinutes
-            }).ToList()
+            Services = BuildEffectiveServices(d, links)
         }).ToList();
 
         return ApiResponse<List<PublicDoctorDto>>.Ok(dtos, $"Retrieved {dtos.Count} doctor(s)");
@@ -86,17 +89,33 @@ public class PublicService : IPublicService
         if (tenant == null)
             return ApiResponse<List<PublicDoctorServiceDto>>.Error("Clinic not found");
 
-        var services = await _context.DoctorServices.IgnoreQueryFilters()
-            .Where(ds => ds.TenantId == tenant.Id && !ds.IsDeleted && ds.IsActive)
+        var linkedServices = await _context.DoctorServiceLinks.IgnoreQueryFilters()
+            .Include(l => l.ClinicService)
+            .Where(l => l.TenantId == tenant.Id && !l.IsDeleted && l.IsActive && !l.ClinicService.IsDeleted && l.ClinicService.IsActive)
             .ToListAsync();
 
-        var dtos = services.Select(s => new PublicDoctorServiceDto
+        var dtos = linkedServices.Select(s => new PublicDoctorServiceDto
         {
             Id = s.Id,
-            ServiceName = s.ServiceName,
-            Price = s.Price,
-            DurationMinutes = s.DurationMinutes
+            ServiceName = s.ClinicService.Name,
+            Price = s.OverridePrice ?? s.ClinicService.DefaultPrice,
+            DurationMinutes = s.OverrideDurationMinutes ?? s.ClinicService.DefaultDurationMinutes
         }).ToList();
+
+        if (!dtos.Any())
+        {
+            var legacyServices = await _context.DoctorServices.IgnoreQueryFilters()
+                .Where(ds => ds.TenantId == tenant.Id && !ds.IsDeleted && ds.IsActive)
+                .ToListAsync();
+
+            dtos = legacyServices.Select(s => new PublicDoctorServiceDto
+            {
+                Id = s.Id,
+                ServiceName = s.ServiceName,
+                Price = s.Price,
+                DurationMinutes = s.DurationMinutes
+            }).ToList();
+        }
 
         return ApiResponse<List<PublicDoctorServiceDto>>.Ok(dtos, $"Retrieved {dtos.Count} service(s)");
     }
@@ -125,5 +144,89 @@ public class PublicService : IPublicService
         }).ToList();
 
         return ApiResponse<List<PublicWorkingHourDto>>.Ok(dtos, $"Retrieved {dtos.Count} working hour(s)");
+    }
+
+    public async Task<ApiResponse<List<PublicDoctorDto>>> GetAvailableDoctorsNowAsync(string tenantSlug)
+    {
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Slug == tenantSlug && !t.IsDeleted);
+
+        if (tenant == null)
+            return ApiResponse<List<PublicDoctorDto>>.Error("Clinic not found");
+
+        var activeDoctorIds = await _context.QueueSessions.IgnoreQueryFilters()
+            .Where(s => s.TenantId == tenant.Id && !s.IsDeleted && s.IsActive && s.DoctorId.HasValue)
+            .Select(s => s.DoctorId!.Value)
+            .Distinct()
+            .ToListAsync();
+
+        if (!activeDoctorIds.Any())
+            return ApiResponse<List<PublicDoctorDto>>.Ok(new List<PublicDoctorDto>(), "No doctors currently on active shift");
+
+        var doctors = await _context.Doctors.IgnoreQueryFilters()
+            .Include(d => d.Services)
+            .Where(d => d.TenantId == tenant.Id && !d.IsDeleted && d.IsEnabled && activeDoctorIds.Contains(d.Id))
+            .ToListAsync();
+
+        var links = await _context.DoctorServiceLinks.IgnoreQueryFilters()
+            .Include(l => l.ClinicService)
+            .Where(l => l.TenantId == tenant.Id && !l.IsDeleted && l.IsActive && !l.ClinicService.IsDeleted && l.ClinicService.IsActive)
+            .ToListAsync();
+
+        var dtos = doctors.Select(d => new PublicDoctorDto
+        {
+            Id = d.Id,
+            Name = d.Name,
+            Specialty = d.Specialty,
+            Bio = d.Bio,
+            PhotoUrl = d.PhotoUrl,
+            IsEnabled = d.IsEnabled,
+            AvgVisitDurationMinutes = d.AvgVisitDurationMinutes,
+            Services = BuildEffectiveServices(d, links)
+        }).ToList();
+
+        return ApiResponse<List<PublicDoctorDto>>.Ok(dtos, $"Retrieved {dtos.Count} active doctor(s)");
+    }
+
+    private static List<PublicDoctorServiceDto> BuildEffectiveServices(Doctor doctor, List<DoctorServiceLink> links)
+    {
+        var linked = links
+            .Where(l => l.DoctorId == doctor.Id)
+            .Select(l => new PublicDoctorServiceDto
+            {
+                Id = l.Id,
+                ServiceName = l.ClinicService.Name,
+                Price = l.OverridePrice ?? l.ClinicService.DefaultPrice,
+                DurationMinutes = l.OverrideDurationMinutes ?? l.ClinicService.DefaultDurationMinutes
+            })
+            .ToList();
+
+        if (linked.Any())
+            return linked;
+
+        return doctor.Services
+            .Where(s => s.IsActive && !s.IsDeleted)
+            .Select(s => new PublicDoctorServiceDto
+            {
+                Id = s.Id,
+                ServiceName = s.ServiceName,
+                Price = s.Price,
+                DurationMinutes = s.DurationMinutes
+            }).ToList();
+    }
+
+    private static Dictionary<string, string> ParseSocialLinks(string? socialLinksJson)
+    {
+        if (string.IsNullOrWhiteSpace(socialLinksJson))
+            return new Dictionary<string, string>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(socialLinksJson) ?? new Dictionary<string, string>();
+        }
+        catch
+        {
+            return new Dictionary<string, string>();
+        }
     }
 }

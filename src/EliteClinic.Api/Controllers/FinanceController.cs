@@ -44,13 +44,13 @@ public class FinanceController : ControllerBase
     [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<DoctorRevenueDto>>), 200)]
     public async Task<ActionResult<ApiResponse<List<DoctorRevenueDto>>>> GetByDoctor(
-        [FromQuery] DateTime? date, [FromQuery] Guid? doctorId)
+        [FromQuery] DateTime? date, [FromQuery] Guid? doctorId, [FromQuery] decimal? commissionPercent)
     {
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<List<DoctorRevenueDto>>.Error("Tenant context not resolved"));
 
         var targetDate = date ?? DateTime.UtcNow;
-        var result = await _financeService.GetRevenueByDoctorAsync(_tenantContext.TenantId, targetDate, doctorId);
+        var result = await _financeService.GetRevenueByDoctorAsync(_tenantContext.TenantId, targetDate, doctorId, commissionPercent ?? 0);
         return Ok(result);
     }
 

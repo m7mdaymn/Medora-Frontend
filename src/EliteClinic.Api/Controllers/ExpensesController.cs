@@ -85,7 +85,7 @@ public class ExpensesController : ControllerBase
     /// List expenses (paginated, filterable by date & category)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ExpenseDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<ExpenseDto>>>> GetAll(
         [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? category,

@@ -59,7 +59,8 @@ public class BookingsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<BookingDto>.Error("Tenant context not resolved"));
 
-        var result = await _bookingService.CancelAsync(_tenantContext.TenantId, id, GetCurrentUserId(), request);
+        var isAdministrativeAction = !User.IsInRole("Patient");
+        var result = await _bookingService.CancelAsync(_tenantContext.TenantId, id, GetCurrentUserId(), request, isAdministrativeAction);
         if (!result.Success)
             return BadRequest(result);
 
@@ -78,7 +79,8 @@ public class BookingsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<BookingDto>.Error("Tenant context not resolved"));
 
-        var result = await _bookingService.RescheduleAsync(_tenantContext.TenantId, id, GetCurrentUserId(), request);
+        var isAdministrativeAction = !User.IsInRole("Patient");
+        var result = await _bookingService.RescheduleAsync(_tenantContext.TenantId, id, GetCurrentUserId(), request, isAdministrativeAction);
         if (!result.Success)
             return BadRequest(result);
 

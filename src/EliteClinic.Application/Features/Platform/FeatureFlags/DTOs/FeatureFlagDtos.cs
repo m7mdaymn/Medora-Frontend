@@ -13,6 +13,12 @@ public class FeatureFlagDto
     public bool AdvancedMedicalTemplates { get; set; }
     public bool Ratings { get; set; }
     public bool Export { get; set; }
+    public bool ConsultationVisitTypeEnabled { get; set; }
+    public bool UrgentInsertPolicyEnabled { get; set; }
+    public bool EncounterPendingSettlementEnabled { get; set; }
+    public bool PatientDocumentsEnabled { get; set; }
+    public bool CompensationRulesEnabled { get; set; }
+    public bool DailyClosingSnapshotEnabled { get; set; }
 }
 
 public class UpdateFeatureFlagRequest
@@ -37,4 +43,22 @@ public class UpdateFeatureFlagRequest
 
     [Required]
     public bool Export { get; set; }
+
+    [Required]
+    public bool ConsultationVisitTypeEnabled { get; set; }
+
+    [Required]
+    public bool UrgentInsertPolicyEnabled { get; set; }
+
+    [Required]
+    public bool EncounterPendingSettlementEnabled { get; set; }
+
+    [Required]
+    public bool PatientDocumentsEnabled { get; set; }
+
+    [Required]
+    public bool CompensationRulesEnabled { get; set; }
+
+    [Required]
+    public bool DailyClosingSnapshotEnabled { get; set; }
 }

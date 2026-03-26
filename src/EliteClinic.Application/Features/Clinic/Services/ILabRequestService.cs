@@ -9,5 +9,6 @@ public interface ILabRequestService
     Task<ApiResponse<LabRequestDto>> CreateAsync(Guid tenantId, Guid visitId, CreateLabRequestRequest request, Guid callerUserId);
     Task<ApiResponse<LabRequestDto>> UpdateAsync(Guid tenantId, Guid visitId, Guid labId, UpdateLabRequestRequest request, Guid callerUserId);
     Task<ApiResponse<LabRequestDto>> AddResultAsync(Guid tenantId, Guid visitId, Guid labId, AddLabResultRequest request);
+    Task<ApiResponse<LabRequestDto>> DeleteAsync(Guid tenantId, Guid visitId, Guid labId, Guid callerUserId);
     Task<ApiResponse<List<LabRequestDto>>> GetByVisitAsync(Guid tenantId, Guid visitId, LabRequestType? type = null);
 }

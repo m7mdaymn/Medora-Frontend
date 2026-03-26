@@ -21,6 +21,8 @@ public class BookingDto
     public Guid? QueueTicketId { get; set; }
     public DateTime? CancelledAt { get; set; }
     public string? CancellationReason { get; set; }
+    public bool IsOperationalNow { get; set; }
+    public string OperationalPurpose { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
 

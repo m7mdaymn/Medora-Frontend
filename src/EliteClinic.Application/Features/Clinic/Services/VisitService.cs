@@ -16,12 +16,17 @@ public class VisitService : IVisitService
         _context = context;
     }
 
-    public async Task<ApiResponse<VisitDto>> CreateVisitAsync(Guid tenantId, CreateVisitRequest request)
+    public async Task<ApiResponse<VisitDto>> CreateVisitAsync(Guid tenantId, CreateVisitRequest request, Guid callerUserId)
     {
+        var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+
         // Validate doctor
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == request.DoctorId && d.TenantId == tenantId && !d.IsDeleted);
         if (doctor == null)
             return ApiResponse<VisitDto>.Error("Doctor not found");
+
+        if (callerDoctor != null && doctor.Id != callerDoctor.Id)
+            return ApiResponse<VisitDto>.Error("Doctors can only create visits for themselves");
 
         // Validate patient
         var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == request.PatientId && p.TenantId == tenantId && !p.IsDeleted);
@@ -48,11 +53,15 @@ public class VisitService : IVisitService
                 ticket.Status = TicketStatus.InVisit;
                 ticket.VisitStartedAt = DateTime.UtcNow;
             }
+
+            if (string.IsNullOrWhiteSpace(request.Complaint) && !string.IsNullOrWhiteSpace(ticket.Notes))
+                request.Complaint = ticket.Notes;
         }
 
         var visit = new Visit
         {
             TenantId = tenantId,
+            VisitType = request.VisitType,
             QueueTicketId = request.QueueTicketId,
             DoctorId = request.DoctorId,
             PatientId = request.PatientId,
@@ -112,11 +121,17 @@ public class VisitService : IVisitService
         if (visit == null)
             return ApiResponse<VisitDto>.Error("Visit not found");
 
+        var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+        if (callerDoctor != null && visit.DoctorId != callerDoctor.Id)
+            return ApiResponse<VisitDto>.Error("You can only complete your own visits");
+
         if (visit.Status != VisitStatus.Open)
             return ApiResponse<VisitDto>.Error("Visit is already completed");
 
         visit.Status = VisitStatus.Completed;
         visit.CompletedAt = DateTime.UtcNow;
+        visit.LifecycleState = EncounterLifecycleState.MedicallyCompleted;
+        visit.MedicallyCompletedAt = DateTime.UtcNow;
         if (!string.IsNullOrEmpty(request.Diagnosis))
             visit.Diagnosis = request.Diagnosis;
         if (!string.IsNullOrEmpty(request.Notes))
@@ -134,41 +149,100 @@ public class VisitService : IVisitService
             }
         }
 
+        var invoice = await _context.Invoices
+            .FirstOrDefaultAsync(i => i.TenantId == tenantId && !i.IsDeleted && i.VisitId == visit.Id);
+        if (invoice != null)
+        {
+            var pendingSettlementEnabled = await _context.TenantFeatureFlags
+                .Where(f => f.TenantId == tenantId && !f.IsDeleted)
+                .Select(f => f.EncounterPendingSettlementEnabled)
+                .FirstOrDefaultAsync();
+
+            invoice.IsServiceRendered = true;
+            invoice.CreditAmount = 0;
+            invoice.CreditIssuedAt = null;
+
+            if (invoice.RemainingAmount <= 0)
+            {
+                invoice.HasPendingSettlement = false;
+                invoice.PendingSettlementAmount = 0;
+                visit.FinancialState = EncounterFinancialState.FinanciallySettled;
+                visit.FinanciallySettledAt = DateTime.UtcNow;
+                visit.LifecycleState = EncounterLifecycleState.FullyClosed;
+                visit.FullyClosedAt = DateTime.UtcNow;
+            }
+            else if (pendingSettlementEnabled)
+            {
+                invoice.HasPendingSettlement = true;
+                invoice.PendingSettlementAmount = invoice.RemainingAmount;
+                visit.FinancialState = EncounterFinancialState.PendingSettlement;
+            }
+            else
+            {
+                invoice.HasPendingSettlement = false;
+                invoice.PendingSettlementAmount = 0;
+                visit.FinancialState = EncounterFinancialState.NotStarted;
+            }
+        }
+
         await _context.SaveChangesAsync();
 
         var updated = await GetVisitWithIncludes(tenantId, visitId);
         return ApiResponse<VisitDto>.Ok(MapVisitToDto(updated!), "Visit completed successfully");
     }
 
-    public async Task<ApiResponse<VisitDto>> GetVisitByIdAsync(Guid tenantId, Guid visitId)
+    public async Task<ApiResponse<VisitDto>> GetVisitByIdAsync(Guid tenantId, Guid visitId, Guid callerUserId)
     {
         var visit = await GetVisitWithIncludes(tenantId, visitId);
         if (visit == null)
             return ApiResponse<VisitDto>.Error("Visit not found");
 
-        return ApiResponse<VisitDto>.Ok(MapVisitToDto(visit), "Visit retrieved successfully");
+        var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+        if (callerDoctor != null && visit.DoctorId != callerDoctor.Id)
+            return ApiResponse<VisitDto>.Error("Doctors can only access their own visits");
+
+        var dto = MapVisitToDto(visit);
+        dto.ChronicProfile = MapChronicProfile(await GetChronicProfileAsync(tenantId, visit.PatientId));
+        return ApiResponse<VisitDto>.Ok(dto, "Visit retrieved successfully");
     }
 
-    public async Task<ApiResponse<PagedResult<VisitDto>>> GetPatientVisitsAsync(Guid tenantId, Guid patientId, int pageNumber = 1, int pageSize = 10)
+    public async Task<ApiResponse<PagedResult<VisitDto>>> GetPatientVisitsAsync(Guid tenantId, Guid patientId, Guid callerUserId, int pageNumber = 1, int pageSize = 10)
     {
+        var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+
         var query = _context.Visits
             .Include(v => v.Doctor)
             .Include(v => v.Patient)
             .Include(v => v.Prescriptions.Where(p => !p.IsDeleted))
             .Include(v => v.LabRequests.Where(l => !l.IsDeleted))
             .Include(v => v.Invoice)
-            .Where(v => v.PatientId == patientId && v.TenantId == tenantId)
-            .OrderByDescending(v => v.StartedAt);
+            .Where(v => v.PatientId == patientId && v.TenantId == tenantId);
+
+        if (callerDoctor != null)
+            query = query.Where(v => v.DoctorId == callerDoctor.Id);
 
         var totalCount = await query.CountAsync();
         var visits = await query
+            .OrderByDescending(v => v.StartedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
+        var patientIds = visits.Select(v => v.PatientId).Distinct().ToList();
+        var chronicByPatientId = await _context.PatientChronicProfiles
+            .Where(c => c.TenantId == tenantId && !c.IsDeleted && patientIds.Contains(c.PatientId))
+            .ToDictionaryAsync(c => c.PatientId, c => c);
+
+        var mappedItems = visits.Select(v =>
+        {
+            var dto = MapVisitToDto(v);
+            dto.ChronicProfile = chronicByPatientId.TryGetValue(v.PatientId, out var cp) ? MapChronicProfile(cp) : null;
+            return dto;
+        }).ToList();
+
         var result = new PagedResult<VisitDto>
         {
-            Items = visits.Select(MapVisitToDto).ToList(),
+            Items = mappedItems,
             TotalCount = totalCount,
             PageNumber = pageNumber,
             PageSize = pageSize
@@ -177,19 +251,39 @@ public class VisitService : IVisitService
         return ApiResponse<PagedResult<VisitDto>>.Ok(result, $"Retrieved {result.Items.Count} visit(s)");
     }
 
-    public async Task<ApiResponse<PatientSummaryDto>> GetPatientSummaryAsync(Guid tenantId, Guid patientId)
+    public async Task<ApiResponse<PatientSummaryDto>> GetPatientSummaryAsync(Guid tenantId, Guid patientId, Guid callerUserId)
     {
+        var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+
         var patient = await _context.Patients
             .FirstOrDefaultAsync(p => p.Id == patientId && p.TenantId == tenantId && !p.IsDeleted);
         if (patient == null)
             return ApiResponse<PatientSummaryDto>.Error("Patient not found");
 
-        var totalVisits = await _context.Visits
-            .CountAsync(v => v.PatientId == patientId && v.TenantId == tenantId && !v.IsDeleted);
+        if (callerDoctor != null)
+        {
+            var hasVisitWithDoctor = await _context.Visits
+                .AnyAsync(v => v.TenantId == tenantId && !v.IsDeleted && v.PatientId == patientId && v.DoctorId == callerDoctor.Id);
+            if (!hasVisitWithDoctor)
+                return ApiResponse<PatientSummaryDto>.Error("Doctors can only access summaries for their own patients");
+        }
 
-        var recentVisits = await _context.Visits
+        var visitsCountQuery = _context.Visits
+            .Where(v => v.PatientId == patientId && v.TenantId == tenantId && !v.IsDeleted);
+
+        if (callerDoctor != null)
+            visitsCountQuery = visitsCountQuery.Where(v => v.DoctorId == callerDoctor.Id);
+
+        var totalVisits = await visitsCountQuery.CountAsync();
+
+        var recentVisitsQuery = _context.Visits
             .Include(v => v.Doctor)
-            .Where(v => v.PatientId == patientId && v.TenantId == tenantId && !v.IsDeleted)
+            .Where(v => v.PatientId == patientId && v.TenantId == tenantId && !v.IsDeleted);
+
+        if (callerDoctor != null)
+            recentVisitsQuery = recentVisitsQuery.Where(v => v.DoctorId == callerDoctor.Id);
+
+        var recentVisits = await recentVisitsQuery
             .OrderByDescending(v => v.StartedAt)
             .Take(5)
             .ToListAsync();
@@ -216,6 +310,220 @@ public class VisitService : IVisitService
         return ApiResponse<PatientSummaryDto>.Ok(summary, "Patient summary retrieved successfully");
     }
 
+    public async Task<ApiResponse<List<VisitDto>>> GetMyTodayVisitsAsync(Guid tenantId, Guid doctorUserId)
+    {
+        var doctor = await ResolveCallerDoctorAsync(tenantId, doctorUserId);
+        if (doctor == null)
+            return ApiResponse<List<VisitDto>>.Error("Doctor profile not found");
+
+        var today = DateTime.UtcNow.Date;
+        var tomorrow = today.AddDays(1);
+
+        var visits = await _context.Visits
+            .Include(v => v.Doctor)
+            .Include(v => v.Patient)
+            .Include(v => v.Prescriptions.Where(p => !p.IsDeleted))
+            .Include(v => v.LabRequests.Where(l => !l.IsDeleted))
+            .Include(v => v.Invoice)
+                .ThenInclude(i => i!.Payments.Where(p => !p.IsDeleted))
+            .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.DoctorId == doctor.Id && v.StartedAt >= today && v.StartedAt < tomorrow)
+            .OrderByDescending(v => v.StartedAt)
+            .ToListAsync();
+
+        var patientIds = visits.Select(v => v.PatientId).Distinct().ToList();
+        var chronicByPatientId = await _context.PatientChronicProfiles
+            .Where(c => c.TenantId == tenantId && !c.IsDeleted && patientIds.Contains(c.PatientId))
+            .ToDictionaryAsync(c => c.PatientId, c => c);
+
+        var items = visits.Select(v =>
+        {
+            var dto = MapVisitToDto(v);
+            dto.ChronicProfile = chronicByPatientId.TryGetValue(v.PatientId, out var cp) ? MapChronicProfile(cp) : null;
+            return dto;
+        }).ToList();
+
+        return ApiResponse<List<VisitDto>>.Ok(items, $"Retrieved {visits.Count} visit(s)");
+    }
+
+    public async Task<ApiResponse<PagedResult<PatientDto>>> GetMyPatientsAsync(Guid tenantId, Guid doctorUserId, int pageNumber = 1, int pageSize = 10, string? search = null)
+    {
+        var doctor = await ResolveCallerDoctorAsync(tenantId, doctorUserId);
+        if (doctor == null)
+            return ApiResponse<PagedResult<PatientDto>>.Error("Doctor profile not found");
+
+        var basePatientQuery = _context.Visits
+            .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.DoctorId == doctor.Id)
+            .Select(v => v.PatientId)
+            .Distinct();
+
+        var query = _context.Patients
+            .Include(p => p.User)
+            .Include(p => p.SubProfiles.Where(sp => !sp.IsDeleted))
+            .Where(p => p.TenantId == tenantId && !p.IsDeleted && basePatientQuery.Contains(p.Id));
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(s) || p.Phone.Contains(s));
+        }
+
+        var totalCount = await query.CountAsync();
+        var patients = await query
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = patients.Select(p => new PatientDto
+        {
+            Id = p.Id,
+            UserId = p.UserId,
+            Name = p.Name,
+            Phone = p.Phone,
+            DateOfBirth = p.DateOfBirth,
+            Gender = p.Gender,
+            Address = p.Address,
+            Notes = p.Notes,
+            IsDefault = p.IsDefault,
+            ParentPatientId = p.ParentPatientId,
+            Username = p.User.UserName ?? string.Empty,
+            SubProfiles = p.SubProfiles.Select(sp => new PatientSubProfileDto
+            {
+                Id = sp.Id,
+                Name = sp.Name,
+                Phone = sp.Phone,
+                DateOfBirth = sp.DateOfBirth,
+                Gender = sp.Gender,
+                IsDefault = sp.IsDefault
+            }).ToList(),
+            CreatedAt = p.CreatedAt
+        }).ToList();
+
+        return ApiResponse<PagedResult<PatientDto>>.Ok(new PagedResult<PatientDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        }, $"Retrieved {items.Count} patient(s)");
+    }
+
+    public async Task<ApiResponse<PagedResult<VisitDto>>> GetPatientVisitsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId, int pageNumber = 1, int pageSize = 10)
+    {
+        var profile = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId && p.TenantId == tenantId && !p.IsDeleted);
+        if (profile == null)
+            return ApiResponse<PagedResult<VisitDto>>.Error("Patient profile not found");
+
+        if (profile.UserId != patientUserId)
+            return ApiResponse<PagedResult<VisitDto>>.Error("Access denied to requested patient profile");
+
+        return await GetPatientVisitsAsync(tenantId, patientId, callerUserId: Guid.Empty, pageNumber, pageSize);
+    }
+
+    public async Task<ApiResponse<PatientSummaryDto>> GetPatientSummaryForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)
+    {
+        var profile = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId && p.TenantId == tenantId && !p.IsDeleted);
+        if (profile == null)
+            return ApiResponse<PatientSummaryDto>.Error("Patient profile not found");
+
+        if (profile.UserId != patientUserId)
+            return ApiResponse<PatientSummaryDto>.Error("Access denied to requested patient profile");
+
+        var visits = await _context.Visits
+            .Include(v => v.Doctor)
+            .Where(v => v.PatientId == patientId && v.TenantId == tenantId && !v.IsDeleted)
+            .OrderByDescending(v => v.StartedAt)
+            .ToListAsync();
+
+        var summary = new PatientSummaryDto
+        {
+            PatientId = profile.Id,
+            Name = profile.Name,
+            Phone = profile.Phone,
+            DateOfBirth = profile.DateOfBirth,
+            Gender = profile.Gender.ToString(),
+            TotalVisits = visits.Count,
+            RecentVisits = visits.Take(5).Select(v => new VisitSummaryDto
+            {
+                Id = v.Id,
+                DoctorName = v.Doctor?.Name ?? string.Empty,
+                Complaint = v.Complaint,
+                Diagnosis = v.Diagnosis,
+                StartedAt = v.StartedAt,
+                CompletedAt = v.CompletedAt
+            }).ToList()
+        };
+
+        return ApiResponse<PatientSummaryDto>.Ok(summary, "Patient summary retrieved successfully");
+    }
+
+    public async Task<ApiResponse<List<StaleOpenVisitDto>>> GetStaleOpenVisitsAsync(Guid tenantId, int olderThanHours = 12)
+    {
+        var safeHours = Math.Max(olderThanHours, 1);
+        var threshold = DateTime.UtcNow.AddHours(-safeHours);
+
+        var staleVisits = await _context.Visits
+            .Include(v => v.Patient)
+            .Include(v => v.Doctor)
+            .Include(v => v.QueueTicket)
+            .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.Status == VisitStatus.Open && v.StartedAt <= threshold)
+            .OrderBy(v => v.StartedAt)
+            .ToListAsync();
+
+        var dtos = staleVisits.Select(v => new StaleOpenVisitDto
+        {
+            VisitId = v.Id,
+            PatientId = v.PatientId,
+            PatientName = v.Patient?.Name ?? string.Empty,
+            DoctorId = v.DoctorId,
+            DoctorName = v.Doctor?.Name ?? string.Empty,
+            QueueTicketId = v.QueueTicketId,
+            Complaint = v.Complaint,
+            StartedAt = v.StartedAt,
+            AgeHours = (DateTime.UtcNow - v.StartedAt).TotalHours,
+            HasActiveQueueTicket = v.QueueTicket != null &&
+                (v.QueueTicket.Status == TicketStatus.Waiting || v.QueueTicket.Status == TicketStatus.Called || v.QueueTicket.Status == TicketStatus.InVisit)
+        }).ToList();
+
+        return ApiResponse<List<StaleOpenVisitDto>>.Ok(dtos, $"Retrieved {dtos.Count} stale open visit(s)");
+    }
+
+    public async Task<ApiResponse<VisitDto>> CloseStaleVisitAsync(Guid tenantId, Guid visitId, CloseStaleVisitRequest request)
+    {
+        var visit = await _context.Visits
+            .Include(v => v.QueueTicket)
+            .FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);
+        if (visit == null)
+            return ApiResponse<VisitDto>.Error("Visit not found");
+
+        if (visit.Status != VisitStatus.Open)
+            return ApiResponse<VisitDto>.Error("Visit is already closed");
+
+        visit.Status = VisitStatus.Completed;
+        visit.CompletedAt = DateTime.UtcNow;
+        visit.LifecycleState = EncounterLifecycleState.MedicallyCompleted;
+        visit.MedicallyCompletedAt = DateTime.UtcNow;
+        visit.Notes = string.IsNullOrWhiteSpace(visit.Notes)
+            ? $"Stale open visit closed by maintenance. {request.ResolutionNote}".Trim()
+            : $"{visit.Notes} | Stale open visit closed by maintenance. {request.ResolutionNote}".Trim();
+
+        if (visit.QueueTicket != null && request.MarkQueueTicketNoShow)
+        {
+            if (visit.QueueTicket.Status == TicketStatus.Waiting || visit.QueueTicket.Status == TicketStatus.Called || visit.QueueTicket.Status == TicketStatus.InVisit)
+            {
+                visit.QueueTicket.Status = TicketStatus.NoShow;
+                visit.QueueTicket.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        var saved = await GetVisitWithIncludes(tenantId, visitId);
+        return ApiResponse<VisitDto>.Ok(MapVisitToDto(saved!), "Stale visit closed successfully");
+    }
+
     // ── Helpers ────────────────────────────────────────────────────
 
     private async Task<Visit?> GetVisitWithIncludes(Guid tenantId, Guid id)
@@ -230,17 +538,52 @@ public class VisitService : IVisitService
             .FirstOrDefaultAsync(v => v.Id == id && v.TenantId == tenantId && !v.IsDeleted);
     }
 
+    private async Task<PatientChronicProfile?> GetChronicProfileAsync(Guid tenantId, Guid patientId)
+    {
+        return await _context.PatientChronicProfiles
+            .FirstOrDefaultAsync(c => c.TenantId == tenantId && !c.IsDeleted && c.PatientId == patientId);
+    }
+
+    private static PatientChronicProfileDto? MapChronicProfile(PatientChronicProfile? profile)
+    {
+        if (profile == null)
+            return null;
+
+        return new PatientChronicProfileDto
+        {
+            Id = profile.Id,
+            PatientId = profile.PatientId,
+            Diabetes = profile.Diabetes,
+            Hypertension = profile.Hypertension,
+            CardiacDisease = profile.CardiacDisease,
+            Asthma = profile.Asthma,
+            Other = profile.Other,
+            OtherNotes = profile.OtherNotes,
+            RecordedByUserId = profile.RecordedByUserId,
+            UpdatedAt = profile.UpdatedAt
+        };
+    }
+
     internal static VisitDto MapVisitToDto(Visit v)
     {
         return new VisitDto
         {
             Id = v.Id,
+            VisitType = v.VisitType,
             QueueTicketId = v.QueueTicketId,
             DoctorId = v.DoctorId,
             DoctorName = v.Doctor?.Name ?? string.Empty,
             PatientId = v.PatientId,
             PatientName = v.Patient?.Name ?? string.Empty,
+            PatientPhone = v.Patient?.Phone ?? string.Empty,
+            PatientDateOfBirth = v.Patient?.DateOfBirth,
+            PatientGender = v.Patient?.Gender.ToString() ?? string.Empty,
+            Phone = v.Patient?.Phone ?? string.Empty,
+            DateOfBirth = v.Patient?.DateOfBirth,
+            Gender = v.Patient?.Gender.ToString() ?? string.Empty,
             Status = v.Status,
+            LifecycleState = v.LifecycleState,
+            FinancialState = v.FinancialState,
             Complaint = v.Complaint,
             Diagnosis = v.Diagnosis,
             Notes = v.Notes,
@@ -257,6 +600,9 @@ public class VisitService : IVisitService
             FollowUpDate = v.FollowUpDate,
             StartedAt = v.StartedAt,
             CompletedAt = v.CompletedAt,
+            MedicallyCompletedAt = v.MedicallyCompletedAt,
+            FinanciallySettledAt = v.FinanciallySettledAt,
+            FullyClosedAt = v.FullyClosedAt,
             Prescriptions = v.Prescriptions?.Where(p => !p.IsDeleted).Select(p => new PrescriptionDto
             {
                 Id = p.Id,
@@ -283,15 +629,22 @@ public class VisitService : IVisitService
             Invoice = v.Invoice != null && !v.Invoice.IsDeleted ? new InvoiceDto
             {
                 Id = v.Invoice.Id,
+                InvoiceNumber = v.Invoice.InvoiceNumber,
                 VisitId = v.Invoice.VisitId,
                 PatientId = v.Invoice.PatientId,
-                PatientName = v.Patient?.Name ?? string.Empty,
+                PatientName = v.Patient?.Name ?? v.Invoice.PatientNameSnapshot,
+                PatientPhone = v.Patient?.Phone ?? v.Invoice.PatientPhoneSnapshot,
                 DoctorId = v.Invoice.DoctorId,
                 DoctorName = v.Doctor?.Name ?? string.Empty,
                 Amount = v.Invoice.Amount,
                 PaidAmount = v.Invoice.PaidAmount,
                 RemainingAmount = v.Invoice.RemainingAmount,
                 Status = v.Invoice.Status,
+                IsServiceRendered = v.Invoice.IsServiceRendered,
+                CreditAmount = v.Invoice.CreditAmount,
+                HasPendingSettlement = v.Invoice.HasPendingSettlement,
+                PendingSettlementAmount = v.Invoice.PendingSettlementAmount,
+                CreditIssuedAt = v.Invoice.CreditIssuedAt,
                 Notes = v.Invoice.Notes,
                 Payments = v.Invoice.Payments?.Where(p => !p.IsDeleted).Select(p => new PaymentDto
                 {
@@ -308,5 +661,20 @@ public class VisitService : IVisitService
             } : null,
             CreatedAt = v.CreatedAt
         };
+    }
+
+    private async Task<Doctor?> ResolveCallerDoctorAsync(Guid tenantId, Guid callerUserId)
+    {
+        var isDoctorRole = await (from ur in _context.UserRoles
+                                  join r in _context.Roles on ur.RoleId equals r.Id
+                                  where ur.UserId == callerUserId && r.NormalizedName == "DOCTOR"
+                                  select ur.UserId)
+            .AnyAsync();
+
+        if (!isDoctorRole)
+            return null;
+
+        return await _context.Doctors
+            .FirstOrDefaultAsync(d => d.UserId == callerUserId && d.TenantId == tenantId && !d.IsDeleted);
     }
 }

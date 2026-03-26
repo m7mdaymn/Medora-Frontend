@@ -11,6 +11,9 @@ public class PublicClinicDto
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? LogoUrl { get; set; }
+    public string? ImgUrl { get; set; }
+    public string? Description { get; set; }
+    public Dictionary<string, string> SocialLinks { get; set; } = new();
     public bool BookingEnabled { get; set; }
     public string TenantSlug { get; set; } = string.Empty;
     public bool IsActive { get; set; }

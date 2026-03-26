@@ -28,7 +28,7 @@ public class QueueSessionsController : ControllerBase
     /// Open a new queue session (ClinicOwner, ClinicManager, or Doctor for own session)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueSessionDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueSessionDto>>> OpenSession([FromBody] CreateQueueSessionRequest request)
@@ -36,7 +36,7 @@ public class QueueSessionsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueSessionDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.OpenSessionAsync(_tenantContext.TenantId, request);
+        var result = await _queueService.OpenSessionAsync(_tenantContext.TenantId, request, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -48,15 +48,15 @@ public class QueueSessionsController : ControllerBase
     /// Close a queue session — remaining Waiting/Called tickets become NoShow
     /// </summary>
     [HttpPost("{id:guid}/close")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueSessionDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
-    public async Task<ActionResult<ApiResponse<QueueSessionDto>>> CloseSession(Guid id)
+    public async Task<ActionResult<ApiResponse<QueueSessionDto>>> CloseSession(Guid id, [FromQuery] bool force = false)
     {
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueSessionDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.CloseSessionAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.CloseSessionAsync(_tenantContext.TenantId, id, GetCurrentUserId(), force);
         if (!result.Success)
             return BadRequest(result);
 
@@ -68,7 +68,7 @@ public class QueueSessionsController : ControllerBase
     /// Remaining Waiting/Called tickets become NoShow.
     /// </summary>
     [HttpPost("close-all")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<int>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<int>>> CloseAllSessions([FromQuery] DateTime? date)
@@ -88,7 +88,7 @@ public class QueueSessionsController : ControllerBase
     /// List all queue sessions (paginated)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<QueueSessionDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<QueueSessionDto>>>> GetSessions(
         [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -104,7 +104,7 @@ public class QueueSessionsController : ControllerBase
     /// Get session by ID with ticket summary
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueSessionDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<QueueSessionDto>>> GetSession(Guid id)
@@ -112,7 +112,7 @@ public class QueueSessionsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueSessionDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.GetSessionByIdAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.GetSessionByIdAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return NotFound(result);
 
@@ -123,7 +123,7 @@ public class QueueSessionsController : ControllerBase
     /// Get all tickets for a session (ordered: urgent first, then by issued time)
     /// </summary>
     [HttpGet("{id:guid}/tickets")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<QueueTicketDto>>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<ActionResult<ApiResponse<List<QueueTicketDto>>>> GetTickets(Guid id)
@@ -131,10 +131,12 @@ public class QueueSessionsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<List<QueueTicketDto>>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.GetTicketsBySessionAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.GetTicketsBySessionAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return NotFound(result);
 
         return Ok(result);
     }
+
+    private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 }

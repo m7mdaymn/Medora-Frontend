@@ -31,8 +31,8 @@ public class FinanceService : IFinanceService
         var dto = new DailyRevenueDto
         {
             Date = dayStart,
-            TotalRevenue = invoices.Sum(i => i.Amount),
-            TotalPaid = payments.Sum(p => p.Amount),
+            TotalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount),
+            TotalPaid = invoices.Sum(i => i.PaidAmount),
             TotalUnpaid = invoices.Sum(i => i.RemainingAmount),
             InvoiceCount = invoices.Count,
             PaymentCount = payments.Count
@@ -41,7 +41,7 @@ public class FinanceService : IFinanceService
         return ApiResponse<DailyRevenueDto>.Ok(dto, "Daily revenue retrieved");
     }
 
-    public async Task<ApiResponse<List<DoctorRevenueDto>>> GetRevenueByDoctorAsync(Guid tenantId, DateTime date, Guid? doctorId)
+    public async Task<ApiResponse<List<DoctorRevenueDto>>> GetRevenueByDoctorAsync(Guid tenantId, DateTime date, Guid? doctorId, decimal commissionPercent = 0)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
@@ -53,15 +53,19 @@ public class FinanceService : IFinanceService
         if (doctorId.HasValue)
             query = query.Where(i => i.DoctorId == doctorId.Value);
 
+        var safeCommissionPercent = Math.Max(commissionPercent, 0);
+
         var grouped = await query
             .GroupBy(i => new { i.DoctorId, DoctorName = i.Doctor.Name })
             .Select(g => new DoctorRevenueDto
             {
                 DoctorId = g.Key.DoctorId,
                 DoctorName = g.Key.DoctorName,
-                TotalRevenue = g.Sum(i => i.Amount),
+                TotalRevenue = g.Where(i => i.IsServiceRendered).Sum(i => i.Amount),
                 TotalPaid = g.Sum(i => i.PaidAmount),
-                VisitCount = g.Count()
+                VisitCount = g.Count(),
+                CommissionPercent = safeCommissionPercent,
+                CommissionAmount = g.Sum(i => i.PaidAmount) * safeCommissionPercent / 100m
             })
             .ToListAsync();
 
@@ -81,9 +85,11 @@ public class FinanceService : IFinanceService
             .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= monthStart && e.ExpenseDate < monthEnd)
             .ToListAsync();
 
-        var totalRevenue = invoices.Sum(i => i.Amount);
+        var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
         var totalPaid = invoices.Sum(i => i.PaidAmount);
         var totalExpenses = expenses.Sum(e => e.Amount);
+        var salaryExpenses = expenses.Where(e => IsSalaryCategory(e.Category)).Sum(e => e.Amount);
+        var nonSalaryExpenses = totalExpenses - salaryExpenses;
 
         var dto = new MonthlyRevenueDto
         {
@@ -92,6 +98,8 @@ public class FinanceService : IFinanceService
             TotalRevenue = totalRevenue,
             TotalPaid = totalPaid,
             TotalExpenses = totalExpenses,
+            SalaryExpenses = salaryExpenses,
+            NonSalaryExpenses = nonSalaryExpenses,
             NetProfit = totalPaid - totalExpenses,
             InvoiceCount = invoices.Count
         };
@@ -112,9 +120,10 @@ public class FinanceService : IFinanceService
             .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= yearStart && e.ExpenseDate < yearEnd)
             .ToListAsync();
 
-        var totalRevenue = invoices.Sum(i => i.Amount);
+        var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
         var totalPaid = invoices.Sum(i => i.PaidAmount);
         var totalExpenses = expenses.Sum(e => e.Amount);
+        var totalSalaryExpenses = expenses.Where(e => IsSalaryCategory(e.Category)).Sum(e => e.Amount);
 
         // Monthly breakdown
         var months = new List<MonthlyRevenueDto>();
@@ -125,9 +134,10 @@ public class FinanceService : IFinanceService
 
             var mInvoices = invoices.Where(i => i.CreatedAt >= ms && i.CreatedAt < me).ToList();
             var mExpenses = expenses.Where(e => e.ExpenseDate >= ms && e.ExpenseDate < me).ToList();
-            var mRev = mInvoices.Sum(i => i.Amount);
+            var mRev = mInvoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
             var mPaid = mInvoices.Sum(i => i.PaidAmount);
             var mExp = mExpenses.Sum(e => e.Amount);
+            var mSalary = mExpenses.Where(e => IsSalaryCategory(e.Category)).Sum(e => e.Amount);
 
             months.Add(new MonthlyRevenueDto
             {
@@ -136,6 +146,8 @@ public class FinanceService : IFinanceService
                 TotalRevenue = mRev,
                 TotalPaid = mPaid,
                 TotalExpenses = mExp,
+                SalaryExpenses = mSalary,
+                NonSalaryExpenses = mExp - mSalary,
                 NetProfit = mPaid - mExp,
                 InvoiceCount = mInvoices.Count
             });
@@ -147,6 +159,8 @@ public class FinanceService : IFinanceService
             TotalRevenue = totalRevenue,
             TotalPaid = totalPaid,
             TotalExpenses = totalExpenses,
+            SalaryExpenses = totalSalaryExpenses,
+            NonSalaryExpenses = totalExpenses - totalSalaryExpenses,
             NetProfit = totalPaid - totalExpenses,
             InvoiceCount = invoices.Count,
             Months = months
@@ -169,9 +183,10 @@ public class FinanceService : IFinanceService
             .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= fromDate && e.ExpenseDate < toDate)
             .ToListAsync();
 
-        var totalRevenue = invoices.Sum(i => i.Amount);
+        var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
         var totalPaid = invoices.Sum(i => i.PaidAmount);
         var totalExpenses = expenses.Sum(e => e.Amount);
+        var salaryExpenses = expenses.Where(e => IsSalaryCategory(e.Category)).Sum(e => e.Amount);
 
         var byDoctor = invoices
             .GroupBy(i => new { i.DoctorId, DoctorName = i.Doctor?.Name ?? "Unknown" })
@@ -179,7 +194,7 @@ public class FinanceService : IFinanceService
             {
                 DoctorId = g.Key.DoctorId,
                 DoctorName = g.Key.DoctorName,
-                TotalRevenue = g.Sum(i => i.Amount),
+                TotalRevenue = g.Where(i => i.IsServiceRendered).Sum(i => i.Amount),
                 TotalPaid = g.Sum(i => i.PaidAmount),
                 VisitCount = g.Count()
             }).ToList();
@@ -191,6 +206,8 @@ public class FinanceService : IFinanceService
             TotalRevenue = totalRevenue,
             TotalPaid = totalPaid,
             TotalExpenses = totalExpenses,
+            SalaryExpenses = salaryExpenses,
+            NonSalaryExpenses = totalExpenses - salaryExpenses,
             NetProfit = totalPaid - totalExpenses,
             InvoiceCount = invoices.Count,
             ExpenseCount = expenses.Count,
@@ -198,5 +215,17 @@ public class FinanceService : IFinanceService
         };
 
         return ApiResponse<ProfitReportDto>.Ok(dto, "Profit report retrieved");
+    }
+
+    private static bool IsSalaryCategory(string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return false;
+
+        var normalized = category.Trim().ToLowerInvariant();
+        return normalized.Contains("salary")
+            || normalized.Contains("payroll")
+            || normalized.Contains("wage")
+            || normalized.Contains("compensation");
     }
 }

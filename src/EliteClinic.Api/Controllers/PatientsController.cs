@@ -164,6 +164,26 @@ public class PatientsController : ControllerBase
     }
 
     /// <summary>
+    /// Send patient credentials to WhatsApp. Optionally regenerates password before sending.
+    /// </summary>
+    [HttpPost("{id:guid}/send-credentials")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<SendPatientCredentialsResponse>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public async Task<ActionResult<ApiResponse<SendPatientCredentialsResponse>>> SendCredentials(Guid id, [FromBody] SendPatientCredentialsRequest? request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<SendPatientCredentialsResponse>.Error("Tenant context not resolved"));
+
+        var payload = request ?? new SendPatientCredentialsRequest();
+        var result = await _patientService.SendCredentialsAsync(_tenantContext.TenantId, id, payload);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Soft-delete a patient (ClinicOwner only)
     /// </summary>
     [HttpDelete("{id:guid}")]

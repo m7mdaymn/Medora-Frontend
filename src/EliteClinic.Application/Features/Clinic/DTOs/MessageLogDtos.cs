@@ -13,9 +13,14 @@ public class MessageLogDto
     public MessageChannel Channel { get; set; }
     public MessageStatus Status { get; set; }
     public int AttemptCount { get; set; }
+    public DateTime? NextAttemptAt { get; set; }
     public DateTime? LastAttemptAt { get; set; }
     public DateTime? SentAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    public string? ProviderMessageId { get; set; }
+    public string? LastProviderStatus { get; set; }
+    public string? ProviderRawResponse { get; set; }
+    public string? RenderedBody { get; set; }
     public string? FailureReason { get; set; }
     public string? Variables { get; set; }
     public DateTime CreatedAt { get; set; }

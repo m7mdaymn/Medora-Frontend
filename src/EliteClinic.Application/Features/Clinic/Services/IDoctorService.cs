@@ -14,4 +14,7 @@ public interface IDoctorService
     Task<ApiResponse<DoctorDto>> DisableDoctorAsync(Guid tenantId, Guid id);
     Task<ApiResponse<List<DoctorServiceDto>>> UpdateServicesAsync(Guid tenantId, Guid doctorId, UpdateDoctorServicesRequest request);
     Task<ApiResponse<DoctorVisitFieldConfigDto>> UpdateVisitFieldsAsync(Guid tenantId, Guid doctorId, UpdateVisitFieldsRequest request);
+    Task<ApiResponse<DoctorDto>> GetMyProfileAsync(Guid tenantId, Guid doctorUserId);
+    Task<ApiResponse<DoctorVisitFieldConfigDto>> GetMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId);
+    Task<ApiResponse<DoctorVisitFieldConfigDto>> UpdateMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId, UpdateVisitFieldsRequest request);
 }

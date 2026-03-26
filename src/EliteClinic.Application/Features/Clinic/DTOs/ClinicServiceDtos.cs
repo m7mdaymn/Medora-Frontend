@@ -29,3 +29,23 @@ public class UpdateClinicServiceRequest
     public int? DefaultDurationMinutes { get; set; }
     public bool? IsActive { get; set; }
 }
+
+public class DoctorClinicServiceLinkDto
+{
+    public Guid LinkId { get; set; }
+    public Guid DoctorId { get; set; }
+    public Guid ClinicServiceId { get; set; }
+    public string ServiceName { get; set; } = string.Empty;
+    public decimal EffectivePrice { get; set; }
+    public int? EffectiveDurationMinutes { get; set; }
+    public decimal? OverridePrice { get; set; }
+    public int? OverrideDurationMinutes { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class UpsertDoctorClinicServiceLinkRequest
+{
+    public decimal? OverridePrice { get; set; }
+    public int? OverrideDurationMinutes { get; set; }
+    public bool IsActive { get; set; } = true;
+}

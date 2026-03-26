@@ -31,20 +31,32 @@ public class QueueTicketDto
 {
     public Guid Id { get; set; }
     public Guid SessionId { get; set; }
+    public Guid? VisitId { get; set; }
+    public Guid? InvoiceId { get; set; }
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public Guid DoctorId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
     public Guid? DoctorServiceId { get; set; }
     public string? ServiceName { get; set; }
+    public decimal? InvoiceAmount { get; set; }
+    public decimal? PaidAmount { get; set; }
+    public decimal? RemainingAmount { get; set; }
+    public InvoiceStatus? InvoiceStatus { get; set; }
     public int TicketNumber { get; set; }
     public TicketStatus Status { get; set; }
     public bool IsUrgent { get; set; }
+    public bool UrgentAccepted { get; set; }
     public DateTime IssuedAt { get; set; }
     public DateTime? CalledAt { get; set; }
     public DateTime? VisitStartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public string? Notes { get; set; }
+    public int? MyQueueNumber { get; set; }
+    public int? CurrentServingNumber { get; set; }
+    public int? PatientsAheadCount { get; set; }
+    public int? EstimatedWaitMinutes { get; set; }
+    public string? EstimatedWaitText { get; set; }
 }
 
 public class CreateQueueTicketRequest
@@ -53,6 +65,7 @@ public class CreateQueueTicketRequest
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public bool IsUrgent { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -65,7 +78,10 @@ public class CreateQueueTicketWithPaymentRequest
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public bool IsUrgent { get; set; }
     public string? Notes { get; set; }
+    public VisitType VisitType { get; set; } = VisitType.Exam;
+    public decimal? PaidAmount { get; set; }
     // Payment info (optional)
     public decimal? PaymentAmount { get; set; }
     public string? PaymentMethod { get; set; }

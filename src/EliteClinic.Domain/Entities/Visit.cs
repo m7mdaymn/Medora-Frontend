@@ -8,10 +8,13 @@ namespace EliteClinic.Domain.Entities;
 /// </summary>
 public class Visit : TenantBaseEntity
 {
+    public VisitType VisitType { get; set; }
     public Guid? QueueTicketId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid PatientId { get; set; }
     public VisitStatus Status { get; set; }
+    public EncounterLifecycleState LifecycleState { get; set; }
+    public EncounterFinancialState FinancialState { get; set; }
     public string? Complaint { get; set; }
     public string? Diagnosis { get; set; }
     public string? Notes { get; set; }
@@ -31,6 +34,9 @@ public class Visit : TenantBaseEntity
     public DateTime? FollowUpDate { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime? MedicallyCompletedAt { get; set; }
+    public DateTime? FinanciallySettledAt { get; set; }
+    public DateTime? FullyClosedAt { get; set; }
 
     public Doctor Doctor { get; set; } = null!;
     public Patient Patient { get; set; } = null!;
@@ -41,7 +47,10 @@ public class Visit : TenantBaseEntity
 
     public Visit()
     {
+        VisitType = VisitType.Exam;
         Status = VisitStatus.Open;
+        LifecycleState = EncounterLifecycleState.InProgress;
+        FinancialState = EncounterFinancialState.NotStarted;
         StartedAt = DateTime.UtcNow;
     }
 }

@@ -68,7 +68,7 @@ public class QueueTicketsController : ControllerBase
     /// Call next patient (Doctor calls a patient from waiting list)
     /// </summary>
     [HttpPost("{id:guid}/call")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueTicketDto>>> CallTicket(Guid id)
@@ -107,7 +107,7 @@ public class QueueTicketsController : ControllerBase
     /// Finish ticket — marks ticket and linked visit as completed
     /// </summary>
     [HttpPost("{id:guid}/finish")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueTicketDto>>> FinishTicket(Guid id)
@@ -134,7 +134,7 @@ public class QueueTicketsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.SkipTicketAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.SkipTicketAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -145,7 +145,7 @@ public class QueueTicketsController : ControllerBase
     /// Cancel ticket — cancel before seeing doctor
     /// </summary>
     [HttpPost("{id:guid}/cancel")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueTicketDto>>> CancelTicket(Guid id)
@@ -153,7 +153,7 @@ public class QueueTicketsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.CancelTicketAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.CancelTicketAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -164,7 +164,7 @@ public class QueueTicketsController : ControllerBase
     /// Mark ticket as urgent — elevates priority in the queue
     /// </summary>
     [HttpPost("{id:guid}/urgent")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<QueueTicketDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<QueueTicketDto>>> MarkUrgent(Guid id)
@@ -172,7 +172,7 @@ public class QueueTicketsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.MarkUrgentAsync(_tenantContext.TenantId, id);
+        var result = await _queueService.MarkUrgentAsync(_tenantContext.TenantId, id, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 

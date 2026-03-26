@@ -17,6 +17,9 @@ public class DoctorDto
     public bool IsEnabled { get; set; }
     public string Username { get; set; } = string.Empty;
     public UrgentCaseMode UrgentCaseMode { get; set; }
+    public bool UrgentEnabled { get; set; }
+    public int? UrgentInsertAfterCount { get; set; }
+    public bool SupportsUrgent { get; set; }
     public int AvgVisitDurationMinutes { get; set; }
     public List<DoctorServiceDto> Services { get; set; } = new();
     public DoctorVisitFieldConfigDto? VisitFieldConfig { get; set; }
@@ -47,6 +50,9 @@ public class CreateDoctorRequest
     public string? PhotoUrl { get; set; }
 
     public UrgentCaseMode UrgentCaseMode { get; set; } = UrgentCaseMode.UrgentNext;
+    public bool? UrgentEnabled { get; set; }
+    [Range(0, 3, ErrorMessage = "UrgentInsertAfterCount must be between 0 and 3")]
+    public int? UrgentInsertAfterCount { get; set; }
 
     [Range(1, 120, ErrorMessage = "AvgVisitDurationMinutes must be between 1 and 120")]
     public int AvgVisitDurationMinutes { get; set; } = 15;
@@ -68,6 +74,9 @@ public class UpdateDoctorRequest
     public string? PhotoUrl { get; set; }
 
     public UrgentCaseMode UrgentCaseMode { get; set; } = UrgentCaseMode.UrgentNext;
+    public bool? UrgentEnabled { get; set; }
+    [Range(0, 3, ErrorMessage = "UrgentInsertAfterCount must be between 0 and 3")]
+    public int? UrgentInsertAfterCount { get; set; }
 
     [Range(1, 120)]
     public int AvgVisitDurationMinutes { get; set; } = 15;
@@ -81,6 +90,8 @@ public class PatchDoctorRequest
     public string? Bio { get; set; }
     public string? PhotoUrl { get; set; }
     public UrgentCaseMode? UrgentCaseMode { get; set; }
+    public bool? UrgentEnabled { get; set; }
+    [Range(0, 3)] public int? UrgentInsertAfterCount { get; set; }
     [Range(1, 120)] public int? AvgVisitDurationMinutes { get; set; }
 }
 

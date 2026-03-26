@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Auth.DTOs;
 using EliteClinic.Application.Features.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EliteClinic.Api.Controllers;
 
@@ -26,6 +27,7 @@ public class AuthController : ControllerBase
     /// <param name="tenantSlug">Tenant slug from X-Tenant header (optional for SuperAdmin)</param>
     /// <returns>JWT token and user info</returns>
     [HttpPost("login")]
+    [EnableRateLimiting("AuthPolicy")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 401)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -62,6 +64,7 @@ public class AuthController : ControllerBase
     /// <param name="tenantSlug">Tenant slug from X-Tenant header (required)</param>
     /// <returns>JWT token and patient info with profiles</returns>
     [HttpPost("patient/login")]
+    [EnableRateLimiting("AuthPolicy")]
     [ProducesResponseType(typeof(ApiResponse<PatientLoginResponse>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 401)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -85,7 +88,17 @@ public class AuthController : ControllerBase
             return BadRequest(ApiResponse<PatientLoginResponse>.ValidationError(errors));
         }
 
-        var result = await _authService.PatientLoginAsync(request.Username, request.Password, tenantSlug);
+        PatientLoginResponse? result;
+        try
+        {
+            result = await _authService.PatientLoginAsync(request.Username, request.Password, tenantSlug);
+        }
+        catch (UnauthorizedAccessException ex) when (ex.Message == "NON_PATIENT_LOGIN_FORBIDDEN")
+        {
+            _logger.LogWarning("Forbidden patient-login attempt by non-patient user: {Username}", request.Username);
+            return StatusCode(403, ApiResponse<PatientLoginResponse>.Error("Only patient users can authenticate using patient login"));
+        }
+
         if (result == null)
         {
             _logger.LogWarning("Failed patient login attempt for user: {Username}", request.Username);
@@ -102,6 +115,7 @@ public class AuthController : ControllerBase
     /// <param name="request">Refresh token from login response</param>
     /// <returns>New JWT token and refresh token</returns>
     [HttpPost("refresh")]
+    [EnableRateLimiting("AuthPolicy")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 401)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -134,6 +148,11 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<UserInfoDto>>> GetMe(
         [FromHeader(Name = "X-Tenant")] string? tenantSlug = null)
     {
+        if (!User.IsInRole("SuperAdmin") && string.IsNullOrWhiteSpace(tenantSlug))
+        {
+            return BadRequest(ApiResponse<UserInfoDto>.Error("X-Tenant header is required for tenant users"));
+        }
+
         var user = await _authService.GetCurrentUserAsync(User, tenantSlug);
         if (user == null)
         {

@@ -99,4 +99,23 @@ public class LabRequestsController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Delete a diagnostic request (lab or radiology/imaging)
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<LabRequestDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<LabRequestDto>>> Delete(Guid visitId, Guid id)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<LabRequestDto>.Error("Tenant context not resolved"));
+
+        var result = await _labRequestService.DeleteAsync(_tenantContext.TenantId, visitId, id, GetCurrentUserId());
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

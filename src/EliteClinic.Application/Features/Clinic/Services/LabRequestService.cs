@@ -82,6 +82,35 @@ public class LabRequestService : ILabRequestService
         return ApiResponse<LabRequestDto>.Ok(MapToDto(labRequest), "Lab result recorded successfully");
     }
 
+    public async Task<ApiResponse<LabRequestDto>> DeleteAsync(Guid tenantId, Guid visitId, Guid labId, Guid callerUserId)
+    {
+        var visit = await _context.Visits
+            .FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);
+        if (visit == null)
+            return ApiResponse<LabRequestDto>.Error("Visit not found");
+
+        var doctor = await _context.Doctors
+            .FirstOrDefaultAsync(d => d.UserId == callerUserId && d.TenantId == tenantId && !d.IsDeleted);
+        if (doctor != null)
+        {
+            if (visit.DoctorId != doctor.Id)
+                return ApiResponse<LabRequestDto>.Error("Doctors can only delete diagnostics from their own visits");
+
+            if (visit.StartedAt.Date != DateTime.UtcNow.Date)
+                return ApiResponse<LabRequestDto>.Error("Doctors can only delete diagnostics from today's visits");
+        }
+
+        var labRequest = await _context.LabRequests
+            .FirstOrDefaultAsync(l => l.Id == labId && l.VisitId == visitId && l.TenantId == tenantId && !l.IsDeleted);
+        if (labRequest == null)
+            return ApiResponse<LabRequestDto>.Error("Diagnostic request not found");
+
+        _context.LabRequests.Remove(labRequest);
+        await _context.SaveChangesAsync();
+
+        return ApiResponse<LabRequestDto>.Ok(MapToDto(labRequest), "Diagnostic request deleted successfully");
+    }
+
     public async Task<ApiResponse<List<LabRequestDto>>> GetByVisitAsync(Guid tenantId, Guid visitId, LabRequestType? type = null)
     {
         var visit = await _context.Visits.FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);

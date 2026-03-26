@@ -12,5 +12,7 @@ public interface IPatientService
     Task<ApiResponse<PatientDto>> PatchPatientAsync(Guid tenantId, Guid id, PatchPatientRequest request);
     Task<ApiResponse<PatientDto>> AddSubProfileAsync(Guid tenantId, Guid parentId, AddSubProfileRequest request);
     Task<ApiResponse<ResetPasswordResponse>> ResetPasswordAsync(Guid tenantId, Guid id);
+    Task<ApiResponse<SendPatientCredentialsResponse>> SendCredentialsAsync(Guid tenantId, Guid id, SendPatientCredentialsRequest request);
+    Task<ApiResponse<PatientDto>> GetOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId);
     Task<ApiResponse<object>> DeletePatientAsync(Guid tenantId, Guid id);
 }

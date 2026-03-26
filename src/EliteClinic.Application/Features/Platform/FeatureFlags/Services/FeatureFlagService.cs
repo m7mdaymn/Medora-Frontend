@@ -63,6 +63,12 @@ public class FeatureFlagService : IFeatureFlagService
         featureFlags.AdvancedMedicalTemplates = request.AdvancedMedicalTemplates;
         featureFlags.Ratings = request.Ratings;
         featureFlags.Export = request.Export;
+        featureFlags.ConsultationVisitTypeEnabled = request.ConsultationVisitTypeEnabled;
+        featureFlags.UrgentInsertPolicyEnabled = request.UrgentInsertPolicyEnabled;
+        featureFlags.EncounterPendingSettlementEnabled = request.EncounterPendingSettlementEnabled;
+        featureFlags.PatientDocumentsEnabled = request.PatientDocumentsEnabled;
+        featureFlags.CompensationRulesEnabled = request.CompensationRulesEnabled;
+        featureFlags.DailyClosingSnapshotEnabled = request.DailyClosingSnapshotEnabled;
 
         await _context.SaveChangesAsync();
 
@@ -80,6 +86,12 @@ public class FeatureFlagService : IFeatureFlagService
         ExpensesModule = featureFlags.ExpensesModule,
         AdvancedMedicalTemplates = featureFlags.AdvancedMedicalTemplates,
         Ratings = featureFlags.Ratings,
-        Export = featureFlags.Export
+        Export = featureFlags.Export,
+        ConsultationVisitTypeEnabled = featureFlags.ConsultationVisitTypeEnabled,
+        UrgentInsertPolicyEnabled = featureFlags.UrgentInsertPolicyEnabled,
+        EncounterPendingSettlementEnabled = featureFlags.EncounterPendingSettlementEnabled,
+        PatientDocumentsEnabled = featureFlags.PatientDocumentsEnabled,
+        CompensationRulesEnabled = featureFlags.CompensationRulesEnabled,
+        DailyClosingSnapshotEnabled = featureFlags.DailyClosingSnapshotEnabled
     };
 }

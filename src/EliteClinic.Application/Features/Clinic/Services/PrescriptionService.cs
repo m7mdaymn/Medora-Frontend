@@ -10,10 +10,12 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 public class PrescriptionService : IPrescriptionService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly IMessageService _messageService;
 
-    public PrescriptionService(EliteClinicDbContext context)
+    public PrescriptionService(EliteClinicDbContext context, IMessageService messageService)
     {
         _context = context;
+        _messageService = messageService;
     }
 
     public async Task<ApiResponse<PrescriptionDto>> CreateAsync(Guid tenantId, Guid visitId, CreatePrescriptionRequest request, Guid callerUserId)
@@ -38,6 +40,22 @@ public class PrescriptionService : IPrescriptionService
 
         _context.Prescriptions.Add(prescription);
         await _context.SaveChangesAsync();
+
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == visit.PatientId);
+
+        await _messageService.LogWorkflowEventAsync(
+            tenantId,
+            nameof(MessageScenario.MedicationReminder),
+            recipientUserId: patient?.UserId,
+            recipientPhone: patient?.Phone,
+            variables: new Dictionary<string, string>
+            {
+                ["medicationName"] = prescription.MedicationName,
+                ["dosage"] = prescription.Dosage ?? string.Empty,
+                ["frequency"] = prescription.Frequency ?? string.Empty,
+                ["notes"] = prescription.Instructions ?? string.Empty
+            });
 
         return ApiResponse<PrescriptionDto>.Created(MapToDto(prescription), "Prescription added successfully");
     }
