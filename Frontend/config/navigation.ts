@@ -112,12 +112,30 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         icon: PieChart,
         roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
       },
-      // {
-      //   title: 'تعاقدات الشركات', // أوضح من كلمة تعاقدات مبهمة
-      //   href: '/contracts',
-      //   icon: Handshake,
-      //   roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
-      // },
+      {
+        title: 'تعاقدات الشركاء',
+        href: '/contracts',
+        icon: Handshake,
+        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
+      },
+    ],
+  },
+
+  {
+    label: 'بوابة المتعاقد',
+    items: [
+      {
+        title: 'طلبات الخدمات',
+        href: '/contractor/orders',
+        icon: Handshake,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'دليل الخدمات',
+        href: '/contractor/services',
+        icon: ClipboardList,
+        roles: ['Contractor'],
+      },
     ],
   },
 

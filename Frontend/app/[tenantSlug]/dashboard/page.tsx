@@ -25,6 +25,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     redirect(`/${tenantSlug}/dashboard/doctor/queue`)
   }
 
+  if (role === 'Contractor') {
+    redirect(`/${tenantSlug}/dashboard/contractor/orders`)
+  }
+
   if (!role) {
     return <div className='p-4 text-center'>غير مصرح لك بالدخول، يرجى تسجيل الدخول.</div>
   }
@@ -36,6 +40,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
     case 'Receptionist':
       return <div className='p-4 font-bold'>داشبورد الاستقبال (قيد الإنشاء)</div>
+
+    case 'Contractor':
+      return <div className='p-4 font-bold'>بوابة المتعاقد (قيد التجهيز)</div>
 
     default:
       return <div className='p-4 text-center'>لا توجد لوحة تحكم مخصصة لصلاحياتك.</div>
