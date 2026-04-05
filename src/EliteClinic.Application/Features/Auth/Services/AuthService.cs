@@ -338,6 +338,11 @@ public class AuthService : IAuthService
             {
                 "queue.view", "booking.create", "profile.view"
             },
+            "Contractor" => new List<string>
+            {
+                "partner.order.view", "partner.order.accept", "partner.order.schedule",
+                "partner.order.arrived", "partner.order.result", "partner.service.manage"
+            },
             _ => new List<string>()
         };
     }

@@ -2,27 +2,23 @@ using EliteClinic.Domain.Enums;
 
 namespace EliteClinic.Domain.Entities;
 
-public class PartnerContract : TenantBaseEntity
+public class PartnerServiceCatalogItem : TenantBaseEntity
 {
     public Guid PartnerId { get; set; }
     public Guid? BranchId { get; set; }
-    public string? ServiceScope { get; set; }
-    public decimal? CommissionPercentage { get; set; }
+    public string ServiceName { get; set; } = string.Empty;
+    public decimal Price { get; set; }
     public PartnerSettlementTarget SettlementTarget { get; set; }
+    public decimal SettlementPercentage { get; set; }
     public decimal? ClinicDoctorSharePercentage { get; set; }
-    public decimal? FlatFee { get; set; }
-    public DateTime EffectiveFrom { get; set; }
-    public DateTime? EffectiveTo { get; set; }
     public bool IsActive { get; set; } = true;
     public string? Notes { get; set; }
 
     public Partner Partner { get; set; } = null!;
     public Branch? Branch { get; set; }
-    public ICollection<PartnerOrder> Orders { get; set; } = new List<PartnerOrder>();
 
-    public PartnerContract()
+    public PartnerServiceCatalogItem()
     {
-        EffectiveFrom = DateTime.UtcNow;
         SettlementTarget = PartnerSettlementTarget.Clinic;
     }
 }

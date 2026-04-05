@@ -64,6 +64,8 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<SalesInvoiceLineItem> SalesInvoiceLineItems { get; set; }
     public DbSet<Partner> Partners { get; set; }
     public DbSet<PartnerContract> PartnerContracts { get; set; }
+    public DbSet<PartnerServiceCatalogItem> PartnerServiceCatalogItems { get; set; }
+    public DbSet<PartnerUser> PartnerUsers { get; set; }
     public DbSet<PartnerOrder> PartnerOrders { get; set; }
     public DbSet<PartnerOrderStatusHistory> PartnerOrderStatusHistories { get; set; }
 
@@ -935,6 +937,8 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ServiceScope).HasMaxLength(200);
             entity.Property(e => e.CommissionPercentage).HasPrecision(18, 4);
+            entity.Property(e => e.SettlementTarget).HasConversion<int>();
+            entity.Property(e => e.ClinicDoctorSharePercentage).HasPrecision(18, 4);
             entity.Property(e => e.FlatFee).HasPrecision(18, 2);
             entity.Property(e => e.Notes).HasMaxLength(2000);
             entity.HasIndex(e => new { e.TenantId, e.PartnerId, e.BranchId, e.EffectiveFrom });
@@ -950,11 +954,58 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
+        builder.Entity<PartnerServiceCatalogItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ServiceName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.Property(e => e.SettlementTarget).HasConversion<int>();
+            entity.Property(e => e.SettlementPercentage).HasPrecision(18, 4);
+            entity.Property(e => e.ClinicDoctorSharePercentage).HasPrecision(18, 4);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => new { e.TenantId, e.PartnerId, e.BranchId, e.ServiceName }).HasFilter("[IsDeleted] = 0");
+
+            entity.HasOne(e => e.Partner)
+                .WithMany(p => p.ServiceCatalogItems)
+                .HasForeignKey(e => e.PartnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Branch)
+                .WithMany()
+                .HasForeignKey(e => e.BranchId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<PartnerUser>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.PartnerId, e.UserId }).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => new { e.TenantId, e.UserId, e.IsActive });
+
+            entity.HasOne(e => e.Partner)
+                .WithMany(p => p.PartnerUsers)
+                .HasForeignKey(e => e.PartnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         builder.Entity<PartnerOrder>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.PartnerType).HasConversion<int>();
             entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.ServiceNameSnapshot).HasMaxLength(200);
+            entity.Property(e => e.ServicePrice).HasPrecision(18, 2);
+            entity.Property(e => e.SettlementTarget).HasConversion<int>();
+            entity.Property(e => e.SettlementPercentage).HasPrecision(18, 4);
+            entity.Property(e => e.ClinicDoctorSharePercentage).HasPrecision(18, 4);
+            entity.Property(e => e.DoctorPayoutAmount).HasPrecision(18, 2);
+            entity.Property(e => e.ClinicRevenueAmount).HasPrecision(18, 2);
+            entity.Property(e => e.ResultSummary).HasMaxLength(4000);
             entity.Property(e => e.EstimatedCost).HasPrecision(18, 2);
             entity.Property(e => e.FinalCost).HasPrecision(18, 2);
             entity.Property(e => e.ExternalReference).HasMaxLength(120);
@@ -971,6 +1022,11 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasOne(e => e.PartnerContract)
                 .WithMany(c => c.Orders)
                 .HasForeignKey(e => e.PartnerContractId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.PartnerServiceCatalogItem)
+                .WithMany()
+                .HasForeignKey(e => e.PartnerServiceCatalogItemId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(e => e.Branch)
@@ -1268,6 +1324,8 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<SalesInvoiceLineItem>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<Partner>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<PartnerContract>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PartnerServiceCatalogItem>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<PartnerUser>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<PartnerOrder>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<PartnerOrderStatusHistory>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
 

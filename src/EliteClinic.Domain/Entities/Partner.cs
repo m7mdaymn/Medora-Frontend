@@ -15,4 +15,6 @@ public class Partner : TenantBaseEntity
 
     public ICollection<PartnerContract> Contracts { get; set; } = new List<PartnerContract>();
     public ICollection<PartnerOrder> Orders { get; set; } = new List<PartnerOrder>();
+    public ICollection<PartnerServiceCatalogItem> ServiceCatalogItems { get; set; } = new List<PartnerServiceCatalogItem>();
+    public ICollection<PartnerUser> PartnerUsers { get; set; } = new List<PartnerUser>();
 }

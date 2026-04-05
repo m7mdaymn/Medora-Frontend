@@ -5,6 +5,7 @@ using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EliteClinic.Api.Controllers;
 
@@ -21,6 +22,8 @@ public class PartnersController : ControllerBase
         _partnerService = partnerService;
         _tenantContext = tenantContext;
     }
+
+    private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
     [HttpGet]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
@@ -86,6 +89,22 @@ public class PartnersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{partnerId:guid}/users")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerUserDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerUserDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerUserDto>>> CreatePartnerUser(Guid partnerId, [FromBody] CreatePartnerUserRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerUserDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.CreatePartnerUserAsync(_tenantContext.TenantId, partnerId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
     [HttpGet("contracts")]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<List<PartnerContractDto>>), 200)]
@@ -124,6 +143,50 @@ public class PartnersController : ControllerBase
             return BadRequest(ApiResponse<PartnerContractDto>.Error("Tenant context not resolved"));
 
         var result = await _partnerService.UpdateContractAsync(_tenantContext.TenantId, contractId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("services")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,Contractor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<PartnerServiceCatalogItemDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<PartnerServiceCatalogItemDto>>>> ListServices([FromQuery] PartnerServiceCatalogQuery query)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<PartnerServiceCatalogItemDto>>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.ListServiceCatalogAsync(_tenantContext.TenantId, GetCurrentUserId(), query);
+        return Ok(result);
+    }
+
+    [HttpPost("services")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Contractor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerServiceCatalogItemDto>>> CreateService([FromBody] CreatePartnerServiceCatalogItemRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerServiceCatalogItemDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.CreateServiceCatalogItemAsync(_tenantContext.TenantId, GetCurrentUserId(), request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    [HttpPut("services/{itemId:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Contractor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerServiceCatalogItemDto>>> UpdateService(Guid itemId, [FromBody] UpdatePartnerServiceCatalogItemRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerServiceCatalogItemDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.UpdateServiceCatalogItemAsync(_tenantContext.TenantId, GetCurrentUserId(), itemId, request);
         if (!result.Success)
             return BadRequest(result);
 

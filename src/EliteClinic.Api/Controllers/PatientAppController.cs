@@ -18,19 +18,22 @@ public class PatientAppController : ControllerBase
     private readonly IVisitService _visitService;
     private readonly IQueueService _queueService;
     private readonly IBookingService _bookingService;
+    private readonly IPartnerService _partnerService;
 
     public PatientAppController(
         ITenantContext tenantContext,
         IPatientService patientService,
         IVisitService visitService,
         IQueueService queueService,
-        IBookingService bookingService)
+        IBookingService bookingService,
+        IPartnerService partnerService)
     {
         _tenantContext = tenantContext;
         _patientService = patientService;
         _visitService = visitService;
         _queueService = queueService;
         _bookingService = bookingService;
+        _partnerService = partnerService;
     }
 
     private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -99,6 +102,20 @@ public class PatientAppController : ControllerBase
             return BadRequest(ApiResponse<List<BookingDto>>.Error("Tenant context not resolved"));
 
         var result = await _bookingService.GetBookingsForOwnedProfileAsync(_tenantContext.TenantId, GetCurrentUserId(), patientId);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("profiles/{patientId:guid}/partner-orders")]
+    [ProducesResponseType(typeof(ApiResponse<List<PatientPartnerOrderTimelineDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<PatientPartnerOrderTimelineDto>>>> GetPartnerOrders(Guid patientId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<PatientPartnerOrderTimelineDto>>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.GetPatientTimelineAsync(_tenantContext.TenantId, GetCurrentUserId(), patientId);
         if (!result.Success)
             return BadRequest(result);
 

@@ -296,7 +296,7 @@ async Task SeedDataAsync(EliteClinicDbContext dbContext, IServiceProvider servic
     var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
     // Seed roles
-    var roles = new[] { "SuperAdmin", "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Patient", "Nurse" };
+    var roles = new[] { "SuperAdmin", "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Patient", "Nurse", "Contractor" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

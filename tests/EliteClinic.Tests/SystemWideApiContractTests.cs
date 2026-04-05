@@ -192,7 +192,8 @@ public class SystemWideApiContractTests
             "Receptionist",
             "Doctor",
             "Nurse",
-            "Patient"
+            "Patient",
+            "Contractor"
         };
 
         foreach (var role in requiredRoles)
@@ -205,11 +206,20 @@ public class SystemWideApiContractTests
     public void Phase4Endpoints_ShouldExistWithExpectedRoutes()
     {
         AssertEndpointExists<PartnersController>(nameof(PartnersController.CreateContract), "POST", "api/clinic/partners/contracts");
+        AssertEndpointExists<PartnersController>(nameof(PartnersController.ListServices), "GET", "api/clinic/partners/services");
+        AssertEndpointExists<PartnersController>(nameof(PartnersController.CreateService), "POST", "api/clinic/partners/services");
+        AssertEndpointExists<PartnersController>(nameof(PartnersController.UpdateService), "PUT", "api/clinic/partners/services/{itemid:guid}");
+        AssertEndpointExists<PartnersController>(nameof(PartnersController.CreatePartnerUser), "POST", "api/clinic/partners/{partnerid:guid}/users");
         AssertEndpointExists<PartnerOrdersController>(nameof(PartnerOrdersController.UpdateStatus), "POST", "api/clinic/partner-orders/{orderid:guid}/status");
+        AssertEndpointExists<PartnerOrdersController>(nameof(PartnerOrdersController.Accept), "POST", "api/clinic/partner-orders/{orderid:guid}/accept");
+        AssertEndpointExists<PartnerOrdersController>(nameof(PartnerOrdersController.Schedule), "POST", "api/clinic/partner-orders/{orderid:guid}/schedule");
+        AssertEndpointExists<PartnerOrdersController>(nameof(PartnerOrdersController.MarkArrived), "POST", "api/clinic/partner-orders/{orderid:guid}/arrived");
+        AssertEndpointExists<PartnerOrdersController>(nameof(PartnerOrdersController.UploadResult), "POST", "api/clinic/partner-orders/{orderid:guid}/result");
         AssertEndpointExists<LabRequestsController>(nameof(LabRequestsController.CreatePartnerOrder), "POST", "api/clinic/visits/{visitid:guid}/labs/{labrequestid:guid}/partner-order");
         AssertEndpointExists<PrescriptionsController>(nameof(PrescriptionsController.GetRevisions), "GET", "api/clinic/visits/{visitid:guid}/prescriptions/{id:guid}/revisions");
         AssertEndpointExists<PatientMedicalController>(nameof(PatientMedicalController.AddThreadReply), "POST", "api/clinic/patients/{patientid:guid}/medical-documents/{documentid:guid}/threads/{threadid:guid}/replies");
         AssertEndpointExists<NotificationsController>(nameof(NotificationsController.MarkAllInAppRead), "POST", "api/clinic/notifications/in-app/mark-all-read");
+        AssertEndpointExists<PatientAppController>(nameof(PatientAppController.GetPartnerOrders), "GET", "api/clinic/patient-app/profiles/{patientid:guid}/partner-orders");
     }
 
     private static void AssertEndpointExists<TController>(string actionName, string verb, string expectedRoute)

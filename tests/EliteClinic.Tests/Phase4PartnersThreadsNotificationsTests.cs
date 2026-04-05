@@ -151,6 +151,127 @@ public class Phase4PartnersThreadsNotificationsTests
     }
 
     [Fact]
+    public async Task PartnerWorkflow_AcceptScheduleArrivedResult_ShouldComputePayoutAndExposeTimeline()
+    {
+        var tenantId = Guid.NewGuid();
+        var (ctx, conn) = DbContextFactory.Create(tenantId);
+        var seed = await SeedAsync(ctx, tenantId);
+
+        var partnerService = BuildPartnerService(ctx);
+
+        var partner = await partnerService.CreatePartnerAsync(tenantId, new CreatePartnerRequest
+        {
+            Name = "External Prime Lab",
+            Type = PartnerType.Laboratory,
+            ContactPhone = "0105551234"
+        });
+        Assert.True(partner.Success);
+
+        var serviceItem = await partnerService.CreateServiceCatalogItemAsync(
+            tenantId,
+            seed.DoctorUserId,
+            new CreatePartnerServiceCatalogItemRequest
+            {
+                PartnerId = partner.Data!.Id,
+                BranchId = seed.BranchId,
+                ServiceName = "CBC + ESR",
+                Price = 900m,
+                SettlementTarget = PartnerSettlementTarget.Clinic,
+                SettlementPercentage = 50m,
+                ClinicDoctorSharePercentage = 20m,
+                Notes = "Standard external workflow"
+            });
+
+        Assert.True(serviceItem.Success);
+
+        var created = await partnerService.CreateLabOrderAsync(
+            tenantId,
+            seed.VisitId,
+            seed.LabRequestId,
+            seed.DoctorUserId,
+            new CreateLabPartnerOrderRequest
+            {
+                PartnerId = partner.Data.Id,
+                PartnerServiceCatalogItemId = serviceItem.Data!.Id,
+                Notes = "Please process tomorrow morning"
+            });
+
+        Assert.True(created.Success);
+        var orderId = created.Data!.Id;
+
+        var accepted = await partnerService.AcceptOrderAsync(tenantId, seed.DoctorUserId, orderId, "Accepted by contractor");
+        Assert.True(accepted.Success);
+        Assert.Equal(PartnerOrderStatus.Accepted, accepted.Data!.Status);
+        Assert.NotNull(accepted.Data.AcceptedAt);
+
+        var scheduledAt = DateTime.UtcNow.AddHours(4);
+        var scheduled = await partnerService.ScheduleOrderAsync(
+            tenantId,
+            seed.DoctorUserId,
+            orderId,
+            new SchedulePartnerOrderRequest
+            {
+                ScheduledAt = scheduledAt,
+                Notes = "Patient scheduled at 9:00 AM"
+            });
+
+        Assert.True(scheduled.Success);
+        Assert.Equal(PartnerOrderStatus.Accepted, scheduled.Data!.Status);
+        Assert.NotNull(scheduled.Data.ScheduledAt);
+
+        var arrived = await partnerService.MarkPatientArrivedAsync(
+            tenantId,
+            seed.DoctorUserId,
+            orderId,
+            new MarkPartnerOrderArrivedRequest
+            {
+                ArrivedAt = DateTime.UtcNow.AddHours(5),
+                Notes = "Patient is now at the lab"
+            });
+
+        Assert.True(arrived.Success);
+        Assert.Equal(PartnerOrderStatus.InProgress, arrived.Data!.Status);
+        Assert.NotNull(arrived.Data.PatientArrivedAt);
+
+        var completed = await partnerService.UploadResultAndCompleteAsync(
+            tenantId,
+            seed.DoctorUserId,
+            orderId,
+            new UploadPartnerOrderResultRequest
+            {
+                ResultSummary = "All markers within normal range",
+                FinalCost = 1000m,
+                Notes = "Completed externally"
+            });
+
+        Assert.True(completed.Success);
+        Assert.Equal(PartnerOrderStatus.Completed, completed.Data!.Status);
+        Assert.NotNull(completed.Data.ResultUploadedAt);
+        Assert.NotNull(completed.Data.CompletedAt);
+        Assert.Equal(100m, completed.Data.DoctorPayoutAmount);
+        Assert.Equal(400m, completed.Data.ClinicRevenueAmount);
+
+        var labRequest = await ctx.LabRequests.FirstAsync(l => l.Id == seed.LabRequestId);
+        Assert.Equal("All markers within normal range", labRequest.ResultText);
+        Assert.NotNull(labRequest.ResultReceivedAt);
+
+        var payoutExpense = await ctx.Expenses
+            .FirstOrDefaultAsync(e => e.Category == "DoctorPartnerPayout" && e.Notes!.Contains(orderId.ToString()));
+        Assert.NotNull(payoutExpense);
+        Assert.Equal(100m, payoutExpense!.Amount);
+
+        var timeline = await partnerService.GetPatientTimelineAsync(tenantId, seed.PatientUserId, seed.PatientId);
+        Assert.True(timeline.Success);
+        Assert.NotEmpty(timeline.Data!);
+        var timelineItem = Assert.Single(timeline.Data!.Where(i => i.Id == orderId));
+        Assert.Equal(PartnerOrderStatus.Completed, timelineItem.Status);
+        Assert.Equal("All markers within normal range", timelineItem.ResultSummary);
+
+        await ctx.DisposeAsync();
+        await conn.DisposeAsync();
+    }
+
+    [Fact]
     public async Task DocumentThreadFlow_ShouldCreateReplyClose_AndHideInternalReplyFromPatientView()
     {
         var tenantId = Guid.NewGuid();
@@ -341,8 +462,16 @@ public class Phase4PartnersThreadsNotificationsTests
         AssertMethodRoles(typeof(PartnersController), nameof(PartnersController.Create), "ClinicOwner", "ClinicManager", "SuperAdmin");
         AssertMethodRoles(typeof(PartnersController), nameof(PartnersController.ListContracts), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "SuperAdmin");
 
-        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.List), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "SuperAdmin");
-        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.UpdateStatus), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.List), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.UpdateStatus), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.Accept), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.Schedule), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.MarkArrived), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnerOrdersController), nameof(PartnerOrdersController.UploadResult), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Nurse", "Contractor", "SuperAdmin");
+
+        AssertMethodRoles(typeof(PartnersController), nameof(PartnersController.ListServices), "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnersController), nameof(PartnersController.CreateService), "ClinicOwner", "ClinicManager", "Contractor", "SuperAdmin");
+        AssertMethodRoles(typeof(PartnersController), nameof(PartnersController.UpdateService), "ClinicOwner", "ClinicManager", "Contractor", "SuperAdmin");
 
         AssertMethodRoles(typeof(LabRequestsController), nameof(LabRequestsController.CreatePartnerOrder), "ClinicOwner", "ClinicManager", "Doctor", "SuperAdmin");
         AssertMethodRoles(typeof(PrescriptionsController), nameof(PrescriptionsController.CreatePartnerOrder), "ClinicOwner", "ClinicManager", "Doctor", "SuperAdmin");
