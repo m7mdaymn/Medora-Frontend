@@ -12,3 +12,13 @@ export async function getClinicSettings(
     tenantSlug,
   })
 }
+
+export async function getClinicPaymentOptionsAction(
+  tenantSlug: string,
+): Promise<BaseApiResponse<Record<string, unknown>>> {
+  return await fetchApi<Record<string, unknown>>(`/api/clinic/settings/payment-options`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+}

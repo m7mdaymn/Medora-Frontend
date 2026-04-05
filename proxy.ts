@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { buildApiUrl } from './lib/apiBaseUrl'
 
 // 1. فك التوكن
 function decodeJwt(token: string) {
@@ -12,7 +13,7 @@ function decodeJwt(token: string) {
         .join(''),
     )
     return JSON.parse(jsonPayload)
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -54,13 +55,13 @@ export async function proxy(request: NextRequest) {
   // ==========================================
   if (staffToken && refreshToken && isTokenExpired(staffToken)) {
     try {
-      const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Auth/refresh-token`, {
+      const refreshRes = await fetch(buildApiUrl('/api/auth/refresh'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(tenantSlug && tenantSlug !== 'admin' && { 'X-Tenant': tenantSlug }),
         },
-        body: JSON.stringify({ token: staffToken, refreshToken }),
+        body: JSON.stringify({ refreshToken }),
       })
 
       if (refreshRes.ok) {
@@ -81,7 +82,7 @@ export async function proxy(request: NextRequest) {
           requestHeaders.set('cookie', updatedCookies)
         } else throw new Error('Refresh failed')
       } else throw new Error('Refresh failed')
-    } catch (error) {
+    } catch {
       const redirectUrl = new URL(
         `/${tenantSlug === 'admin' ? 'admin' : tenantSlug}/login`,
         request.url,

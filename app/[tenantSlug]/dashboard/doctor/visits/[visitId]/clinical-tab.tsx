@@ -61,7 +61,7 @@ export function ClinicalTab({ tenantSlug, visit, doctor, isClosed }: ClinicalTab
       } else {
         toast.error(response.message || 'فشل الحفظ')
       }
-    } catch (error) {
+    } catch {
       toast.dismiss()
       toast.error('حدث خطأ غير متوقع')
     }

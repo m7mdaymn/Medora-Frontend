@@ -10,3 +10,10 @@ export async function getTenants(): Promise<BaseApiResponse<IPaginatedData<ITena
     { method: 'GET', cache: 'no-store' },
   )
 }
+
+export async function getTenantByIdAction(tenantId: string): Promise<BaseApiResponse<ITenant>> {
+  return await fetchApi<ITenant>(`/api/platform/tenants/${tenantId}`, {
+    method: 'GET',
+    cache: 'no-store',
+  })
+}

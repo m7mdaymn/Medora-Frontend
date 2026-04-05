@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface SpotlightBackgroundProps {
@@ -43,7 +43,7 @@ export function SpotlightBackground({
   const lastMouseMoveRef = useRef<number>(0)
   const [positions, setPositions] = useState<{ x: number; y: number }[]>([])
 
-  const colorArray = Array.isArray(colors) ? colors : [colors]
+  const colorArray = useMemo(() => (Array.isArray(colors) ? colors : [colors]), [colors])
 
   // Initialize spotlight positions
   useEffect(() => {
@@ -62,7 +62,7 @@ export function SpotlightBackground({
     }))
 
     setPositions(spotlightsRef.current.map((s) => ({ x: s.x, y: s.y })))
-  }, [colorArray.length])
+  }, [colorArray])
 
   // Lerp helper
   const lerp = useCallback((start: number, end: number, factor: number) => {

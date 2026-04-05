@@ -69,7 +69,7 @@ const AddSubProfileModal = ({ parentId, parentName, tenantSlug }: Props) => {
       } else {
         toast.error(res.message || 'حدث خطأ ما')
       }
-    } catch (error) {
+    } catch {
       toast.error('فشل الاتصال بالخادم')
     }
   }

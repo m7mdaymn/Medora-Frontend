@@ -4,7 +4,7 @@ import { valibotResolver } from '@hookform/resolvers/valibot'
 import { Link2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { upsertDoctorLinkAction } from '@/actions/service/doctor-services'
@@ -67,7 +67,10 @@ export function LinkServiceModal({
   })
 
   // لما اليوزر يختار خدمة، نجيب السعر الافتراضي نعرضهوله كمعلومة
-  const selectedServiceId = form.watch('clinicServiceId')
+  const selectedServiceId = useWatch({
+    control: form.control,
+    name: 'clinicServiceId',
+  })
   const activeCatalogService = catalogServices.find((s) => s.id === selectedServiceId)
 
   const onSubmit = async (values: DoctorLinkInput) => {
@@ -85,7 +88,7 @@ export function LinkServiceModal({
       } else {
         toast.error(result.message)
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ غير متوقع')
     }
   }

@@ -36,7 +36,7 @@ export async function superAdminLoginAction(data: LoginInput): Promise<BaseApiRe
         meta: res.meta,
       }
     }
-  } catch (error) {
+  } catch {
     return { success: false, message: 'توكن غير صالح', data: null, errors: [], meta: res.meta }
   }
 

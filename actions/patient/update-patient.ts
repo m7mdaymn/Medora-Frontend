@@ -30,3 +30,45 @@ export async function updatePatientAction(
 
   return result
 }
+
+export async function patchPatientAction(
+  id: string,
+  data: Partial<UpdatePatientInput>,
+  tenantSlug: string,
+): Promise<BaseApiResponse<IPatient>> {
+  const result = await fetchApi<IPatient>(`/api/clinic/patients/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+    tenantSlug,
+    authType: 'staff',
+  })
+
+  if (result.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/patients`)
+    revalidatePath(`/${tenantSlug}/dashboard/patients/${id}`)
+  }
+
+  return result
+}
+
+export async function resetPatientPasswordAction(
+  id: string,
+  tenantSlug: string,
+): Promise<BaseApiResponse<null>> {
+  return await fetchApi<null>(`/api/clinic/patients/${id}/reset-password`, {
+    method: 'POST',
+    tenantSlug,
+    authType: 'staff',
+  })
+}
+
+export async function sendPatientCredentialsAction(
+  id: string,
+  tenantSlug: string,
+): Promise<BaseApiResponse<null>> {
+  return await fetchApi<null>(`/api/clinic/patients/${id}/send-credentials`, {
+    method: 'POST',
+    tenantSlug,
+    authType: 'staff',
+  })
+}

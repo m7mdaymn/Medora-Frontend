@@ -153,8 +153,8 @@ export function AddPatientModal({
       } else {
         toast.error(result.message)
       }
-    } catch (error) {
-      toast.error('حدث خطأ أثناء حفظ البيانات')
+    } catch {
+      toast.error('حدث خطأ في الاتصال بالخادم')
     }
   }
 

@@ -26,3 +26,20 @@ export async function getAllStaffAction(tenantSlug: string): Promise<IStaff[]> {
   // بنستخلص الـ items بس ونرمي الباقي
   return res.data.items
 }
+
+export async function getStaffByIdAction(
+  tenantSlug: string,
+  staffId: string,
+): Promise<IStaff | null> {
+  const res = await fetchApi<IStaff>(`/api/clinic/staff/${staffId}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+
+  if (!res.success || !res.data) {
+    return null
+  }
+
+  return res.data
+}

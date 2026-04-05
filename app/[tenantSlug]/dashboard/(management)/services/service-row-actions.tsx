@@ -77,7 +77,7 @@ export function ServiceRowActions({ service, tenantSlug }: Props) {
       } else {
         toast.error(result.message)
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ غير متوقع')
     }
   }

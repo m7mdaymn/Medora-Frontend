@@ -1,5 +1,6 @@
 // app/[tenantSlug]/manifest.json/route.ts
 import { getFullImageUrl } from '@/lib/utils'
+import { buildApiUrl } from '@/lib/apiBaseUrl'
 import { BaseApiResponse } from '@/types/api'
 import { IPublicClinic } from '@/types/public'
 
@@ -10,10 +11,9 @@ export async function GET(
   const { tenantSlug } = await params
 
   // 1. هنجيب داتا العيادة زي ما عملنا في الـ Layout قبل كده
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/public/${tenantSlug}/clinic`,
-    { next: { revalidate: 3600 } },
-  )
+  const response = await fetch(buildApiUrl(`/api/public/${tenantSlug}/clinic`), {
+    next: { revalidate: 3600 },
+  })
 
   if (!response.ok) {
     return new Response('Clinic Not Found', { status: 404 })

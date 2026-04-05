@@ -142,3 +142,15 @@ export async function refundInvoiceAction(
   }
   return result
 }
+
+export async function getInvoicePaymentsAction(
+  tenantSlug: string,
+  invoiceId: string,
+): Promise<BaseApiResponse<IPayment[]>> {
+  return await fetchApi<IPayment[]>(`/api/clinic/invoices/${invoiceId}/payments`, {
+    method: 'GET',
+    tenantSlug,
+    authType: 'staff',
+    cache: 'no-store',
+  })
+}

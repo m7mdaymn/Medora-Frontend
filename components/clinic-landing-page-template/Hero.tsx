@@ -85,7 +85,7 @@ export default function Hero({ clinic, tenantSlug }: HeroProps) {
           <div className='relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-xl transition-all duration-700 ease-out group-hover:translate-x-2 group-hover:-translate-y-2 group-hover:shadow-2xl'>
             <Image
               src='https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=1632&auto=format&fit=crop'
-              alt='رعاية طبية'
+              alt={`رعاية طبية - ${clinic.clinicName}`}
               fill
               className='object-cover object-center transition-transform duration-1000 group-hover:scale-110'
               priority

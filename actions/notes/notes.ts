@@ -13,6 +13,15 @@ export async function createDoctorNoteAction(tenantSlug: string, message: string
   })
 }
 
+export async function getAllDoctorNotesAction(tenantSlug: string) {
+  return await fetchApi<IDoctorNote[]>('/api/clinic/doctor-notes', {
+    method: 'GET',
+    tenantSlug,
+    authType: 'staff',
+    cache: 'no-store',
+  })
+}
+
 // 2. الريسبشن بيجيب الملاحظات اللي متقرتش
 // دي هنستخدمها جوه الـ SWR Fetcher
 export async function getUnreadDoctorNotes(tenantSlug: string) {

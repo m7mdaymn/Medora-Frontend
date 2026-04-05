@@ -1,5 +1,6 @@
 import { getToken } from '../actions/auth/getToken'
 import { BaseApiResponse } from '../types/api'
+import { buildApiUrl } from './apiBaseUrl'
 
 interface FetchOptions extends RequestInit {
   tenantSlug?: string
@@ -36,7 +37,7 @@ export async function fetchApi<T>(
     headers.set('X-Tenant', tenantSlug)
   }
 
-  const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`
+  const url = buildApiUrl(endpoint)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)

@@ -30,6 +30,17 @@ export async function getClinicServicesAction(
   return res.success ? res.data : null
 }
 
+export async function getClinicServiceByIdAction(
+  tenantSlug: string,
+  id: string,
+): Promise<BaseApiResponse<IClinicService>> {
+  return await fetchApi<IClinicService>(`/api/clinic/services/${id}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+}
+
 // 2. إنشاء خدمة (POST)
 export async function createClinicServiceAction(
   tenantSlug: string,

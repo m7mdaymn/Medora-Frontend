@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { createLabRequestAction } from '@/actions/labs/create-lab-request'
+import { createLabPartnerOrderAction } from '@/actions/labs/create-lab-partner-order'
 import { deleteLabRequestAction } from '../../../../../../actions/labs/delete-lab-request'
 import {
   AlertDialog,
@@ -32,7 +33,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { LabRequestFormInput, labRequestSchema } from '@/validation/labs'
-import { AlertCircle, Beaker, Loader2, Plus, Trash2 } from 'lucide-react'
+import { AlertCircle, Beaker, ExternalLink, Loader2, Plus, Trash2 } from 'lucide-react'
 
 interface LabsTabProps {
   visit: IVisit
@@ -84,6 +85,37 @@ export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
     const res = await deleteLabRequestAction(tenantSlug, visit.id, id)
     if (res.success) toast.success('تم حذف طلب الفحص')
     else toast.error(res.message)
+  }
+
+  const handleCreatePartnerOrder = async (labRequestId: string) => {
+    const partnerId = window.prompt('أدخل Partner ID لإرسال الطلب:')?.trim()
+    if (!partnerId) return
+
+    const partnerContractId = window.prompt('Partner Contract ID (اختياري):')?.trim() || undefined
+    const partnerServiceCatalogItemId =
+      window.prompt('Partner Service Catalog Item ID (اختياري):')?.trim() || undefined
+    const estimatedCostInput = window.prompt('التكلفة التقديرية (اختياري):')?.trim() || ''
+    const notes = window.prompt('ملاحظات (اختياري):')?.trim() || undefined
+
+    const estimatedCost = estimatedCostInput ? Number(estimatedCostInput) : undefined
+    if (estimatedCostInput && Number.isNaN(estimatedCost)) {
+      toast.error('قيمة التكلفة التقديرية غير صحيحة')
+      return
+    }
+
+    const res = await createLabPartnerOrderAction(tenantSlug, visit.id, labRequestId, {
+      partnerId,
+      partnerContractId,
+      partnerServiceCatalogItemId,
+      estimatedCost,
+      notes,
+    })
+
+    if (res.success) {
+      toast.success('تم إرسال الطلب للشريك بنجاح')
+    } else {
+      toast.error(res.message || 'فشل إرسال الطلب للشريك')
+    }
   }
 
   // دالة الاختيار السريع بدون any
@@ -287,31 +319,40 @@ export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
               </div>
 
               {!isClosed && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className='h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity'
-                    >
-                      <Trash2 className='h-3.5 w-3.5 text-muted-foreground/40 hover:text-destructive' />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className='text-sm'>حذف الفحص؟</AlertDialogTitle>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className='h-8 text-xs'>إلغاء</AlertDialogCancel>
-                      <AlertDialogAction
-                        className='h-8 text-xs bg-destructive'
-                        onClick={() => handleDelete(lab.id)}
-                      >
-                        حذف
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon'
+                    className='h-6 w-6'
+                    onClick={() => void handleCreatePartnerOrder(lab.id)}
+                    title='إرسال لشريك'
+                  >
+                    <ExternalLink className='h-3.5 w-3.5 text-muted-foreground/60 hover:text-primary' />
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant='ghost' size='icon' className='h-6 w-6'>
+                        <Trash2 className='h-3.5 w-3.5 text-muted-foreground/40 hover:text-destructive' />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className='text-sm'>حذف الفحص؟</AlertDialogTitle>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className='h-8 text-xs'>إلغاء</AlertDialogCancel>
+                        <AlertDialogAction
+                          className='h-8 text-xs bg-destructive'
+                          onClick={() => handleDelete(lab.id)}
+                        >
+                          حذف
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               )}
             </div>
           ))

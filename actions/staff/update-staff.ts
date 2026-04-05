@@ -30,3 +30,22 @@ export async function updateStaffAction(
 
   return res
 }
+
+export async function patchStaffAction(
+  data: Partial<UpdateStaffInput> & { id: string },
+  tenantSlug: string,
+): Promise<BaseApiResponse<IStaff>> {
+  const { id, ...payload } = data
+
+  const res = await fetchApi<IStaff>(`/api/clinic/staff/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+    tenantSlug,
+  })
+
+  if (res.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/staff`)
+  }
+
+  return res
+}

@@ -1,14 +1,20 @@
 import {
   Activity,
+  BadgeCheck,
   Banknote,
+  Bell,
+  Briefcase,
   CalendarDays,
   ClipboardList,
   Clock,
   Handshake,
   LayoutDashboard,
+  MessageSquare,
+  Package,
   PieChart,
   Receipt,
   Settings,
+  ShoppingCart,
   Stethoscope,
   Users,
   type LucideIcon,
@@ -51,6 +57,12 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         roles: ['Doctor'],
       },
       {
+        title: 'تقارير الطبيب',
+        href: '/doctor/reports',
+        icon: PieChart,
+        roles: ['Doctor'],
+      },
+      {
         title: 'إعدادات الكشف', // مخصصة أكتر للدكتور
         href: '/doctor/settings',
         icon: Settings,
@@ -86,6 +98,36 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         href: '/patients',
         icon: Users,
         roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
+      },
+      {
+        title: 'المخزون',
+        href: '/inventory',
+        icon: Package,
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
+      },
+      {
+        title: 'طلبات المتجر',
+        href: '/marketplace-orders',
+        icon: ShoppingCart,
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
+      },
+      {
+        title: 'طلبات الخدمة الذاتية',
+        href: '/self-service-requests',
+        icon: BadgeCheck,
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
+      },
+      {
+        title: 'الرسائل',
+        href: '/messages',
+        icon: MessageSquare,
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'Doctor', 'Nurse', 'SuperAdmin'],
+      },
+      {
+        title: 'الإشعارات',
+        href: '/notifications',
+        icon: Bell,
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'Doctor', 'Nurse', 'SuperAdmin'],
       },
     ],
   },
@@ -153,6 +195,12 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         title: 'شئون العاملين', // مصطلح HR مظبوط
         href: '/staff',
         icon: ClipboardList,
+        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
+      },
+      {
+        title: 'إدارة القوى العاملة',
+        href: '/workforce',
+        icon: Briefcase,
         roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
       },
       {

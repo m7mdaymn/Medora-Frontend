@@ -34,7 +34,7 @@ export async function loginAction(values: LoginInput, tenantSlug: string) {
         message: 'هذا الحساب خاص بمريض. يرجى تسجيل الدخول من بوابة المرضى.',
       }
     }
-  } catch (error) {
+  } catch {
     return { success: false, message: 'استجابة غير صالحة من الخادم (التوكن تالف)' }
   }
 

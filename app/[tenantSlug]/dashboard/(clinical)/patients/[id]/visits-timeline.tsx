@@ -9,10 +9,9 @@ import { useState } from 'react'
 
 interface VisitsTimelineProps {
   visits: IVisit[]
-  tenantSlug: string
 }
 
-function TimelineItem({ visit, tenantSlug }: { visit: IVisit; tenantSlug: string }) {
+function TimelineItem({ visit }: { visit: IVisit }) {
   const [expanded, setExpanded] = useState(false)
   const isCompleted = visit.status === 'Completed'
 
@@ -141,7 +140,7 @@ function TimelineItem({ visit, tenantSlug }: { visit: IVisit; tenantSlug: string
   )
 }
 
-export function VisitsTimeline({ visits, tenantSlug }: VisitsTimelineProps) {
+export function VisitsTimeline({ visits }: VisitsTimelineProps) {
   if (!visits || visits.length === 0) {
     return (
       <div className='flex flex-col items-center justify-center py-12 text-muted-foreground border border-dashed border-border rounded-xl bg-card/50'>
@@ -154,7 +153,7 @@ export function VisitsTimeline({ visits, tenantSlug }: VisitsTimelineProps) {
   return (
     <div className='relative border-r border-border/40 space-y-1 mt-2 mr-2 md:mr-4'>
       {visits.map((visit) => (
-        <TimelineItem key={visit.id} visit={visit} tenantSlug={tenantSlug} />
+        <TimelineItem key={visit.id} visit={visit} />
       ))}
     </div>
   )

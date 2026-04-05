@@ -39,12 +39,19 @@ export default async function PatientProfilePage({ params, searchParams }: PageP
           </h1>
           <p className='text-sm text-muted-foreground mt-1'>إدارة السجل الطبي الشامل للمريض</p>
         </div>
-        <Button variant={'ghost'}>
-          <Link href={`/${tenantSlug}/dashboard/patients`} className='flex space-x-2 items-center'>
-            صفحة المرضى
-            <ChevronLeft />
-          </Link>
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button asChild variant='outline'>
+            <Link href={`/${tenantSlug}/dashboard/patients/${id}/medical-documents`}>
+              الوثائق الطبية
+            </Link>
+          </Button>
+          <Button variant={'ghost'}>
+            <Link href={`/${tenantSlug}/dashboard/patients`} className='flex space-x-2 items-center'>
+              صفحة المرضى
+              <ChevronLeft />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
@@ -79,7 +86,7 @@ export default async function PatientProfilePage({ params, searchParams }: PageP
             {/* Tabs Content */}
             <div className='mt-6'>
               <TabsContent value='visits' className='outline-none m-0'>
-                <VisitsTimeline visits={visits || []} tenantSlug={tenantSlug} />
+                <VisitsTimeline visits={visits || []} />
 
                 {pagination && pagination.totalPages > 1 && (
                   <div className='mt-6 pt-4 flex justify-center md:justify-end'>

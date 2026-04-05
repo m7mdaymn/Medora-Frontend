@@ -59,8 +59,6 @@ export function StarfieldBackground({
     let animationId: number
     let tick = 0
 
-    const centerX = width / 2
-    const centerY = height / 2
     const maxDepth = 1500
 
     // 2. تحديد الألوان بناءً على الثيم الحالي

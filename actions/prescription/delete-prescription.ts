@@ -18,7 +18,7 @@ export const deletePrescriptionAction = async (
       revalidatePath(`/${tenantSlug}/dashboard/doctor/visits/${visitId}`)
     }
     return result
-  } catch (error) {
+  } catch {
     return { success: false, message: 'فشل في حذف الدواء' }
   }
 }
