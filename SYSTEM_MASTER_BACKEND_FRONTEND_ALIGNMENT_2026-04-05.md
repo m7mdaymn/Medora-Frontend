@@ -21,9 +21,35 @@ Scope: Full backend contract + full frontend integration coverage + workflow sce
 
 - Backend validation gates: clean/build/test/migrations/parity all passed in the latest run.
 - Build status: success (32 warnings, 0 errors).
-- Test status: 50 passed, 0 failed.
-- EF migration chain includes historical Phase13 to Phase16 IDs.
+- Test status: 51 passed, 0 failed.
+- EF migration chain includes historical Phase13 to Phase17 IDs.
 - Strict parity (report-vs-codebase): missing exact paths 0, missing bare filenames 0, ambiguous bare filenames 2.
+
+## Date: 2026-04-05 (Phase17 Contractor + Partner Workflow Delivery Update)
+
+- Backend partner workflow now supports explicit milestones: accept, schedule, arrived, and result upload/completion.
+- New backend contract surface delivered:
+  - POST /api/clinic/partner-orders/{orderId:guid}/accept
+  - POST /api/clinic/partner-orders/{orderId:guid}/schedule
+  - POST /api/clinic/partner-orders/{orderId:guid}/arrived
+  - POST /api/clinic/partner-orders/{orderId:guid}/result
+  - POST /api/clinic/partners/{partnerId:guid}/users
+  - GET/POST/PUT /api/clinic/partners/services
+  - GET /api/clinic/patient-app/profiles/{patientId:guid}/partner-orders
+- Financial rule implemented per product clarification: if settlement target is Clinic, doctor share is computed from clinic share only.
+- External contractor access is active via Contractor role plus partner-user linkage and scoped access checks.
+- Frontend sync delivered for contractor workflows:
+  - Contractor orders workspace (accept/schedule/arrived/result).
+  - Contractor services workspace (catalog create/list).
+  - Staff contracts workspace upgraded to manage partner services and contractor accounts.
+  - Patient history now includes partner-order timeline.
+- Frontend typed-route stabilization completed by adding doctor route fallbacks:
+  - /{tenantSlug}/dashboard/doctor/contracts -> redirects to doctor queue.
+  - /{tenantSlug}/dashboard/doctor/reports -> redirects to doctor visits.
+- Verification (latest run):
+  - corepack pnpm -C Frontend exec tsc --noEmit: PASS (exit code 0).
+  - dotnet test tests/EliteClinic.Tests/EliteClinic.Tests.csproj -v minimal: PASS (51/51).
+- Endpoint inventory refreshed from controllers: docs/spec-kit/ENDPOINT_INVENTORY_GENERATED.md now reports 219 rows (Generated: 2026-04-05 19:42:12 +02:00).
 
 ## Date: 2026-04-05 (System Workflow Scenarios - Current Behavior)
 
@@ -42,7 +68,7 @@ Scope: Full backend contract + full frontend integration coverage + workflow sce
 - Clinical flow: visits, prescriptions, lab requests, doctor notes, patient summaries/history.
 - Finance flow: invoices, payments, refunds, expenses, daily/monthly/yearly/profit/by-doctor reports.
 
-### 4) Extended Phase13-16 Domains
+### 4) Extended Phase13-17 Domains
 - Self-service requests: review queue, approve/reject/reupload/adjust-paid-amount conversion paths.
 - Inventory + marketplace: catalog, activation, public sellable items, marketplace order lifecycle.
 - Partners + partner orders: partners/contracts management and order status lifecycle.
@@ -54,21 +80,23 @@ Scope: Full backend contract + full frontend integration coverage + workflow sce
 
 ## Date: 2026-04-05 (Frontend Missing From Backend - Required Gap Section)
 
-- Frontend source files scanned: 332
-- Unique normalized frontend API paths: 88
-- Matched frontend API paths: 85
-- Unmatched frontend API paths: 3
-- Backend endpoints not referenced by frontend: 80
+- Frontend source files scanned: 338
+- Unique normalized frontend API paths: 98
+- Matched frontend API paths: 93
+- Unmatched frontend API paths: 5
+- Backend endpoints not referenced by frontend: 78
 
 ### Unmatched Frontend API Calls
 - /api/auth/refresh-token | files: Frontend/actions/auth/refresh-token.ts; Frontend/proxy.ts
+- /api/clinic/partner-orders{*} | files: Frontend/actions/partner/workflow.ts
+- /api/clinic/partners{*} | files: Frontend/actions/partner/workflow.ts
 - /api/clinic/visits/my/today | files: Frontend/actions/doctor/get-my-today-visits.ts
 - /api/platform/subscriptions{*} | files: Frontend/actions/platform/subscriptions.ts
 
 ### Backend Not Referenced by Frontend - Priority Buckets
 - /api/clinic/inventory: 5
 - /api/clinic/marketplace: 3
-- /api/clinic/partners: 7
+- /api/clinic/partners: 5
 - /api/clinic/partner-orders: 3
 - /api/clinic/reports: 3
 - /api/clinic/self-service-requests: 6
@@ -81,37 +109,37 @@ Scope: Full backend contract + full frontend integration coverage + workflow sce
 ### Backend Not Referenced by Frontend - Top Controllers
 - WorkforceController: 10
 - NotificationsController: 7
-- PartnersController: 7
-- PublicController: 7
 - PatientMedicalController: 7
+- PublicController: 7
 - SelfServiceRequestsController: 6
 - InventoryController: 5
+- PartnersController: 5
 - MessagesController: 4
-- VisitsController: 3
-- ReportsController: 3
-- PartnerOrdersController: 3
 - MarketplaceOrdersController: 3
-- PrescriptionsController: 2
-- LabRequestsController: 2
+- PartnerOrdersController: 3
+- ReportsController: 3
+- VisitsController: 3
 - ClinicSettingsController: 2
+- LabRequestsController: 2
 - PatientsController: 2
+- PrescriptionsController: 2
 - QueueSessionsController: 2
-- HealthController: 1
 - AuthController: 1
-- MediaController: 1
 - DoctorsController: 1
+- HealthController: 1
 - InvoicesController: 1
+- MediaController: 1
 
 ---
 
 ## FULL ENDPOINT INVENTORY (Current)
 
 - Source: docs/spec-kit/ENDPOINT_INVENTORY_GENERATED.md
-- Endpoint count: 210
+- Endpoint count: 219
 
 # Endpoint Inventory (Generated)
 
-Generated: 2026-04-05 17:10:20 +02:00
+Generated: 2026-04-05 19:42:12 +02:00
 Source: src/EliteClinic.Api/Controllers
 
 | Method | Route | Controller | Action | Auth |

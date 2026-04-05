@@ -624,7 +624,92 @@ async Task SeedPhase2ClinicUsersAsync(EliteClinicDbContext dbContext, UserManage
         });
     }
 
-    // 4. Doctor 1
+    // 4. Receptionist
+    var receptionistUser = await GetOrCreateUser("reception_nada", "Nada Receptionist", "Reception@123456", "Receptionist");
+    if (!await dbContext.Employees.IgnoreQueryFilters().AnyAsync(e => e.UserId == receptionistUser.Id))
+    {
+        dbContext.Employees.Add(new EliteClinic.Domain.Entities.Employee
+        {
+            TenantId = tenantId, UserId = receptionistUser.Id, Name = "Nada Receptionist",
+            Phone = "+201111111113", Role = "Receptionist", Salary = 4200m,
+            HireDate = DateTime.UtcNow.AddMonths(-4), IsEnabled = true
+        });
+    }
+
+    // 5. Nurse
+    var nurseUser = await GetOrCreateUser("nurse_huda", "Huda Nurse", "Nurse@123456", "Nurse");
+    if (!await dbContext.Employees.IgnoreQueryFilters().AnyAsync(e => e.UserId == nurseUser.Id))
+    {
+        dbContext.Employees.Add(new EliteClinic.Domain.Entities.Employee
+        {
+            TenantId = tenantId, UserId = nurseUser.Id, Name = "Huda Nurse",
+            Phone = "+201111111114", Role = "Nurse", Salary = 4300m,
+            HireDate = DateTime.UtcNow.AddMonths(-5), IsEnabled = true
+        });
+    }
+
+    // 6. Contractor (linked to a seeded lab partner)
+    var contractorUser = await GetOrCreateUser("contractor_lab", "Lab Contractor", "Contractor@123456", "Contractor");
+    var contractorPartner = await dbContext.Partners.IgnoreQueryFilters()
+        .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Name == "Seed Lab Partner" && !p.IsDeleted);
+
+    if (contractorPartner == null)
+    {
+        contractorPartner = new EliteClinic.Domain.Entities.Partner
+        {
+            TenantId = tenantId,
+            Name = "Seed Lab Partner",
+            Type = EliteClinic.Domain.Enums.PartnerType.Laboratory,
+            ContactName = "Lab Operations",
+            ContactPhone = "+201333333333",
+            ContactEmail = "lab.partner@eliteclinic.local",
+            IsActive = true,
+            Notes = "Seed partner for contractor role testing"
+        };
+        dbContext.Partners.Add(contractorPartner);
+    }
+
+    if (!await dbContext.PartnerUsers.IgnoreQueryFilters().AnyAsync(pu => pu.TenantId == tenantId && pu.UserId == contractorUser.Id && !pu.IsDeleted))
+    {
+        dbContext.PartnerUsers.Add(new EliteClinic.Domain.Entities.PartnerUser
+        {
+            TenantId = tenantId,
+            PartnerId = contractorPartner.Id,
+            UserId = contractorUser.Id,
+            IsPrimary = true,
+            IsActive = true
+        });
+    }
+
+    if (!await dbContext.PartnerServiceCatalogItems.IgnoreQueryFilters().AnyAsync(ps => ps.TenantId == tenantId && ps.PartnerId == contractorPartner.Id && !ps.IsDeleted))
+    {
+        dbContext.PartnerServiceCatalogItems.AddRange(
+            new EliteClinic.Domain.Entities.PartnerServiceCatalogItem
+            {
+                TenantId = tenantId,
+                PartnerId = contractorPartner.Id,
+                ServiceName = "CBC",
+                Price = 180m,
+                SettlementTarget = EliteClinic.Domain.Enums.PartnerSettlementTarget.Clinic,
+                SettlementPercentage = 100m,
+                IsActive = true,
+                Notes = "Seed service for contractor dashboard"
+            },
+            new EliteClinic.Domain.Entities.PartnerServiceCatalogItem
+            {
+                TenantId = tenantId,
+                PartnerId = contractorPartner.Id,
+                ServiceName = "Panoramic X-Ray",
+                Price = 350m,
+                SettlementTarget = EliteClinic.Domain.Enums.PartnerSettlementTarget.Clinic,
+                SettlementPercentage = 100m,
+                IsActive = true,
+                Notes = "Seed imaging service for contractor dashboard"
+            }
+        );
+    }
+
+    // 7. Doctor 1
     var doc1User = await GetOrCreateUser("dr_khaled", "Dr. Khaled Dentist", "Doctor@123456", "Doctor");
     if (!await dbContext.Doctors.IgnoreQueryFilters().AnyAsync(d => d.UserId == doc1User.Id))
     {
@@ -650,7 +735,7 @@ async Task SeedPhase2ClinicUsersAsync(EliteClinicDbContext dbContext, UserManage
         });
     }
 
-    // 5. Doctor 2
+    // 8. Doctor 2
     var doc2User = await GetOrCreateUser("dr_mona", "Dr. Mona Orthodontist", "Doctor@123456", "Doctor");
     if (!await dbContext.Doctors.IgnoreQueryFilters().AnyAsync(d => d.UserId == doc2User.Id))
     {
@@ -677,7 +762,7 @@ async Task SeedPhase2ClinicUsersAsync(EliteClinicDbContext dbContext, UserManage
 
     await dbContext.SaveChangesAsync();
 
-    // 6. Patients (6 + 1 sub-profile)
+    // 9. Patients (6 + 1 sub-profile)
     var patientNames = new[]
     {
         ("Mohamed Hassan", "+201500000001", EliteClinic.Domain.Enums.Gender.Male),

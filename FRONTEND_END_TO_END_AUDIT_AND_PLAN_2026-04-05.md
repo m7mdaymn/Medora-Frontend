@@ -3,13 +3,22 @@
 Generated: 2026-04-05
 Scope: Full Frontend folder audit + backend integration alignment plan
 
+## 0) Implementation Update (Post-Audit Baseline)
+
+- Contractor + partner workflow frontend integration has been delivered end-to-end for the requested phase.
+- Added partner workflow action layer: list orders, accept, schedule, mark arrived, upload result, list services, create service, create partner user, and partner listing.
+- Added new pages: /{tenantSlug}/dashboard/contractor/orders, /{tenantSlug}/dashboard/contractor/services, /{tenantSlug}/dashboard/doctor/contracts (fallback redirect), /{tenantSlug}/dashboard/doctor/reports (fallback redirect).
+- Upgraded /{tenantSlug}/dashboard/contracts to operational partner-service + contractor-account management UI.
+- Patient history now consumes and renders partner-order timeline data.
+- Validation status after this update: corepack pnpm -C Frontend exec tsc --noEmit PASS; dotnet test tests/EliteClinic.Tests/EliteClinic.Tests.csproj -v minimal PASS (51/51).
+
 ## 1) Audit Method (What Was Read)
 
-- Full scan of frontend source files (.ts/.tsx/.js/.jsx) under Frontend: 332 files.
-- Full scan of app routes: 31 page route files.
-- Full scan of action files: 72 files, 102 exported server actions.
-- Full scan of model/type files (types + validation): 36 files, 126 exported contracts.
-- API coverage comparison performed against generated backend endpoint inventory (210 endpoints).
+- Full scan of frontend source files (.ts/.tsx/.js/.jsx) under Frontend: 338 files.
+- Full scan of app routes: 35 page route files.
+- Full scan of action files: 73 files, 112 exported server actions.
+- Full scan of model/type files (types + validation): 37 files, 136 exported contracts.
+- API coverage comparison performed against generated backend endpoint inventory (219 endpoints).
 
 ## 2) Current Frontend Architecture Snapshot
 
@@ -17,13 +26,13 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 
 | Folder | Total Files | Source Files |
 |---|---:|---:|
-| app | 118 | 116 |
-| actions | 73 | 73 |
+| app | 122 | 120 |
+| actions | 74 | 74 |
 | components | 88 | 88 |
 | lib | 4 | 4 |
 | hooks | 2 | 2 |
 | store | 3 | 3 |
-| types | 19 | 19 |
+| types | 20 | 20 |
 | validation | 17 | 17 |
 
 ### Action Coverage by Module Folder
@@ -35,7 +44,7 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 | platform | 6 | 13 |
 | auth | 6 | 6 |
 | visit | 4 | 2 |
-| patient-app | 4 | 10 |
+| patient-app | 4 | 11 |
 | staff | 4 | 4 |
 | queue | 4 | 11 |
 | finance | 4 | 16 |
@@ -46,17 +55,19 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 | labs | 2 | 0 |
 | service | 2 | 7 |
 | notes | 1 | 3 |
+| partner | 1 | 9 |
 
 ## 3) Integration Findings (Backend vs Frontend)
 
-- Unique normalized frontend API paths: 88
-- Matched frontend API paths: 85
-- Unmatched frontend API paths: 3
-- Backend endpoints not referenced by frontend: 80
+- Unique normalized frontend API paths: 98
+- Matched frontend API paths: 93
+- Unmatched frontend API paths: 5
+- Backend endpoints not referenced by frontend: 78
 
 ### 3.1 Hard Mismatches and Defects Found
 
 - /api/auth/refresh-token is called from frontend auth/proxy flow, while backend contract route is /api/auth/refresh.
+- /api/clinic/partner-orders{*} and /api/clinic/partners{*} appear as unmatched normalized paths due query-string interpolation shape and should be normalized to canonical route literals.
 - /api/clinic/visits/my/today is called from doctor action, while backend contract exposes /api/clinic/visits/my.
 - Frontend/actions/patient/getPatient.ts is an empty file (zero bytes), leaving one patient retrieval flow incomplete.
 - /api/platform/subscriptions${query} appears as a normalized unmatched pattern in static analysis; runtime resolves with querystring, but should be normalized in tooling and validated by contract tests.
@@ -75,14 +86,12 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 - GET /api/clinic/marketplace/orders/{orderId:guid}
 - POST /api/clinic/marketplace/orders/{orderId:guid}/status
 
-#### /api/clinic/partners (missing coverage: 7)
+#### /api/clinic/partners (missing coverage: 5)
 - GET /api/clinic/partners
 - POST /api/clinic/partners
-- PUT /api/clinic/partners/{partnerId:guid}
 - POST /api/clinic/partners/{partnerId:guid}/activation
 - GET /api/clinic/partners/contracts
 - POST /api/clinic/partners/contracts
-- PUT /api/clinic/partners/contracts/{contractId:guid}
 
 #### /api/clinic/partner-orders (missing coverage: 3)
 - GET /api/clinic/partner-orders
@@ -135,7 +144,7 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 |---|---:|
 | WorkforceController | 10 |
 | NotificationsController | 7 |
-| PartnersController | 7 |
+| PartnersController | 5 |
 | PublicController | 7 |
 | PatientMedicalController | 7 |
 | SelfServiceRequestsController | 6 |
@@ -160,14 +169,15 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 
 - Inventory management UI/action layer is missing end-to-end (list/create/update/activation).
 - Marketplace backoffice order management UI/action layer is missing.
-- Partners and partner-orders UI/action layer is missing.
+- Partner and contractor workflow UI/action layer is now implemented for operational execution (orders, services, contractor accounts), but partner core CRUD/activation/contracts coverage is still partial.
 - Self-service request review/approval/rejection/reupload admin UI flow is missing.
 - Patient medical document threads (list/upload/thread/reply/close) UI flow is missing.
 - ReportsController endpoints are uncovered by dedicated report contracts (current finance reports page is not wired to the new report contract set).
 - Public landing/marketplace/public payment options flows are partially uncovered against new public endpoints.
 - In-app notifications management/consumption flows are partially uncovered in current action surface.
+- Contract hotfix gaps remain: auth refresh path mismatch, doctor "my today" visits mismatch, and empty Frontend/actions/patient/getPatient.ts.
 
-## 5) End-to-End Completion Plan (What Will Be Built)
+## 5) End-to-End Completion Plan (Remaining Work)
 
 ### Phase FE-1: Contract Alignment Hotfixes (Immediate)
 - Update auth refresh calls to /api/auth/refresh in frontend auth action + proxy middleware refresh flow.
@@ -176,13 +186,13 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 - Add API contract guard tests for all auth/doctor/patient critical endpoints.
 
 ### Phase FE-2: Missing Actions for New Backend Modules
-- Create new action groups: inventory, marketplace, partners, partner-orders, self-service-requests, patient-medical-docs, reports-v2.
+- Complete remaining action groups: inventory, marketplace, self-service-requests, patient-medical-docs, reports-v2, plus partner core CRUD/contract/activation gaps.
 - Define strict request/response types under Frontend/types and validation schemas under Frontend/validation for each new action group.
 - Add cache revalidation strategy per route area (dashboard sections and patient app areas).
 
 ### Phase FE-3: Dashboard UI Modules (Clinic Backoffice)
 - Add dashboard pages and widgets for inventory and marketplace order operations.
-- Add partners/contracts and partner-order tracking screens with status timeline components.
+- Complete partner management surfaces for partner CRUD, contract lifecycle, and activation toggles.
 - Add self-service requests review queue page with approve/reject/reupload/adjust actions.
 - Add reports pages wired to ReportsController endpoints (overview/services/my-overview).
 
@@ -207,8 +217,8 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 
 ## 6) Acceptance Criteria for Frontend Completion
 
-- Unmatched frontend API paths reduced from 3 to 0.
-- Backend endpoints not referenced by frontend reduced from 80 to target agreed scope (or 0 if full parity target).
+- Unmatched frontend API paths reduced from 5 to 0.
+- Backend endpoints not referenced by frontend reduced from 78 to target agreed scope (or 0 if full parity target).
 - All critical modules (inventory, marketplace, partners, self-service requests, patient medical docs, reports) have both action layer and page layer coverage.
 - End-to-end smoke suite passes for admin, staff, doctor, patient-app, and public flows.
 
@@ -218,10 +228,14 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 - /{*}  <-  Frontend/app/[tenantSlug]/(public)/page.tsx
 - /{*}/dashboard  <-  Frontend/app/[tenantSlug]/dashboard/page.tsx
 - /{*}/dashboard/appointments  <-  Frontend/app/[tenantSlug]/dashboard/(clinical)/appointments/page.tsx
+- /{*}/dashboard/contractor/orders  <-  Frontend/app/[tenantSlug]/dashboard/contractor/orders/page.tsx
+- /{*}/dashboard/contractor/services  <-  Frontend/app/[tenantSlug]/dashboard/contractor/services/page.tsx
 - /{*}/dashboard/contracts  <-  Frontend/app/[tenantSlug]/dashboard/(finance)/contracts/page.tsx
+- /{*}/dashboard/doctor/contracts  <-  Frontend/app/[tenantSlug]/dashboard/doctor/contracts/page.tsx
 - /{*}/dashboard/doctor/patients  <-  Frontend/app/[tenantSlug]/dashboard/doctor/patients/page.tsx
 - /{*}/dashboard/doctor/patients/{*}  <-  Frontend/app/[tenantSlug]/dashboard/doctor/patients/[patientId]/page.tsx
 - /{*}/dashboard/doctor/queue  <-  Frontend/app/[tenantSlug]/dashboard/doctor/queue/page.tsx
+- /{*}/dashboard/doctor/reports  <-  Frontend/app/[tenantSlug]/dashboard/doctor/reports/page.tsx
 - /{*}/dashboard/doctor/settings  <-  Frontend/app/[tenantSlug]/dashboard/doctor/settings/page.tsx
 - /{*}/dashboard/doctor/visits  <-  Frontend/app/[tenantSlug]/dashboard/doctor/visits/page.tsx
 - /{*}/dashboard/doctor/visits/{*}  <-  Frontend/app/[tenantSlug]/dashboard/doctor/visits/[visitId]/page.tsx
@@ -250,6 +264,7 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 
 - Frontend/types/enums.ts (exports: 44)
 - Frontend/types/visit.ts (exports: 13)
+- Frontend/types/partner.ts (exports: 9)
 - Frontend/types/queue.ts (exports: 6)
 - Frontend/types/finance.ts (exports: 5)
 - Frontend/types/patient.ts (exports: 4)
@@ -258,7 +273,7 @@ Scope: Full Frontend folder audit + backend integration alignment plan
 - Frontend/types/public.ts (exports: 4)
 - Frontend/validation/patient.ts (exports: 3)
 - Frontend/types/api.ts (exports: 3)
-- Frontend/types/patient-app.ts (exports: 3)
+- Frontend/types/patient-app.ts (exports: 4)
 - Frontend/validation/invoice.ts (exports: 2)
 - Frontend/validation/services.ts (exports: 2)
 - Frontend/types/auth.ts (exports: 2)

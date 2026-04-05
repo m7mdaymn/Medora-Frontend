@@ -102,7 +102,7 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
       } else {
         toast.error(res.message || 'فشل إنشاء الحساب')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ غير متوقع')
     } finally {
       setIsSubmitting(false)

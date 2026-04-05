@@ -19,6 +19,9 @@ import { IPublicClinic } from '../../types/public'
 export const publicRoutes = [
   { href: '#about', label: 'عن العيادة' },
   { href: '#doctors', label: 'طاقم العمل' },
+  { href: '/services', label: 'الخدمات' },
+  { href: '/marketplace', label: 'المتجر' },
+  { href: '/payment-options', label: 'الدفع' },
   { href: '#contact', label: 'تواصل معنا' },
 ]
 
@@ -30,6 +33,7 @@ interface NavbarProps {
 export function Navbar({ clinic, tenantSlug }: NavbarProps) {
   const [open, setOpen] = useState(false)
   const mainContact = clinic.supportWhatsAppNumber || clinic.phone
+  const getRouteHref = (href: string) => `/${tenantSlug}${href}`
 
   const closeMenu = () => setOpen(false)
 
@@ -60,7 +64,7 @@ export function Navbar({ clinic, tenantSlug }: NavbarProps) {
             {publicRoutes.map((route) => (
               <Link
                 key={route.href}
-                href={route.href}
+                href={getRouteHref(route.href)}
                 className='text-sm font-medium text-muted-foreground hover:text-primary transition-colors'
               >
                 {route.label}
@@ -155,7 +159,7 @@ export function Navbar({ clinic, tenantSlug }: NavbarProps) {
                     {publicRoutes.map((route) => (
                       <Link
                         key={route.href}
-                        href={route.href}
+                        href={getRouteHref(route.href)}
                         onClick={closeMenu}
                         className='text-lg font-bold py-4 text-center rounded-2xl hover:bg-primary/5 transition-all active:scale-95'
                       >

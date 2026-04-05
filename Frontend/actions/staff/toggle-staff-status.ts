@@ -25,3 +25,23 @@ export async function toggleStaffStatusAction(
 
   return res
 }
+
+export async function enableStaffAction(
+  staffId: string,
+  tenantSlug: string,
+): Promise<BaseApiResponse<null>> {
+  return await fetchApi<null>(`/api/clinic/staff/${staffId}/enable`, {
+    method: 'POST',
+    tenantSlug,
+  })
+}
+
+export async function disableStaffAction(
+  staffId: string,
+  tenantSlug: string,
+): Promise<BaseApiResponse<null>> {
+  return await fetchApi<null>(`/api/clinic/staff/${staffId}/disable`, {
+    method: 'POST',
+    tenantSlug,
+  })
+}

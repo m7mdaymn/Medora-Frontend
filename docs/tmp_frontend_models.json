@@ -303,6 +303,48 @@
                            "exportCount":  1
                        },
                        {
+                           "file":  "Frontend/types/partner.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "PartnerType"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "PartnerOrderStatus"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "PartnerSettlementTarget"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartnerOrderStatusHistory"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartnerOrder"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartnerServiceCatalogItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartnerUser"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartner"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPartnerTimelineItem"
+                                           }
+                                       ],
+                           "exportCount":  9
+                       },
+                       {
                            "file":  "Frontend/types/patient.ts",
                            "exports":  [
                                            {
@@ -338,9 +380,13 @@
                                            {
                                                "kind":  "interface",
                                                "name":  "ICreditHistoryItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientPartnerOrderTimelineItem"
                                            }
                                        ],
-                           "exportCount":  3
+                           "exportCount":  4
                        },
                        {
                            "file":  "Frontend/types/platform.ts",
@@ -722,7 +768,7 @@
                        }
                    ],
     "summary":  {
-                    "modelTypeFileCount":  36,
-                    "modelTypeExportCount":  126
+                    "modelTypeFileCount":  37,
+                    "modelTypeExportCount":  136
                 }
 }

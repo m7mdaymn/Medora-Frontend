@@ -236,6 +236,51 @@
                                          "normalizedPath":  "/api/clinic/doctor-notes/unread"
                                      },
                                      {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders${query}",
+                                         "normalizedPath":  "/api/clinic/partner-orders{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}/accept",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}/accept"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}/arrived",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}/arrived"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}/result",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}/result"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}/schedule",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}/schedule"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners${query}",
+                                         "normalizedPath":  "/api/clinic/partners{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/${partnerId}/users",
+                                         "normalizedPath":  "/api/clinic/partners/{*}/users"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/services",
+                                         "normalizedPath":  "/api/clinic/partners/services"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/services${query ? ",
+                                         "normalizedPath":  "/api/clinic/partners/services${query"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/patient/add-subprofile.ts",
                                          "literal":  "/api/clinic/patients/${parentId}/profiles",
                                          "normalizedPath":  "/api/clinic/patients/{*}/profiles"
@@ -309,6 +354,11 @@
                                          "file":  "Frontend/actions/patient-app/profile.ts",
                                          "literal":  "/api/clinic/patient-app/profiles/${patientId}/bookings",
                                          "normalizedPath":  "/api/clinic/patient-app/profiles/{*}/bookings"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-app/profile.ts",
+                                         "literal":  "/api/clinic/patient-app/profiles/${patientId}/partner-orders",
+                                         "normalizedPath":  "/api/clinic/patient-app/profiles/{*}/partner-orders"
                                      },
                                      {
                                          "file":  "Frontend/actions/patient-app/profile.ts",
@@ -612,7 +662,7 @@
                                      }
                                  ],
     "summary":  {
-                    "extractedApiCallLiteralCount":  122,
-                    "uniqueNormalizedFrontendApiPathCount":  88
+                    "extractedApiCallLiteralCount":  132,
+                    "uniqueNormalizedFrontendApiPathCount":  98
                 }
 }

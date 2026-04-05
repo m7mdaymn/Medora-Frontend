@@ -29,3 +29,20 @@ export async function getBookingsAction(
 
   return res.data
 }
+
+export async function getBookingByIdAction(
+  tenantSlug: string,
+  bookingId: string,
+): Promise<IBooking | null> {
+  const res = await fetchApi<IBooking>(`/api/clinic/bookings/${bookingId}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+
+  if (!res.success || !res.data) {
+    return null
+  }
+
+  return res.data
+}

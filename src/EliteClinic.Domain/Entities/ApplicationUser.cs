@@ -4,7 +4,7 @@ namespace EliteClinic.Domain.Entities;
 
 public class ApplicationUser : IdentityUser<Guid>
 {
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
     public Guid? TenantId { get; set; }
     public bool IsActive { get; set; }
     public string? RefreshToken { get; set; }

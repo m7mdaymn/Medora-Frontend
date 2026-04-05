@@ -3,14 +3,14 @@
                     {
                         "folder":  "app",
                         "pathExists":  true,
-                        "totalFileCount":  118,
-                        "sourceFileCount":  116
+                        "totalFileCount":  122,
+                        "sourceFileCount":  120
                     },
                     {
                         "folder":  "actions",
                         "pathExists":  true,
-                        "totalFileCount":  73,
-                        "sourceFileCount":  73
+                        "totalFileCount":  74,
+                        "sourceFileCount":  74
                     },
                     {
                         "folder":  "components",
@@ -39,8 +39,8 @@
                     {
                         "folder":  "types",
                         "pathExists":  true,
-                        "totalFileCount":  19,
-                        "sourceFileCount":  19
+                        "totalFileCount":  20,
+                        "sourceFileCount":  20
                     },
                     {
                         "folder":  "validation",
@@ -49,5 +49,5 @@
                         "sourceFileCount":  17
                     }
                 ],
-    "frontendSourceFileCount":  332
+    "frontendSourceFileCount":  338
 }

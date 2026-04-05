@@ -80,26 +80,22 @@ interface Props {
 
 export function AppointmentsCalendar({ bookingsList }: Props) {
   const calendarRef = useRef<FullCalendar>(null)
-  const [currentDate, setCurrentDate] = useState(new Date())
   const [viewType, setViewType] = useState('timeGridDay')
   const [title, setTitle] = useState('')
 
   const handleNext = () => {
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.next()
-    setCurrentDate(calendarApi?.getDate() || new Date())
   }
 
   const handlePrev = () => {
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.prev()
-    setCurrentDate(calendarApi?.getDate() || new Date())
   }
 
   const handleToday = () => {
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.today()
-    setCurrentDate(calendarApi?.getDate() || new Date())
   }
 
   const changeView = (view: string) => {

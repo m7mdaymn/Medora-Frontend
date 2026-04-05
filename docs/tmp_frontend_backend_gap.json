@@ -277,6 +277,57 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/media/doctors/{doctorId:guid}/photo"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}/accept",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/accept"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}/arrived",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/arrived"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}/result",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/result"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}/schedule",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/schedule"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/{*}/users",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/users",
+                                                                  "PUT /api/clinic/partners/contracts/{contractId:guid}",
+                                                                  "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/services",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners/services",
+                                                                  "POST /api/clinic/partners/services",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}",
+                                                                  "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/services${query",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "PUT /api/clinic/partners/{partnerId:guid}"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/patient-app/profiles/{*}",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/patient-app/profile.ts",
@@ -287,6 +338,12 @@
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/patient-app/profile.ts",
                                      "matchedBackendRoutes":  "GET /api/clinic/patient-app/profiles/{patientId:guid}/bookings"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patient-app/profiles/{*}/partner-orders",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient-app/profile.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/patient-app/profiles/{patientId:guid}/partner-orders"
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/patient-app/profiles/{*}/queue-ticket",
@@ -747,6 +804,16 @@
                                                        ]
                                    },
                                    {
+                                       "normalizedPath":  "/api/clinic/partner-orders{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/partner/workflow.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/partners{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/partner/workflow.ts"
+                                   },
+                                   {
                                        "normalizedPath":  "/api/clinic/visits/my/today",
                                        "occurrenceCount":  1,
                                        "sampleFiles":  "Frontend/actions/doctor/get-my-today-visits.ts"
@@ -955,13 +1022,6 @@
                                                         "Action":  "Create"
                                                     },
                                                     {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/partners/{partnerId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/partners/{*}",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "Update"
-                                                    },
-                                                    {
                                                         "Method":  "POST",
                                                         "Route":  "/api/clinic/partners/{partnerId:guid}/activation",
                                                         "NormalizedRoute":  "/api/clinic/partners/{*}/activation",
@@ -981,13 +1041,6 @@
                                                         "NormalizedRoute":  "/api/clinic/partners/contracts",
                                                         "Controller":  "PartnersController",
                                                         "Action":  "CreateContract"
-                                                    },
-                                                    {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/partners/contracts/{contractId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/partners/contracts/{*}",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "UpdateContract"
                                                     },
                                                     {
                                                         "Method":  "GET",
@@ -1320,10 +1373,10 @@
                                                     }
                                                 ],
     "summary":  {
-                    "normalizedFrontendApiPathCount":  88,
-                    "matchedFrontendApiPathCount":  85,
-                    "unmatchedFrontendApiPathCount":  3,
-                    "backendEndpointCount":  210,
-                    "backendEndpointsNotReferencedCount":  80
+                    "normalizedFrontendApiPathCount":  98,
+                    "matchedFrontendApiPathCount":  93,
+                    "unmatchedFrontendApiPathCount":  5,
+                    "backendEndpointCount":  219,
+                    "backendEndpointsNotReferencedCount":  78
                 }
 }

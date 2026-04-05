@@ -63,7 +63,7 @@ export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, o
       } else {
         toast.error('فشل في جلب بيانات الزيارة.')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ أثناء محاولة العودة للكشف.')
     } finally {
       setIsReturning(false)

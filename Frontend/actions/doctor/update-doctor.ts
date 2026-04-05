@@ -12,6 +12,24 @@ export async function updateDoctorAction(
   data: UpdateDoctorInput,
 ): Promise<BaseApiResponse<IDoctor>> {
   const response = await fetchApi<IDoctor>(`/api/clinic/doctors/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    tenantSlug,
+  })
+
+  if (response.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/doctors`)
+  }
+
+  return response
+}
+
+export async function patchDoctorAction(
+  id: string,
+  tenantSlug: string,
+  data: Partial<UpdateDoctorInput>,
+): Promise<BaseApiResponse<IDoctor>> {
+  const response = await fetchApi<IDoctor>(`/api/clinic/doctors/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
     tenantSlug,

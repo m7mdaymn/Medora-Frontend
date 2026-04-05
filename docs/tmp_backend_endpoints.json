@@ -480,21 +480,49 @@
         "Route":  "/api/clinic/partner-orders",
         "Controller":  "PartnerOrdersController",
         "Action":  "List",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
     },
     {
         "Method":  "GET",
         "Route":  "/api/clinic/partner-orders/{orderId:guid}",
         "Controller":  "PartnerOrdersController",
         "Action":  "GetById",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}/accept",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "Accept",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}/arrived",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "MarkArrived",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}/result",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "UploadResult",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}/schedule",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "Schedule",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
     },
     {
         "Method":  "POST",
         "Route":  "/api/clinic/partner-orders/{orderId:guid}/status",
         "Controller":  "PartnerOrdersController",
         "Action":  "UpdateStatus",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin"
     },
     {
         "Method":  "GET",
@@ -525,6 +553,13 @@
         "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
     },
     {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partners/{partnerId:guid}/users",
+        "Controller":  "PartnersController",
+        "Action":  "CreatePartnerUser",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
         "Method":  "GET",
         "Route":  "/api/clinic/partners/contracts",
         "Controller":  "PartnersController",
@@ -547,6 +582,27 @@
     },
     {
         "Method":  "GET",
+        "Route":  "/api/clinic/partners/services",
+        "Controller":  "PartnersController",
+        "Action":  "ListServices",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partners/services",
+        "Controller":  "PartnersController",
+        "Action":  "CreateService",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/partners/services/{itemId:guid}",
+        "Controller":  "PartnersController",
+        "Action":  "UpdateService",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Contractor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
         "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}",
         "Controller":  "PatientAppController",
         "Action":  "GetProfile",
@@ -557,6 +613,13 @@
         "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/bookings",
         "Controller":  "PatientAppController",
         "Action":  "GetBookings",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/partner-orders",
+        "Controller":  "PatientAppController",
+        "Action":  "GetPartnerOrders",
         "Auth":  "Roles: Patient,SuperAdmin"
     },
     {

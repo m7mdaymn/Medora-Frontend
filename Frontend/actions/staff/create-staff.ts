@@ -22,3 +22,20 @@ export async function createStaffAction(
 
   return res
 }
+
+export async function createPayrollOnlyWorkerAction(
+  data: Omit<CreateStaffInput, 'username' | 'password'>,
+  tenantSlug: string,
+): Promise<BaseApiResponse<IStaff>> {
+  const res = await fetchApi<IStaff>('/api/clinic/staff/payroll-only', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    tenantSlug,
+  })
+
+  if (res.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/staff`)
+  }
+
+  return res
+}

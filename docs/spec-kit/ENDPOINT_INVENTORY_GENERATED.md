@@ -1,6 +1,6 @@
 ﻿# Endpoint Inventory (Generated)
 
-Generated: 2026-04-05 17:10:20 +02:00
+Generated: 2026-04-05 19:42:12 +02:00
 Source: src/EliteClinic.Api/Controllers
 
 | Method | Route | Controller | Action | Auth |
@@ -73,18 +73,27 @@ Source: src/EliteClinic.Api/Controllers
 | GET | /api/clinic/notifications/my | NotificationsController | GetMySubscriptions | Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
 | POST | /api/clinic/notifications/send | NotificationsController | SendNotification | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin |
 | POST | /api/clinic/notifications/subscribe | NotificationsController | Subscribe | Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
-| GET | /api/clinic/partner-orders | PartnerOrdersController | List | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin |
-| GET | /api/clinic/partner-orders/{orderId:guid} | PartnerOrdersController | GetById | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin |
-| POST | /api/clinic/partner-orders/{orderId:guid}/status | PartnerOrdersController | UpdateStatus | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin |
+| GET | /api/clinic/partner-orders | PartnerOrdersController | List | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| GET | /api/clinic/partner-orders/{orderId:guid} | PartnerOrdersController | GetById | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| POST | /api/clinic/partner-orders/{orderId:guid}/accept | PartnerOrdersController | Accept | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| POST | /api/clinic/partner-orders/{orderId:guid}/arrived | PartnerOrdersController | MarkArrived | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| POST | /api/clinic/partner-orders/{orderId:guid}/result | PartnerOrdersController | UploadResult | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| POST | /api/clinic/partner-orders/{orderId:guid}/schedule | PartnerOrdersController | Schedule | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
+| POST | /api/clinic/partner-orders/{orderId:guid}/status | PartnerOrdersController | UpdateStatus | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin |
 | GET | /api/clinic/partners | PartnersController | List | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin |
 | POST | /api/clinic/partners | PartnersController | Create | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | PUT | /api/clinic/partners/{partnerId:guid} | PartnersController | Update | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | POST | /api/clinic/partners/{partnerId:guid}/activation | PartnersController | SetActivation | Roles: ClinicOwner,ClinicManager,SuperAdmin |
+| POST | /api/clinic/partners/{partnerId:guid}/users | PartnersController | CreatePartnerUser | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | GET | /api/clinic/partners/contracts | PartnersController | ListContracts | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin |
 | POST | /api/clinic/partners/contracts | PartnersController | CreateContract | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | PUT | /api/clinic/partners/contracts/{contractId:guid} | PartnersController | UpdateContract | Roles: ClinicOwner,ClinicManager,SuperAdmin |
+| GET | /api/clinic/partners/services | PartnersController | ListServices | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Contractor,SuperAdmin |
+| POST | /api/clinic/partners/services | PartnersController | CreateService | Roles: ClinicOwner,ClinicManager,Contractor,SuperAdmin |
+| PUT | /api/clinic/partners/services/{itemId:guid} | PartnersController | UpdateService | Roles: ClinicOwner,ClinicManager,Contractor,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid} | PatientAppController | GetProfile | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/bookings | PatientAppController | GetBookings | Roles: Patient,SuperAdmin |
+| GET | /api/clinic/patient-app/profiles/{patientId:guid}/partner-orders | PatientAppController | GetPartnerOrders | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/queue-ticket | PatientAppController | GetQueueTicket | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/summary | PatientAppController | GetSummary | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/visits | PatientAppController | GetVisits | Roles: Patient,SuperAdmin |

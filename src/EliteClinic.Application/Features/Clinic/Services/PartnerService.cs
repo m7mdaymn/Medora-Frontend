@@ -348,19 +348,32 @@ public class PartnerService : IPartnerService
 
     public async Task<ApiResponse<PartnerServiceCatalogItemDto>> CreateServiceCatalogItemAsync(Guid tenantId, Guid callerUserId, CreatePartnerServiceCatalogItemRequest request)
     {
-        var partner = await _context.Partners
-            .FirstOrDefaultAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == request.PartnerId && p.IsActive);
-
-        if (partner == null)
-            return ApiResponse<PartnerServiceCatalogItemDto>.Error("Partner not found or inactive");
-
+        var partnerId = request.PartnerId;
         var isContractor = await IsContractorUserAsync(callerUserId);
         if (isContractor)
         {
-            var partnerIds = await GetActivePartnerIdsForContractorAsync(tenantId, callerUserId);
-            if (!partnerIds.Contains(partner.Id))
-                return ApiResponse<PartnerServiceCatalogItemDto>.Error("Contractor user cannot manage this partner");
+            var contractorPartnerIds = await GetActivePartnerIdsForContractorAsync(tenantId, callerUserId);
+            if (contractorPartnerIds.Count == 0)
+                return ApiResponse<PartnerServiceCatalogItemDto>.Error("No linked partners for contractor user");
+
+            if (!contractorPartnerIds.Contains(partnerId))
+            {
+                if (contractorPartnerIds.Count == 1)
+                {
+                    partnerId = contractorPartnerIds.First();
+                }
+                else
+                {
+                    return ApiResponse<PartnerServiceCatalogItemDto>.Error("partnerId is required for contractor users linked to multiple partners");
+                }
+            }
         }
+
+        var partner = await _context.Partners
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == partnerId && p.IsActive);
+
+        if (partner == null)
+            return ApiResponse<PartnerServiceCatalogItemDto>.Error("Partner not found or inactive");
 
         if (request.BranchId.HasValue)
         {
@@ -380,7 +393,7 @@ public class PartnerService : IPartnerService
         var duplicate = await _context.PartnerServiceCatalogItems.AnyAsync(i =>
             i.TenantId == tenantId &&
             !i.IsDeleted &&
-            i.PartnerId == request.PartnerId &&
+            i.PartnerId == partnerId &&
             i.BranchId == request.BranchId &&
             i.ServiceName == serviceName);
 
@@ -390,7 +403,7 @@ public class PartnerService : IPartnerService
         var item = new PartnerServiceCatalogItem
         {
             TenantId = tenantId,
-            PartnerId = request.PartnerId,
+            PartnerId = partnerId,
             BranchId = request.BranchId,
             ServiceName = serviceName,
             Price = request.Price,

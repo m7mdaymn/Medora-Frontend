@@ -4682,7 +4682,7 @@ namespace EliteClinic.Infrastructure.Migrations
                     b.HasOne("EliteClinic.Domain.Entities.PartnerServiceCatalogItem", "PartnerServiceCatalogItem")
                         .WithMany()
                         .HasForeignKey("PartnerServiceCatalogItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("EliteClinic.Domain.Entities.Visit", "Visit")
                         .WithMany()

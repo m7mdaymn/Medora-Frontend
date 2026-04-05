@@ -80,7 +80,7 @@ export function EditDoctorDialog({ doctor, tenantSlug, isOpen, onClose }: EditDo
       } else {
         toast.error(res.message || 'فشل في رفع الصورة')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ أثناء الرفع')
     } finally {
       setIsUploading(false)

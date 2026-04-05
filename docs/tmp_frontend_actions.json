@@ -241,6 +241,21 @@
                             "exportedFunctionCount":  3
                         },
                         {
+                            "file":  "Frontend/actions/partner/workflow.ts",
+                            "exportedFunctions":  [
+                                                      "acceptPartnerOrderAction",
+                                                      "createPartnerServiceAction",
+                                                      "createPartnerUserAction",
+                                                      "listPartnerOrdersAction",
+                                                      "listPartnersAction",
+                                                      "listPartnerServicesAction",
+                                                      "markPartnerOrderArrivedAction",
+                                                      "schedulePartnerOrderAction",
+                                                      "uploadPartnerResultAction"
+                                                  ],
+                            "exportedFunctionCount":  9
+                        },
+                        {
                             "file":  "Frontend/actions/patient/add-subprofile.ts",
                             "exportedFunctions":  [
                                                       "addSubProfileAction"
@@ -337,12 +352,13 @@
                                                       "getPatientBookingsAppAction",
                                                       "getPatientCreditBalanceAction",
                                                       "getPatientCreditHistoryAction",
+                                                      "getPatientPartnerOrdersAppAction",
                                                       "getPatientProfileAppAction",
                                                       "getPatientQueueTicketAppAction",
                                                       "getPatientSummaryAppAction",
                                                       "getPatientVisitsAppAction"
                                                   ],
-                            "exportedFunctionCount":  7
+                            "exportedFunctionCount":  8
                         },
                         {
                             "file":  "Frontend/actions/platform/create-tenant.ts",
@@ -547,7 +563,7 @@
                         }
                     ],
     "summary":  {
-                    "actionFileCount":  72,
-                    "actionExportedFunctionCount":  102
+                    "actionFileCount":  73,
+                    "actionExportedFunctionCount":  112
                 }
 }

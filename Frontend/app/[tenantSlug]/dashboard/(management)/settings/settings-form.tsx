@@ -70,15 +70,6 @@ export function SettingsForm({ initialData, tenantSlug }: SettingsFormProps) {
 
   const { fields } = useFieldArray({ control: form.control, name: 'workingHours' })
 
-  // --- منطق بناء اللينك الكامل ---
-  const watchLogoUrl = form.watch('logoUrl')
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || ''
-  const fullLogoUrl = watchLogoUrl
-    ? watchLogoUrl.startsWith('http')
-      ? watchLogoUrl
-      : `${baseUrl}${watchLogoUrl.startsWith('/') ? '' : '/'}${watchLogoUrl}`
-    : ''
-
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -99,7 +90,7 @@ export function SettingsForm({ initialData, tenantSlug }: SettingsFormProps) {
       } else {
         toast.error(res.message || 'فشل في رفع اللوجو')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ أثناء الرفع')
     } finally {
       setIsUploadingLogo(false)
@@ -115,7 +106,7 @@ export function SettingsForm({ initialData, tenantSlug }: SettingsFormProps) {
       } else {
         toast.error(response.message || 'حدث خطأ أثناء الحفظ')
       }
-    } catch (error) {
+    } catch {
       toast.error('حدث خطأ غير متوقع')
     }
   }

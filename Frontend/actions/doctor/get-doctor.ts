@@ -14,3 +14,25 @@ export async function getDoctorAction(
     cache: 'no-store',
   })
 }
+
+export async function getMyDoctorProfileAction(
+  tenantSlug: string,
+): Promise<BaseApiResponse<IDoctor>> {
+  return await fetchApi<IDoctor>(`/api/clinic/doctors/me`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+}
+
+export async function updateDoctorServicesAction(
+  tenantSlug: string,
+  doctorId: string,
+  clinicServiceIds: string[],
+) {
+  return await fetchApi<IDoctor>(`/api/clinic/doctors/${doctorId}/services`, {
+    method: 'PUT',
+    tenantSlug,
+    body: JSON.stringify({ clinicServiceIds }),
+  })
+}

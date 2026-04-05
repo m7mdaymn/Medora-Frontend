@@ -1,0 +1,39 @@
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Application\Common\Models\ApiResponse.cs
+  - code: CS8618; line: 11,12; message: Non-nullable property 'Message' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 110,12; message: Non-nullable property 'Message' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 110,12; message: Non-nullable property 'Pagination' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 73,12; message: Non-nullable property 'Message' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Application\Features\Auth\DTOs\AuthDtos.cs
+  - code: CS8618; line: 11,19; message: Non-nullable property 'Token' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 12,19; message: Non-nullable property 'RefreshToken' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 14,24; message: Non-nullable property 'User' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 19,19; message: Non-nullable property 'Token' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 20,19; message: Non-nullable property 'RefreshToken' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 22,31; message: Non-nullable property 'User' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 28,19; message: Non-nullable property 'Username' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 29,19; message: Non-nullable property 'DisplayName' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 30,19; message: Non-nullable property 'Role' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 39,19; message: Non-nullable property 'Username' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 40,19; message: Non-nullable property 'DisplayName' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 41,19; message: Non-nullable property 'Role' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 49,19; message: Non-nullable property 'Name' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 60,19; message: Non-nullable property 'Status' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 61,19; message: Non-nullable property 'Database' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 62,19; message: Non-nullable property 'Version' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Application\Features\Auth\Services\AuthService.cs
+  - code: CS8601; line: 157,28; message: Possible null reference assignment.
+  - code: CS8601; line: 191,28; message: Possible null reference assignment.
+  - code: CS8601; line: 234,24; message: Possible null reference assignment.
+  - code: CS8604; line: 253,34; message: Possible null reference argument for parameter 'value' in 'Claim.Claim(string type, string value)'.
+  - code: CS8604; line: 264,46; message: Possible null reference argument for parameter 'value' in 'Claim.Claim(string type, string value)'.
+  - code: CS8601; line: 86,28; message: Possible null reference assignment.
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Domain\Entities\ApplicationUser.cs
+  - code: CS8618; line: 18,12; message: Non-nullable property 'DisplayName' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Domain\Entities\AuditLog.cs
+  - code: CS8618; line: 15,12; message: Non-nullable property 'Action' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 15,12; message: Non-nullable property 'EntityId' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 15,12; message: Non-nullable property 'EntityType' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+FILE: C:\DATA\Elite Clinic\src\EliteClinic.Domain\Entities\Tenant.cs
+  - code: CS8618; line: 18,12; message: Non-nullable property 'Name' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+  - code: CS8618; line: 18,12; message: Non-nullable property 'Slug' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+TOTALS: warnings=32; errors=0

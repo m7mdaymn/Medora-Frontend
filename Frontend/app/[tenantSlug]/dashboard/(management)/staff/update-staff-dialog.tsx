@@ -69,7 +69,7 @@ export function UpdateStaffDialog({ staff, tenantSlug, open, onOpenChange }: Pro
         toast.success('تم الحفظ بنجاح')
         onOpenChange(false)
       }
-    } catch (err) {
+    } catch {
       toast.error('حدث خطأ غير متوقع')
     } finally {
       setLoading(false)

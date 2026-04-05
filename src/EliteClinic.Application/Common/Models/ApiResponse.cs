@@ -3,7 +3,7 @@ namespace EliteClinic.Application.Common.Models;
 public class ApiResponse<T>
 {
     public bool Success { get; set; }
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
     public T? Data { get; set; }
     public List<object> Errors { get; set; }
     public ApiResponseMeta Meta { get; set; }
@@ -66,7 +66,7 @@ public class ApiResponse<T>
 public class ApiResponse
 {
     public bool Success { get; set; }
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
     public List<object> Errors { get; set; }
     public ApiResponseMeta Meta { get; set; }
 
@@ -102,9 +102,9 @@ public class ApiResponse
 public class PaginatedResponse<T>
 {
     public bool Success { get; set; }
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
     public List<T> Data { get; set; }
-    public PaginationMeta Pagination { get; set; }
+    public PaginationMeta Pagination { get; set; } = new();
     public ApiResponseMeta Meta { get; set; }
 
     public PaginatedResponse()

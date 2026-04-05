@@ -23,13 +23,11 @@ import { ClinicalTab } from './clinical-tab'
 export function VisitTerminalClient({
   visit,
   tenantSlug,
-  defaultTab,
   doctor,
   summary,
 }: {
   visit: IVisit
   tenantSlug: string
-  defaultTab?: string
   doctor?: IDoctor
   summary: IPatientSummary | null
 }) {

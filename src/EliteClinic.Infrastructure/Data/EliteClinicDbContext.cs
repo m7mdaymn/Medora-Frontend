@@ -1027,7 +1027,7 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasOne(e => e.PartnerServiceCatalogItem)
                 .WithMany()
                 .HasForeignKey(e => e.PartnerServiceCatalogItemId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             entity.HasOne(e => e.Branch)
                 .WithMany()

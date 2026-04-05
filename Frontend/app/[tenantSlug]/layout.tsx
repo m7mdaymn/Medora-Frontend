@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import { TenantInitializer } from '../../components/TenantInitializer'
 import { BaseApiResponse } from '../../types/api'
 import { getFullImageUrl } from '../../lib/utils'
+import { buildApiUrl } from '@/lib/apiBaseUrl'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -12,10 +13,9 @@ interface LayoutProps {
 
 // 1. دالة معزولة لجلب البيانات عشان نستخدمها في الـ SEO والـ Layout بدون تكرار كود
 async function getClinicData(tenantSlug: string): Promise<IPublicClinic | null> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/public/${tenantSlug}/clinic`,
-    { next: { revalidate: 3600 } },
-  )
+  const response = await fetch(buildApiUrl(`/api/public/${tenantSlug}/clinic`), {
+    next: { revalidate: 3600 },
+  })
 
   if (!response.ok) {
     if (response.status === 404) return null

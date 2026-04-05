@@ -40,7 +40,7 @@ export async function patientLoginAction(
         meta: result.meta,
       }
     }
-  } catch (error) {
+  } catch {
     return {
       success: false,
       message: 'توكن غير صالح من الخادم',

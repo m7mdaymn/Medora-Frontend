@@ -5,6 +5,7 @@ export type UserRole =
   | 'Receptionist'
   | 'Doctor'
   | 'Nurse'
+  | 'Patient'
   | 'Contractor'
 
 export interface BaseApiResponse<T> {

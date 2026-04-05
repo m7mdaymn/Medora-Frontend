@@ -1,0 +1,41 @@
+﻿Total issues: 34
+Rule counts:
+@typescript-eslint/no-unused-vars: 30
+react-hooks/exhaustive-deps: 2
+react-hooks/incompatible-library: 2
+
+Issues:
+Frontend/actions/admin/login.tsx:39 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/auth/login.ts:37 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/auth/patientLogin.ts:43 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/auth/refresh-token.ts:66 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/patient/delete-patient.ts:29 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/prescription/delete-prescription.ts:21 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/actions/prescription/update-prescription.ts:27 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/(public)/page.tsx:9 | @typescript-eslint/no-unused-vars | 'IPublicWorkingHour' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(clinical)/appointments/appointments-calendar.tsx:83 | @typescript-eslint/no-unused-vars | 'currentDate' is assigned a value but never used.
+Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/[id]/visits-timeline.tsx:15 | @typescript-eslint/no-unused-vars | 'tenantSlug' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/add-patient-modal.tsx:156 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/AddSubProfileModal.tsx:72 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/edit-patient-modal.tsx:150 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(finance)/contracts/page.tsx:42 | react-hooks/exhaustive-deps | The 'partners' logical expression could make the dependencies of useMemo Hook (at line 44) change on every render. To fix this, wrap the initialization of 'partners' in its own useMemo() Hook.
+Frontend/app/[tenantSlug]/dashboard/(management)/doctors/add-doctor-dialog.tsx:105 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/doctors/edit-doctor-dialog.tsx:83 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/services/add-service-modal.tsx:62 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/services/link-service-modal.tsx:70 | react-hooks/incompatible-library | Compilation Skipped: Use of incompatible library This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized. C:\DATA\Elite Clinic\Frontend\app\[tenantSlug]\dashboard\(management)\services\link-service-modal.tsx:70:29 68 | 69 | // Ù„Ù…Ø§ Ø§Ù„ÙŠÙˆØ²Ø± ÙŠØ®ØªØ§Ø± Ø®Ø¯Ù…Ø©ØŒ Ù†Ø¬ÙŠØ¨ Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ Ù†Ø¹Ø±Ø¶Ù‡ÙˆÙ„Ù‡ ÙƒÙ…Ø¹Ù„ÙˆÙ…Ø© > 70 | const selectedServiceId = form.watch('clinicServiceId') | ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely. 71 | const activeCatalogService = catalogServices.find((s) => s.id === selectedServiceId) 72 | 73 | const onSubmit = async (values: DoctorLinkInput) => {
+Frontend/app/[tenantSlug]/dashboard/(management)/services/link-service-modal.tsx:88 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/services/service-row-actions.tsx:80 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/settings/settings-form.tsx:76 | @typescript-eslint/no-unused-vars | 'fullLogoUrl' is assigned a value but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/settings/settings-form.tsx:102 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/settings/settings-form.tsx:118 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/(management)/staff/update-staff-dialog.tsx:72 | @typescript-eslint/no-unused-vars | 'err' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/doctor/queue/current-patient-card.tsx:66 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/doctor/visits/[visitId]/clinical-tab.tsx:64 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.
+Frontend/app/[tenantSlug]/dashboard/doctor/visits/[visitId]/visit-terminal-client.tsx:26 | @typescript-eslint/no-unused-vars | 'defaultTab' is defined but never used.
+Frontend/components/clinic-landing-page-template/Hero.tsx:15 | @typescript-eslint/no-unused-vars | 'clinic' is defined but never used.
+Frontend/components/ui/data-table.tsx:54 | react-hooks/incompatible-library | Compilation Skipped: Use of incompatible library This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized. C:\DATA\Elite Clinic\Frontend\components\ui\data-table.tsx:54:17 52 | const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]) 53 | > 54 | const table = useReactTable({ | ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely 55 | data, 56 | columns, 57 | getCoreRowModel: getCoreRowModel(),
+Frontend/components/ui/spotlight.tsx:65 | react-hooks/exhaustive-deps | React Hook useEffect has a missing dependency: 'colorArray'. Either include it or remove the dependency array.
+Frontend/components/ui/starfield.tsx:62 | @typescript-eslint/no-unused-vars | 'centerX' is assigned a value but never used.
+Frontend/components/ui/starfield.tsx:63 | @typescript-eslint/no-unused-vars | 'centerY' is assigned a value but never used.
+Frontend/proxy.ts:15 | @typescript-eslint/no-unused-vars | 'e' is defined but never used.
+Frontend/proxy.ts:84 | @typescript-eslint/no-unused-vars | 'error' is defined but never used.

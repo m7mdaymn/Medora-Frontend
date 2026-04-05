@@ -16,8 +16,20 @@
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/appointments/page.tsx"
     },
     {
+        "route":  "/{*}/dashboard/contractor/orders",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/contractor/orders/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/contractor/services",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/contractor/services/page.tsx"
+    },
+    {
         "route":  "/{*}/dashboard/contracts",
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/contracts/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/contracts",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/contracts/page.tsx"
     },
     {
         "route":  "/{*}/dashboard/doctor/patients",
@@ -30,6 +42,10 @@
     {
         "route":  "/{*}/dashboard/doctor/queue",
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/queue/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/reports",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/reports/page.tsx"
     },
     {
         "route":  "/{*}/dashboard/doctor/settings",

@@ -20,3 +20,19 @@ export async function createTenantAction(
 
   return res
 }
+
+export async function updateTenantAction(
+  tenantId: string,
+  data: Partial<CreateTenantInput>,
+): Promise<BaseApiResponse<ITenant>> {
+  const res = await fetchApi<ITenant>(`/api/platform/tenants/${tenantId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+  if (res.success) {
+    revalidatePath('/admin/tenants')
+  }
+
+  return res
+}

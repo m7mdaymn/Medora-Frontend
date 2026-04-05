@@ -83,8 +83,8 @@ public class AuthService : IAuthService
             User = new UserInfoDto
             {
                 Id = user.Id,
-                Username = user.UserName,
-                DisplayName = user.DisplayName,
+                Username = user.UserName ?? string.Empty,
+                DisplayName = user.DisplayName ?? string.Empty,
                 Role = roles.FirstOrDefault() ?? "Unknown",
                 TenantId = user.TenantId,
                 TenantSlug = tenantSlug,
@@ -154,8 +154,8 @@ public class AuthService : IAuthService
             User = new PatientUserInfoDto
             {
                 Id = user.Id,
-                Username = user.UserName,
-                DisplayName = user.DisplayName,
+                Username = user.UserName ?? string.Empty,
+                DisplayName = user.DisplayName ?? string.Empty,
                 Role = roles.FirstOrDefault() ?? "Unknown",
                 TenantId = user.TenantId,
                 Profiles = profiles
@@ -188,8 +188,8 @@ public class AuthService : IAuthService
             User = new UserInfoDto
             {
                 Id = user.Id,
-                Username = user.UserName,
-                DisplayName = user.DisplayName,
+                Username = user.UserName ?? string.Empty,
+                DisplayName = user.DisplayName ?? string.Empty,
                 Role = roles.FirstOrDefault() ?? "Unknown",
                 TenantId = user.TenantId,
                 TenantSlug = resolvedTenantSlug,
@@ -231,8 +231,8 @@ public class AuthService : IAuthService
         return new UserInfoDto
         {
             Id = user.Id,
-            Username = user.UserName,
-            DisplayName = user.DisplayName,
+            Username = user.UserName ?? string.Empty,
+            DisplayName = user.DisplayName ?? string.Empty,
             Role = roles.FirstOrDefault() ?? "Unknown",
             TenantId = user.TenantId,
             TenantSlug = resolved,
@@ -250,8 +250,8 @@ public class AuthService : IAuthService
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.UserName),
-            new("displayName", user.DisplayName),
+            new(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new("displayName", user.DisplayName ?? string.Empty),
         };
 
         foreach (var role in roles)
@@ -261,7 +261,7 @@ public class AuthService : IAuthService
 
         if (user.TenantId.HasValue)
         {
-            claims.Add(new Claim("tenantId", user.TenantId.ToString()));
+            claims.Add(new Claim("tenantId", user.TenantId.Value.ToString()));
         }
 
         if (!string.IsNullOrWhiteSpace(tenantSlug))

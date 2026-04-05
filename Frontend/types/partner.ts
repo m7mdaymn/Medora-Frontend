@@ -68,6 +68,28 @@ export interface IPartnerServiceCatalogItem {
   createdAt: string
 }
 
+export interface ICreatePartnerServicePayload {
+  partnerId: string
+  branchId?: string
+  serviceName: string
+  price: number
+  settlementTarget: PartnerSettlementTarget
+  settlementPercentage: number
+  clinicDoctorSharePercentage?: number
+  notes?: string
+}
+
+export interface IUpdatePartnerServicePayload {
+  branchId?: string
+  serviceName: string
+  price: number
+  settlementTarget: PartnerSettlementTarget
+  settlementPercentage: number
+  clinicDoctorSharePercentage?: number
+  isActive: boolean
+  notes?: string
+}
+
 export interface IPartnerUser {
   id: string
   partnerId: string
@@ -79,6 +101,75 @@ export interface IPartnerUser {
   isPrimary: boolean
   isActive: boolean
   createdAt: string
+}
+
+export interface IPartner {
+  id: string
+  name: string
+  type: PartnerType
+  contactName: string | null
+  contactPhone: string | null
+  contactEmail: string | null
+  address: string | null
+  notes: string | null
+  isActive: boolean
+  createdAt: string
+}
+
+export interface IPartnerContract {
+  id: string
+  partnerId: string
+  partnerName: string
+  partnerType: PartnerType
+  branchId: string | null
+  serviceScope: string | null
+  commissionPercentage: number | null
+  settlementTarget: PartnerSettlementTarget
+  clinicDoctorSharePercentage: number | null
+  flatFee: number | null
+  effectiveFrom: string
+  effectiveTo: string | null
+  isActive: boolean
+  notes: string | null
+  createdAt: string
+}
+
+export interface ICreatePartnerPayload {
+  name: string
+  type: PartnerType
+  contactName?: string
+  contactPhone?: string
+  contactEmail?: string
+  address?: string
+  notes?: string
+}
+
+export type IUpdatePartnerPayload = ICreatePartnerPayload
+
+export interface ICreatePartnerContractPayload {
+  partnerId: string
+  branchId?: string
+  serviceScope?: string
+  commissionPercentage?: number
+  settlementTarget?: PartnerSettlementTarget
+  clinicDoctorSharePercentage?: number
+  flatFee?: number
+  effectiveFrom: string
+  effectiveTo?: string
+  notes?: string
+}
+
+export interface IUpdatePartnerContractPayload {
+  branchId?: string
+  serviceScope?: string
+  commissionPercentage?: number
+  settlementTarget?: PartnerSettlementTarget
+  clinicDoctorSharePercentage?: number
+  flatFee?: number
+  effectiveFrom: string
+  effectiveTo?: string
+  isActive: boolean
+  notes?: string
 }
 
 export interface IPartnerTimelineItem {

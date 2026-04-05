@@ -234,7 +234,7 @@ namespace EliteClinic.Infrastructure.Migrations
                 column: "PartnerServiceCatalogItemId",
                 principalTable: "PartnerServiceCatalogItems",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.NoAction);
         }
 
         /// <inheritdoc />

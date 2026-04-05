@@ -16,7 +16,7 @@ export default function Footer({ clinic, tenantSlug }: FooterProps) {
   const displayAddress = [clinic.city, clinic.address].filter(Boolean).join('، ')
 
   return (
-    <footer className='w-full bg-muted border-t-2 border-border/50 pt-16 pb-8 mt-20' dir='rtl'>
+    <footer id='contact' className='w-full bg-muted border-t-2 border-border/50 pt-16 pb-8 mt-20' dir='rtl'>
       <div className='container mx-auto px-4 md:px-8 max-w-7xl'>
         {/* شبكة الفوتر الرئيسية */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16'>
