@@ -1,0 +1,24 @@
+﻿SUMMARY COUNTS
+--------------
+Backticked segments extracted: 632
+Plain repo-path matches extracted: 225
+Skipped pattern/glob entries: 13
+Unique slash path candidates: 132
+Missing exact paths: 0
+Unique bare filename candidates: 66
+Resolved bare filenames: 64
+Missing bare filenames: 0
+Ambiguous bare filenames: 2
+
+MISSING EXACT PATHS
+-------------------
+(none)
+
+MISSING BARE FILENAMES
+----------------------
+(none)
+
+AMBIGUOUS BARE FILENAMES
+------------------------
+DoctorService.cs => src/EliteClinic.Application/Features/Clinic/Services/DoctorService.cs | src/EliteClinic.Domain/Entities/DoctorService.cs
+Program.cs => .tmp/AssemblyTypeInspector/Program.cs | src/EliteClinic.Api/Program.cs

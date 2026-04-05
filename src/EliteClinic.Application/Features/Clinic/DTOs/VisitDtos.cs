@@ -7,7 +7,9 @@ namespace EliteClinic.Application.Features.Clinic.DTOs;
 public class VisitDto
 {
     public Guid Id { get; set; }
+    public Guid? BranchId { get; set; }
     public VisitType VisitType { get; set; }
+    public VisitSource Source { get; set; }
     public Guid? QueueTicketId { get; set; }
     public Guid DoctorId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
@@ -16,6 +18,11 @@ public class VisitDto
     public string PatientPhone { get; set; } = string.Empty;
     public DateTime? PatientDateOfBirth { get; set; }
     public string PatientGender { get; set; } = string.Empty;
+    public string? ServiceName { get; set; }
+    public TicketStatus? TicketStatus { get; set; }
+    public DateTime? TicketCancelledAt { get; set; }
+    public bool IsCancelled { get; set; }
+    public string EffectiveStatus { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public DateTime? DateOfBirth { get; set; }
     public string Gender { get; set; } = string.Empty;
@@ -55,6 +62,8 @@ public class VisitDto
 public class CreateVisitRequest
 {
     public VisitType VisitType { get; set; } = VisitType.Exam;
+    public VisitSource Source { get; set; } = VisitSource.WalkInTicket;
+    public Guid? BranchId { get; set; }
     public Guid? QueueTicketId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid PatientId { get; set; }
@@ -136,4 +145,18 @@ public class CloseStaleVisitRequest
 {
     public string? ResolutionNote { get; set; }
     public bool MarkQueueTicketNoShow { get; set; } = true;
+}
+
+public class MyVisitsFilterRequest
+{
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+    public VisitSource? Source { get; set; }
+    public VisitType? VisitType { get; set; }
+    public VisitStatus? Status { get; set; }
+    public bool? IsBooking { get; set; }
+    public bool? IsExam { get; set; }
+    public bool? IsConsultation { get; set; }
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
 }

@@ -57,6 +57,8 @@ public class ClinicSettingsService : IClinicSettingsService
         settings.BookingEnabled = request.BookingEnabled;
         settings.CancellationWindowHours = request.CancellationWindowHours;
         settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow;
+        settings.SelfServicePaymentPolicy = request.SelfServicePaymentPolicy;
+        settings.SelfServiceRequestExpiryHours = request.SelfServiceRequestExpiryHours;
 
         // Replace working hours if provided
         if (request.WorkingHours != null)
@@ -124,6 +126,8 @@ public class ClinicSettingsService : IClinicSettingsService
         if (request.BookingEnabled.HasValue) settings.BookingEnabled = request.BookingEnabled.Value;
         if (request.RetainCreditOnNoShow.HasValue) settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow.Value;
         if (request.CancellationWindowHours.HasValue) settings.CancellationWindowHours = request.CancellationWindowHours.Value;
+        if (request.SelfServicePaymentPolicy.HasValue) settings.SelfServicePaymentPolicy = request.SelfServicePaymentPolicy.Value;
+        if (request.SelfServiceRequestExpiryHours.HasValue) settings.SelfServiceRequestExpiryHours = request.SelfServiceRequestExpiryHours.Value;
 
         // Replace working hours if provided
         if (request.WorkingHours != null)
@@ -164,6 +168,72 @@ public class ClinicSettingsService : IClinicSettingsService
         return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(patched), "Clinic settings patched successfully");
     }
 
+    public async Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false)
+    {
+        var settings = await _context.ClinicSettings.FirstOrDefaultAsync();
+        if (settings == null)
+            return ApiResponse<ClinicPaymentOptionsDto>.Error("Clinic settings not found");
+
+        var methodsQuery = _context.ClinicPaymentMethods
+            .Where(m => m.TenantId == tenantId && !m.IsDeleted);
+
+        if (activeOnly)
+            methodsQuery = methodsQuery.Where(m => m.IsActive);
+
+        var methods = await methodsQuery
+            .OrderBy(m => m.DisplayOrder)
+            .ThenBy(m => m.CreatedAt)
+            .ToListAsync();
+
+        return ApiResponse<ClinicPaymentOptionsDto>.Ok(new ClinicPaymentOptionsDto
+        {
+            SelfServicePaymentPolicy = settings.SelfServicePaymentPolicy,
+            SelfServiceRequestExpiryHours = settings.SelfServiceRequestExpiryHours,
+            Methods = methods.Select(MapPaymentMethod).ToList()
+        }, "Payment options retrieved successfully");
+    }
+
+    public async Task<ApiResponse<List<ClinicPaymentMethodDto>>> ReplacePaymentMethodsAsync(Guid tenantId, UpdateClinicPaymentMethodsRequest request)
+    {
+        if (request.Methods == null || request.Methods.Count == 0)
+            return ApiResponse<List<ClinicPaymentMethodDto>>.Error("At least one payment method is required");
+
+        var existing = await _context.ClinicPaymentMethods
+            .Where(m => m.TenantId == tenantId && !m.IsDeleted)
+            .ToListAsync();
+
+        foreach (var item in existing)
+        {
+            item.IsDeleted = true;
+            item.DeletedAt = DateTime.UtcNow;
+        }
+
+        var entities = request.Methods.Select(m => new ClinicPaymentMethod
+        {
+            TenantId = tenantId,
+            MethodName = m.MethodName,
+            ProviderName = m.ProviderName,
+            AccountName = m.AccountName,
+            AccountNumber = m.AccountNumber,
+            Iban = m.Iban,
+            WalletNumber = m.WalletNumber,
+            Instructions = m.Instructions,
+            IsActive = m.IsActive,
+            DisplayOrder = m.DisplayOrder
+        }).ToList();
+
+        _context.ClinicPaymentMethods.AddRange(entities);
+        await _context.SaveChangesAsync();
+
+        var response = entities
+            .OrderBy(m => m.DisplayOrder)
+            .ThenBy(m => m.CreatedAt)
+            .Select(MapPaymentMethod)
+            .ToList();
+
+        return ApiResponse<List<ClinicPaymentMethodDto>>.Ok(response, "Payment methods replaced successfully");
+    }
+
     private static ClinicSettingsDto MapToDto(ClinicSettings settings)
     {
         return new ClinicSettingsDto
@@ -184,6 +254,8 @@ public class ClinicSettingsService : IClinicSettingsService
             BookingEnabled = settings.BookingEnabled,
             CancellationWindowHours = settings.CancellationWindowHours,
             RetainCreditOnNoShow = settings.RetainCreditOnNoShow,
+            SelfServicePaymentPolicy = settings.SelfServicePaymentPolicy,
+            SelfServiceRequestExpiryHours = settings.SelfServiceRequestExpiryHours,
             WorkingHours = settings.WorkingHours
                 .Where(w => !w.IsDeleted)
                 .Select(w => new WorkingHourDto
@@ -218,5 +290,22 @@ public class ClinicSettingsService : IClinicSettingsService
         {
             return new Dictionary<string, string>();
         }
+    }
+
+    private static ClinicPaymentMethodDto MapPaymentMethod(ClinicPaymentMethod method)
+    {
+        return new ClinicPaymentMethodDto
+        {
+            Id = method.Id,
+            MethodName = method.MethodName,
+            ProviderName = method.ProviderName,
+            AccountName = method.AccountName,
+            AccountNumber = method.AccountNumber,
+            Iban = method.Iban,
+            WalletNumber = method.WalletNumber,
+            Instructions = method.Instructions,
+            IsActive = method.IsActive,
+            DisplayOrder = method.DisplayOrder
+        };
     }
 }

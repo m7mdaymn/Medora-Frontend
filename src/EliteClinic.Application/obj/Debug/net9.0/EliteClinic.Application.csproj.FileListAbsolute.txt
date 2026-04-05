@@ -2,7 +2,9 @@ C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Ap
 C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Application.dll
 C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Application.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Infrastructure.dll
 C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Infrastructure.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Application.csproj.AssemblyReference.cache
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Application.GeneratedMSBuildEditorConfig.editorconfig
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Application.AssemblyInfoInputs.cache
@@ -14,5 +16,3 @@ C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Ap
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\refint\EliteClinic.Application.dll
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Application.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\ref\EliteClinic.Application.dll
-C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Infrastructure.dll
-C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\Debug\net9.0\EliteClinic.Infrastructure.pdb

@@ -6,6 +6,7 @@ namespace EliteClinic.Domain.Entities;
 /// </summary>
 public class Expense : TenantBaseEntity
 {
+    public Guid? BranchId { get; set; }
     public string Category { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public string? Notes { get; set; }
@@ -13,6 +14,7 @@ public class Expense : TenantBaseEntity
     public Guid RecordedByUserId { get; set; }
 
     public ApplicationUser RecordedBy { get; set; } = null!;
+    public Branch? Branch { get; set; }
 
     public Expense()
     {

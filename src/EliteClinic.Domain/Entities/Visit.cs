@@ -9,6 +9,8 @@ namespace EliteClinic.Domain.Entities;
 public class Visit : TenantBaseEntity
 {
     public VisitType VisitType { get; set; }
+    public VisitSource Source { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid? QueueTicketId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid PatientId { get; set; }
@@ -39,6 +41,7 @@ public class Visit : TenantBaseEntity
     public DateTime? FullyClosedAt { get; set; }
 
     public Doctor Doctor { get; set; } = null!;
+    public Branch? Branch { get; set; }
     public Patient Patient { get; set; } = null!;
     public QueueTicket? QueueTicket { get; set; }
     public Invoice? Invoice { get; set; }
@@ -48,6 +51,7 @@ public class Visit : TenantBaseEntity
     public Visit()
     {
         VisitType = VisitType.Exam;
+        Source = VisitSource.WalkInTicket;
         Status = VisitStatus.Open;
         LifecycleState = EncounterLifecycleState.InProgress;
         FinancialState = EncounterFinancialState.NotStarted;

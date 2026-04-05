@@ -16,4 +16,5 @@ public class PatientMedicalDocument : TenantBaseEntity
     public string? Notes { get; set; }
 
     public Patient Patient { get; set; } = null!;
+    public ICollection<PatientMedicalDocumentThread> Threads { get; set; } = new List<PatientMedicalDocumentThread>();
 }

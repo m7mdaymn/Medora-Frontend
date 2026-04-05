@@ -8,6 +8,7 @@ namespace EliteClinic.Domain.Entities;
 public class LabRequest : TenantBaseEntity
 {
     public Guid VisitId { get; set; }
+    public Guid? PartnerOrderId { get; set; }
     public string TestName { get; set; } = string.Empty;
     public LabRequestType Type { get; set; }
     public string? Notes { get; set; }

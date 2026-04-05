@@ -56,10 +56,23 @@ public class DoctorServiceImpl : IDoctorService
             UrgentEnabled = request.UrgentEnabled ?? (request.UrgentCaseMode != UrgentCaseMode.Disabled),
             UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(request.UrgentInsertAfterCount, request.UrgentCaseMode),
             AvgVisitDurationMinutes = request.AvgVisitDurationMinutes,
+            CompensationMode = request.CompensationMode,
+            CompensationValue = request.CompensationValue,
+            CompensationEffectiveFrom = request.CompensationEffectiveFrom ?? DateTime.UtcNow,
             IsEnabled = true
         };
 
         _context.Doctors.Add(doctor);
+        _context.DoctorCompensationHistories.Add(new DoctorCompensationHistory
+        {
+            TenantId = tenantId,
+            DoctorId = doctor.Id,
+            Mode = doctor.CompensationMode,
+            Value = doctor.CompensationValue,
+            EffectiveFrom = doctor.CompensationEffectiveFrom,
+            ChangedByUserId = user.Id,
+            Notes = "Initial compensation setup"
+        });
 
         // Auto-create default visit field config
         var visitConfig = new DoctorVisitFieldConfig
@@ -82,6 +95,7 @@ public class DoctorServiceImpl : IDoctorService
         var query = _context.Doctors
             .Include(d => d.User)
             .Include(d => d.Services.Where(s => !s.IsDeleted))
+            .Include(d => d.CompensationHistory.Where(h => !h.IsDeleted))
             .Include(d => d.VisitFieldConfig)
             .Where(d => d.TenantId == tenantId)
             .AsQueryable();
@@ -122,6 +136,7 @@ public class DoctorServiceImpl : IDoctorService
         var doctor = await _context.Doctors
             .Include(d => d.User)
             .Include(d => d.Services.Where(s => !s.IsDeleted))
+            .Include(d => d.CompensationHistory.Where(h => !h.IsDeleted))
             .Include(d => d.VisitFieldConfig)
             .FirstOrDefaultAsync(d => d.TenantId == tenantId && d.UserId == doctorUserId && !d.IsDeleted);
 
@@ -138,6 +153,10 @@ public class DoctorServiceImpl : IDoctorService
         if (doctor == null)
             return ApiResponse<DoctorDto>.Error("Doctor not found");
 
+        var compensationChanged = doctor.CompensationMode != request.CompensationMode
+            || doctor.CompensationValue != request.CompensationValue
+            || doctor.CompensationEffectiveFrom != (request.CompensationEffectiveFrom ?? doctor.CompensationEffectiveFrom);
+
         doctor.Name = request.Name;
         doctor.Specialty = request.Specialty;
         doctor.Phone = request.Phone;
@@ -147,6 +166,23 @@ public class DoctorServiceImpl : IDoctorService
         doctor.UrgentEnabled = request.UrgentEnabled ?? (request.UrgentCaseMode != UrgentCaseMode.Disabled);
         doctor.UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(request.UrgentInsertAfterCount, request.UrgentCaseMode);
         doctor.AvgVisitDurationMinutes = request.AvgVisitDurationMinutes;
+        doctor.CompensationMode = request.CompensationMode;
+        doctor.CompensationValue = request.CompensationValue;
+        doctor.CompensationEffectiveFrom = request.CompensationEffectiveFrom ?? DateTime.UtcNow;
+
+        if (compensationChanged)
+        {
+            _context.DoctorCompensationHistories.Add(new DoctorCompensationHistory
+            {
+                TenantId = tenantId,
+                DoctorId = doctor.Id,
+                Mode = doctor.CompensationMode,
+                Value = doctor.CompensationValue,
+                EffectiveFrom = doctor.CompensationEffectiveFrom,
+                ChangedByUserId = doctor.UserId,
+                Notes = "Updated from doctor profile"
+            });
+        }
 
         doctor.User.DisplayName = request.Name;
         await _userManager.UpdateAsync(doctor.User);
@@ -163,6 +199,10 @@ public class DoctorServiceImpl : IDoctorService
         if (doctor == null)
             return ApiResponse<DoctorDto>.Error("Doctor not found");
 
+        var oldMode = doctor.CompensationMode;
+        var oldValue = doctor.CompensationValue;
+        var oldEffectiveFrom = doctor.CompensationEffectiveFrom;
+
         if (request.Name != null) { doctor.Name = request.Name; doctor.User.DisplayName = request.Name; }
         if (request.Specialty != null) doctor.Specialty = request.Specialty;
         if (request.Phone != null) doctor.Phone = request.Phone;
@@ -175,6 +215,26 @@ public class DoctorServiceImpl : IDoctorService
         else if (request.UrgentCaseMode.HasValue)
             doctor.UrgentInsertAfterCount = ResolveUrgentInsertAfterCount(null, request.UrgentCaseMode.Value);
         if (request.AvgVisitDurationMinutes.HasValue) doctor.AvgVisitDurationMinutes = request.AvgVisitDurationMinutes.Value;
+        if (request.CompensationMode.HasValue) doctor.CompensationMode = request.CompensationMode.Value;
+        if (request.CompensationValue.HasValue) doctor.CompensationValue = request.CompensationValue.Value;
+        if (request.CompensationEffectiveFrom.HasValue) doctor.CompensationEffectiveFrom = request.CompensationEffectiveFrom.Value;
+
+        var compensationChanged = oldMode != doctor.CompensationMode
+            || oldValue != doctor.CompensationValue
+            || oldEffectiveFrom != doctor.CompensationEffectiveFrom;
+        if (compensationChanged)
+        {
+            _context.DoctorCompensationHistories.Add(new DoctorCompensationHistory
+            {
+                TenantId = tenantId,
+                DoctorId = doctor.Id,
+                Mode = doctor.CompensationMode,
+                Value = doctor.CompensationValue,
+                EffectiveFrom = doctor.CompensationEffectiveFrom,
+                ChangedByUserId = doctor.UserId,
+                Notes = "Patched from doctor profile"
+            });
+        }
 
         if (request.Name != null)
             await _userManager.UpdateAsync(doctor.User);
@@ -361,6 +421,7 @@ public class DoctorServiceImpl : IDoctorService
         return await _context.Doctors
             .Include(d => d.User)
             .Include(d => d.Services.Where(s => !s.IsDeleted))
+            .Include(d => d.CompensationHistory.Where(h => !h.IsDeleted))
             .Include(d => d.VisitFieldConfig)
             .FirstOrDefaultAsync(d => d.Id == id && d.TenantId == tenantId && !d.IsDeleted);
     }
@@ -385,7 +446,23 @@ public class DoctorServiceImpl : IDoctorService
             UrgentInsertAfterCount = doctor.UrgentInsertAfterCount,
             SupportsUrgent = doctor.UrgentEnabled,
             AvgVisitDurationMinutes = doctor.AvgVisitDurationMinutes,
+            CompensationMode = doctor.CompensationMode,
+            CompensationValue = doctor.CompensationValue,
+            CompensationEffectiveFrom = doctor.CompensationEffectiveFrom,
             Services = effectiveServices,
+            CompensationHistory = doctor.CompensationHistory
+                .Where(h => !h.IsDeleted)
+                .OrderByDescending(h => h.EffectiveFrom)
+                .Select(h => new DoctorCompensationHistoryItemDto
+                {
+                    Id = h.Id,
+                    Mode = h.Mode,
+                    Value = h.Value,
+                    EffectiveFrom = h.EffectiveFrom,
+                    ChangedByUserId = h.ChangedByUserId,
+                    Notes = h.Notes,
+                    CreatedAt = h.CreatedAt
+                }).ToList(),
             VisitFieldConfig = doctor.VisitFieldConfig != null ? new DoctorVisitFieldConfigDto
             {
                 BloodPressure = doctor.VisitFieldConfig.BloodPressure,

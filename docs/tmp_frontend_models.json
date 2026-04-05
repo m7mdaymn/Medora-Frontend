@@ -1,0 +1,728 @@
+﻿{
+    "modelFiles":  [
+                       {
+                           "file":  "Frontend/types/api.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UserRole"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "BaseApiResponse"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPaginatedData"
+                                           }
+                                       ],
+                           "exportCount":  3
+                       },
+                       {
+                           "file":  "Frontend/types/auth.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "UserProfile"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ILogin"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/types/booking.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IBooking"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/doctor.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorService"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorVisitConfig"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctor"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "UrgentCaseMode"
+                                           }
+                                       ],
+                           "exportCount":  4
+                       },
+                       {
+                           "file":  "Frontend/types/enums.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "TicketStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "VisitStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "VisitTypeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "VisitSourceString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "InvoiceStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "BookingStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "GenderString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "EncounterLifecycleStateString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "EncounterFinancialStateString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UrgentCaseModeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "LabRequestTypeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DocumentCategoryString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorCompensationModeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "WorkerModeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreditTransactionTypeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreditReasonString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MessageChannelString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MessageStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "TenantStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "SubscriptionStatusString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "FinanceActionTypeString"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DayOfWeekString"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "TicketStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "VisitStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "VisitType"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "VisitSource"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "InvoiceStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "BookingStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "Gender"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "EncounterLifecycleState"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "EncounterFinancialState"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "UrgentCaseMode"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "LabRequestType"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "DocumentCategory"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "DoctorCompensationMode"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "WorkerMode"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "CreditTransactionType"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "CreditReason"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "MessageChannel"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "MessageStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "TenantStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "SubscriptionStatus"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "FinanceActionType"
+                                           },
+                                           {
+                                               "kind":  "enum",
+                                               "name":  "DayOfWeek"
+                                           }
+                                       ],
+                           "exportCount":  44
+                       },
+                       {
+                           "file":  "Frontend/types/expense.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IExpense"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/feature-flags.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IFeatureFlags"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/finance.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorProfit"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IProfitReport"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDailyFinance"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IMonthlyFinance"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IYearlyFinance"
+                                           }
+                                       ],
+                           "exportCount":  5
+                       },
+                       {
+                           "file":  "Frontend/types/notes.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorNote"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/patient.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISubProfile"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatient"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreatePatientResponse"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IChronicConditions"
+                                           }
+                                       ],
+                           "exportCount":  4
+                       },
+                       {
+                           "file":  "Frontend/types/patient-app.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientSummary"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreditBalance"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreditHistoryItem"
+                                           }
+                                       ],
+                           "exportCount":  3
+                       },
+                       {
+                           "file":  "Frontend/types/platform.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ITenant"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/public.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicClinic"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicService"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicDoctor"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicWorkingHour"
+                                           }
+                                       ],
+                           "exportCount":  4
+                       },
+                       {
+                           "file":  "Frontend/types/queue.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "TicketStatus"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IQueueTicket"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IQueueSession"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IQueueBoardSession"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IQueueBoard"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreateTicketResponse"
+                                           }
+                                       ],
+                           "exportCount":  6
+                       },
+                       {
+                           "file":  "Frontend/types/services.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IClinicService"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorServiceLink"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/types/settings.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IWorkingHour"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IClinicSettings"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/types/staff.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IStaff"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/subscriptions.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISubscription"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/visit.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "VisitStatus"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "VisitType"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "LifecycleState"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "FinancialState"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "LabRequestType"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPrescription"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ILabRequest"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPayment"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInvoiceLineItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInvoice"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IChronicProfile"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IVisit"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "DoctorVisitFieldConfig"
+                                           }
+                                       ],
+                           "exportCount":  13
+                       },
+                       {
+                           "file":  "Frontend/validation/booking.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateBookingInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/doctor.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateDoctorInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UpdateDoctorInput"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/validation/doctor-services.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorLinkInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/expense.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "ExpenseInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/feature-flags.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UpdateFeatureFlagsInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/invoice.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateInvoiceFormInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreatePaymentFormInput"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/validation/labs.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "LabRequestFormInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/login.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "LoginInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/patient.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreatePatientInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateSubPatientInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UpdatePatientInput"
+                                           }
+                                       ],
+                           "exportCount":  3
+                       },
+                       {
+                           "file":  "Frontend/validation/prescription.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "PrescriptionFormInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/queue.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "OpenSessionInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CutTicketInput"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/validation/services.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "ClinicServiceInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorServiceLinkInput"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/validation/settings.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UpdateSettingsInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/staff.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateStaffInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "UpdateStaffInput"
+                                           }
+                                       ],
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/validation/subscription.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateSubscriptionInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "ExtendSubscriptionInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CancelSubscriptionInput"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MarkPaidInput"
+                                           }
+                                       ],
+                           "exportCount":  4
+                       },
+                       {
+                           "file":  "Frontend/validation/tenant.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "CreateTenantInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/validation/visit.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "ClinicalFormInput"
+                                           }
+                                       ],
+                           "exportCount":  1
+                       }
+                   ],
+    "summary":  {
+                    "modelTypeFileCount":  36,
+                    "modelTypeExportCount":  126
+                }
+}

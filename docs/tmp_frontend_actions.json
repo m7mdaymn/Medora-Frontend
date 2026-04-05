@@ -1,0 +1,553 @@
+﻿{
+    "actionFiles":  [
+                        {
+                            "file":  "Frontend/actions/auth/getToken.ts",
+                            "exportedFunctions":  [
+                                                      "getToken"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/auth/login.ts",
+                            "exportedFunctions":  [
+                                                      "loginAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/auth/logout.ts",
+                            "exportedFunctions":  [
+                                                      "logoutAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/auth/patientLogin.ts",
+                            "exportedFunctions":  [
+                                                      "patientLoginAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/auth/patient-logout.ts",
+                            "exportedFunctions":  [
+                                                      "patientLogoutAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/auth/refresh-token.ts",
+                            "exportedFunctions":  [
+                                                      "refreshAccessToken"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/billing/create-invoice.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/billing/update-invoice.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/booking/cancel-booking.ts",
+                            "exportedFunctions":  [
+                                                      "cancelBookingAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/booking/create-booking.ts",
+                            "exportedFunctions":  [
+                                                      "createBookingAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/booking/get-booking.ts",
+                            "exportedFunctions":  [
+                                                      "getBookingsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/booking/reschedule-booking.ts",
+                            "exportedFunctions":  [
+                                                      "rescheduleBookingAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/create-doctor.ts",
+                            "exportedFunctions":  [
+                                                      "createDoctorAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-doctor.ts",
+                            "exportedFunctions":  [
+                                                      "getDoctorAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-doctors.ts",
+                            "exportedFunctions":  [
+                                                      "getDoctorsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-my-patients.ts",
+                            "exportedFunctions":  [
+                                                      "getMyPatientsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-my-queue.ts",
+                            "exportedFunctions":  [
+                                                      "getMyQueueAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-my-today-visits.ts",
+                            "exportedFunctions":  [
+                                                      "getMyTodayVisitsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-my-visit-fields.ts",
+                            "exportedFunctions":  [
+                                                      "getMyVisitFieldsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/get-patient-history.ts",
+                            "exportedFunctions":  [
+                                                      "getMyPatientHistoryAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/toggle-doctor-status.ts",
+                            "exportedFunctions":  [
+                                                      "toggleDoctorStatusAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/update-doctor.ts",
+                            "exportedFunctions":  [
+                                                      "updateDoctorAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/update-my-visit-fields.ts",
+                            "exportedFunctions":  [
+                                                      "getMyVisitFieldsAction",
+                                                      "updateMyVisitFieldsAction"
+                                                  ],
+                            "exportedFunctionCount":  2
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/update-visit-fields.ts",
+                            "exportedFunctions":  [
+                                                      "updateVisitFieldsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/doctor/upload-photo.ts",
+                            "exportedFunctions":  [
+                                                      "uploadDoctorPhotoAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/finance/expenses.ts",
+                            "exportedFunctions":  [
+                                                      "addExpenseAction",
+                                                      "deleteExpenseAction",
+                                                      "getExpensesAction",
+                                                      "updateExpenseAction"
+                                                  ],
+                            "exportedFunctionCount":  4
+                        },
+                        {
+                            "file":  "Frontend/actions/finance/get-daily-finance.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/finance/invoices.ts",
+                            "exportedFunctions":  [
+                                                      "addInvoiceAdjustmentAction",
+                                                      "addInvoiceLineItemAction",
+                                                      "addPaymentAction",
+                                                      "editInvoiceAction",
+                                                      "getInvoiceByIdAction",
+                                                      "getInvoicesAction",
+                                                      "refundInvoiceAction"
+                                                  ],
+                            "exportedFunctionCount":  7
+                        },
+                        {
+                            "file":  "Frontend/actions/finance/reports.ts",
+                            "exportedFunctions":  [
+                                                      "getDailyFinanceAction",
+                                                      "getFinanceByDoctorAction",
+                                                      "getMonthlyFinanceAction",
+                                                      "getProfitReportAction",
+                                                      "getYearlyFinanceAction"
+                                                  ],
+                            "exportedFunctionCount":  5
+                        },
+                        {
+                            "file":  "Frontend/actions/labs/create-lab-request.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/labs/delete-lab-request.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/notes/notes.ts",
+                            "exportedFunctions":  [
+                                                      "createDoctorNoteAction",
+                                                      "getUnreadDoctorNotes",
+                                                      "markDoctorNoteAsReadAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/add-subprofile.ts",
+                            "exportedFunctions":  [
+                                                      "addSubProfileAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/createPatient.ts",
+                            "exportedFunctions":  [
+                                                      "createPatientAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/delete-patient.ts",
+                            "exportedFunctions":  [
+                                                      "deletePatientAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/get-chronic-conditions.ts",
+                            "exportedFunctions":  [
+                                                      "getChronicConditionsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/getPatient.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/get-patient-profile.ts",
+                            "exportedFunctions":  [
+                                                      "getPatientProfileAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/getPatients.ts",
+                            "exportedFunctions":  [
+                                                      "getPatientsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/get-patient-summary.ts",
+                            "exportedFunctions":  [
+                                                      "getPatientSummaryAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/updateChronicConditions.ts",
+                            "exportedFunctions":  [
+                                                      "updateChronicConditionsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient/update-patient.ts",
+                            "exportedFunctions":  [
+                                                      "updatePatientAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient-app/cancel-booking-patient.ts",
+                            "exportedFunctions":  [
+                                                      "cancelBookingAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient-app/get-my-bookings.ts",
+                            "exportedFunctions":  [
+                                                      "getMyBookingsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient-app/get-my-ticket.ts",
+                            "exportedFunctions":  [
+                                                      "getMyTicketAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/patient-app/profile.ts",
+                            "exportedFunctions":  [
+                                                      "getPatientBookingsAppAction",
+                                                      "getPatientCreditBalanceAction",
+                                                      "getPatientCreditHistoryAction",
+                                                      "getPatientProfileAppAction",
+                                                      "getPatientQueueTicketAppAction",
+                                                      "getPatientSummaryAppAction",
+                                                      "getPatientVisitsAppAction"
+                                                  ],
+                            "exportedFunctionCount":  7
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/create-tenant.ts",
+                            "exportedFunctions":  [
+                                                      "createTenantAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/delete-tenant.ts",
+                            "exportedFunctions":  [
+                                                      "deleteTenant"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/feature-flags.ts",
+                            "exportedFunctions":  [
+                                                      "getTenantFlags",
+                                                      "updateTenantFlags"
+                                                  ],
+                            "exportedFunctionCount":  2
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/get-tenants.ts",
+                            "exportedFunctions":  [
+                                                      "getTenants"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/subscriptions.ts",
+                            "exportedFunctions":  [
+                                                      "cancelSubscriptionAction",
+                                                      "createSubscriptionAction",
+                                                      "extendSubscriptionAction",
+                                                      "getSubscriptions",
+                                                      "markAsPaidAction"
+                                                  ],
+                            "exportedFunctionCount":  5
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/tenant-actions.ts",
+                            "exportedFunctions":  [
+                                                      "activateTenantAction",
+                                                      "blockTenantAction",
+                                                      "suspendTenantAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/prescription/create-prescription.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/prescription/delete-prescription.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/prescription/update-prescription.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/queue/open-my-session.ts",
+                            "exportedFunctions":  [
+                                                      "openMySessionAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/queue/queue-board.ts",
+                            "exportedFunctions":  [
+                                                      "getQueueBoard"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/queue/sessions.ts",
+                            "exportedFunctions":  [
+                                                      "closeQueueSession",
+                                                      "openQueueSession"
+                                                  ],
+                            "exportedFunctionCount":  2
+                        },
+                        {
+                            "file":  "Frontend/actions/queue/tickets.ts",
+                            "exportedFunctions":  [
+                                                      "callTicketAction",
+                                                      "cancelTicket",
+                                                      "createTicket",
+                                                      "finishTicketAction",
+                                                      "markTicketUrgent",
+                                                      "skipTicketAction",
+                                                      "startVisitAction"
+                                                  ],
+                            "exportedFunctionCount":  7
+                        },
+                        {
+                            "file":  "Frontend/actions/service/clinic-services.ts",
+                            "exportedFunctions":  [
+                                                      "createClinicServiceAction",
+                                                      "deleteClinicServiceAction",
+                                                      "getClinicServicesAction",
+                                                      "updateClinicServiceAction"
+                                                  ],
+                            "exportedFunctionCount":  4
+                        },
+                        {
+                            "file":  "Frontend/actions/service/doctor-services.ts",
+                            "exportedFunctions":  [
+                                                      "deleteDoctorLinkAction",
+                                                      "getDoctorLinksAction",
+                                                      "upsertDoctorLinkAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/settings/get-settings.ts",
+                            "exportedFunctions":  [
+                                                      "getClinicSettings"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/settings/update-settings.ts",
+                            "exportedFunctions":  [
+                                                      "updateClinicSettings"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/settings/upload-logo.ts",
+                            "exportedFunctions":  [
+                                                      "uploadClinicLogoAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/staff/create-staff.ts",
+                            "exportedFunctions":  [
+                                                      "createStaffAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/staff/get-staff.ts",
+                            "exportedFunctions":  [
+                                                      "getAllStaffAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/staff/toggle-staff-status.ts",
+                            "exportedFunctions":  [
+                                                      "toggleStaffStatusAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/staff/update-staff.ts",
+                            "exportedFunctions":  [
+                                                      "updateStaffAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/visit/complete-visit.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/visit/get-patient-visit.ts",
+                            "exportedFunctions":  [
+                                                      "getPatientVisitsAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/visit/get-visit.ts",
+                            "exportedFunctions":  [
+                                                      "getVisitAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
+                            "file":  "Frontend/actions/visit/update-visit.ts",
+                            "exportedFunctions":  [
+
+                                                  ],
+                            "exportedFunctionCount":  0
+                        }
+                    ],
+    "summary":  {
+                    "actionFileCount":  72,
+                    "actionExportedFunctionCount":  102
+                }
+}

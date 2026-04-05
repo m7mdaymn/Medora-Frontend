@@ -1,3 +1,5 @@
+using EliteClinic.Domain.Enums;
+
 namespace EliteClinic.Domain.Entities;
 
 public class ClinicSettings : TenantBaseEntity
@@ -19,16 +21,21 @@ public class ClinicSettings : TenantBaseEntity
     public bool BookingEnabled { get; set; }
     public int CancellationWindowHours { get; set; }
     public bool RetainCreditOnNoShow { get; set; }
+    public PatientSelfServicePaymentPolicy SelfServicePaymentPolicy { get; set; }
+    public int SelfServiceRequestExpiryHours { get; set; }
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;
     public ICollection<WorkingHour> WorkingHours { get; set; } = new List<WorkingHour>();
+    public ICollection<ClinicPaymentMethod> PaymentMethods { get; set; } = new List<ClinicPaymentMethod>();
 
     public ClinicSettings()
     {
         BookingEnabled = false;
         CancellationWindowHours = 2;
         RetainCreditOnNoShow = false;
+        SelfServicePaymentPolicy = PatientSelfServicePaymentPolicy.FullOnly;
+        SelfServiceRequestExpiryHours = 24;
     }
 
     public ClinicSettings(Guid tenantId, string clinicName) : this()

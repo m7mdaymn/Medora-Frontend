@@ -8,9 +8,11 @@ namespace EliteClinic.Domain.Entities;
 public class QueueTicket : TenantBaseEntity
 {
     public Guid SessionId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public VisitSource Source { get; set; }
     public int TicketNumber { get; set; }
     public TicketStatus Status { get; set; }
     public bool IsUrgent { get; set; }
@@ -23,6 +25,7 @@ public class QueueTicket : TenantBaseEntity
     public string? Notes { get; set; }
 
     public QueueSession Session { get; set; } = null!;
+    public Branch? Branch { get; set; }
     public Patient Patient { get; set; } = null!;
     public Doctor Doctor { get; set; } = null!;
     public DoctorService? DoctorService { get; set; }
@@ -31,6 +34,7 @@ public class QueueTicket : TenantBaseEntity
     {
         Status = TicketStatus.Waiting;
         IsUrgent = false;
+        Source = VisitSource.WalkInTicket;
         IssuedAt = DateTime.UtcNow;
     }
 }

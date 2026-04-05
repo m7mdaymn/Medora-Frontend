@@ -19,6 +19,64 @@ public class InvoiceService : IInvoiceService
         _invoiceNumberService = invoiceNumberService;
     }
 
+    public async Task<ApiResponse<InvoiceDto>> EnsureInvoiceForVisitAsync(Guid tenantId, Guid visitId, Guid performedByUserId, string? initialNotes = null)
+    {
+        var visit = await _context.Visits
+            .Include(v => v.Doctor)
+            .Include(v => v.Patient)
+            .FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);
+
+        if (visit == null)
+            return ApiResponse<InvoiceDto>.Error("Visit not found");
+
+        var existing = await _context.Invoices
+            .Include(i => i.Patient)
+            .Include(i => i.Doctor)
+            .Include(i => i.LineItems.Where(li => !li.IsDeleted))
+            .Include(i => i.Payments.Where(p => !p.IsDeleted))
+            .FirstOrDefaultAsync(i => i.VisitId == visitId && i.TenantId == tenantId && !i.IsDeleted);
+
+        if (existing != null)
+            return ApiResponse<InvoiceDto>.Ok(MapToDto(existing), "Invoice already exists for visit");
+
+        var invoice = new Invoice
+        {
+            TenantId = tenantId,
+            InvoiceNumber = await _invoiceNumberService.GenerateNextAsync(tenantId),
+            BranchId = visit.BranchId,
+            VisitId = visit.Id,
+            PatientId = visit.PatientId,
+            PatientNameSnapshot = visit.Patient?.Name ?? string.Empty,
+            PatientPhoneSnapshot = visit.Patient?.Phone,
+            DoctorId = visit.DoctorId,
+            Amount = 0m,
+            PaidAmount = 0m,
+            RemainingAmount = 0m,
+            Status = InvoiceStatus.Unpaid,
+            HasPendingSettlement = false,
+            PendingSettlementAmount = 0m,
+            Notes = initialNotes
+        };
+
+        _context.Invoices.Add(invoice);
+        _context.AuditLogs.Add(new AuditLog(performedByUserId, tenantId, nameof(Invoice), invoice.Id.ToString(), "Create")
+        {
+            NewValues = JsonSerializer.Serialize(new
+            {
+                invoice.VisitId,
+                invoice.BranchId,
+                invoice.Amount,
+                invoice.Status,
+                InitialNotes = initialNotes
+            })
+        });
+
+        await _context.SaveChangesAsync();
+
+        var saved = await GetInvoiceWithIncludes(tenantId, invoice.Id);
+        return ApiResponse<InvoiceDto>.Created(MapToDto(saved!), "Invoice ensured for visit");
+    }
+
     public async Task<ApiResponse<InvoiceDto>> CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request)
     {
         var visit = await _context.Visits

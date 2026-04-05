@@ -34,6 +34,8 @@ public class AttendanceRecordDto
     public string? EmployeeName { get; set; }
     public Guid? DoctorId { get; set; }
     public string? DoctorName { get; set; }
+    public Guid? BranchId { get; set; }
+    public Guid? EnteredByUserId { get; set; }
     public DateTime CheckInAt { get; set; }
     public DateTime? CheckOutAt { get; set; }
     public int? LateMinutes { get; set; }
@@ -46,6 +48,7 @@ public class CreateAttendanceRecordRequest
 {
     public Guid? EmployeeId { get; set; }
     public Guid? DoctorId { get; set; }
+    public Guid? BranchId { get; set; }
     public DateTime? CheckInAt { get; set; }
     public int? LateMinutes { get; set; }
     public bool IsAbsent { get; set; }
@@ -93,4 +96,36 @@ public class DailyClosingSnapshotDto
     public int PaymentsCount { get; set; }
     public int ExpensesCount { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class AbsenceRecordDto
+{
+    public Guid Id { get; set; }
+    public Guid? EmployeeId { get; set; }
+    public string? EmployeeName { get; set; }
+    public Guid? DoctorId { get; set; }
+    public string? DoctorName { get; set; }
+    public DateTime FromDate { get; set; }
+    public DateTime ToDate { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public bool IsPaid { get; set; }
+    public string? Notes { get; set; }
+    public Guid EnteredByUserId { get; set; }
+    public Guid? BranchId { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class CreateAbsenceRecordRequest
+{
+    public Guid? EmployeeId { get; set; }
+    public Guid? DoctorId { get; set; }
+    public DateTime FromDate { get; set; }
+    public DateTime ToDate { get; set; }
+    [Required]
+    [StringLength(500)]
+    public string Reason { get; set; } = string.Empty;
+    public bool IsPaid { get; set; }
+    [StringLength(2000)]
+    public string? Notes { get; set; }
+    public Guid? BranchId { get; set; }
 }

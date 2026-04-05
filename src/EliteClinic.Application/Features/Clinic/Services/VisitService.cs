@@ -19,6 +19,7 @@ public class VisitService : IVisitService
     public async Task<ApiResponse<VisitDto>> CreateVisitAsync(Guid tenantId, CreateVisitRequest request, Guid callerUserId)
     {
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
+        QueueTicket? linkedTicket = null;
 
         // Validate doctor
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == request.DoctorId && d.TenantId == tenantId && !d.IsDeleted);
@@ -36,9 +37,9 @@ public class VisitService : IVisitService
         // If from ticket, validate and link
         if (request.QueueTicketId.HasValue)
         {
-            var ticket = await _context.QueueTickets
+            linkedTicket = await _context.QueueTickets
                 .FirstOrDefaultAsync(t => t.Id == request.QueueTicketId.Value && t.TenantId == tenantId && !t.IsDeleted);
-            if (ticket == null)
+            if (linkedTicket == null)
                 return ApiResponse<VisitDto>.Error("Queue ticket not found");
 
             // Check no visit already linked
@@ -48,20 +49,22 @@ public class VisitService : IVisitService
                 return ApiResponse<VisitDto>.Error("A visit already exists for this ticket");
 
             // Update ticket status
-            if (ticket.Status == TicketStatus.Called || ticket.Status == TicketStatus.Waiting)
+            if (linkedTicket.Status == TicketStatus.Called || linkedTicket.Status == TicketStatus.Waiting)
             {
-                ticket.Status = TicketStatus.InVisit;
-                ticket.VisitStartedAt = DateTime.UtcNow;
+                linkedTicket.Status = TicketStatus.InVisit;
+                linkedTicket.VisitStartedAt = DateTime.UtcNow;
             }
 
-            if (string.IsNullOrWhiteSpace(request.Complaint) && !string.IsNullOrWhiteSpace(ticket.Notes))
-                request.Complaint = ticket.Notes;
+            if (string.IsNullOrWhiteSpace(request.Complaint) && !string.IsNullOrWhiteSpace(linkedTicket.Notes))
+                request.Complaint = linkedTicket.Notes;
         }
 
         var visit = new Visit
         {
             TenantId = tenantId,
             VisitType = request.VisitType,
+            Source = linkedTicket?.Source ?? request.Source,
+            BranchId = linkedTicket?.BranchId ?? request.BranchId,
             QueueTicketId = request.QueueTicketId,
             DoctorId = request.DoctorId,
             PatientId = request.PatientId,
@@ -310,24 +313,71 @@ public class VisitService : IVisitService
         return ApiResponse<PatientSummaryDto>.Ok(summary, "Patient summary retrieved successfully");
     }
 
-    public async Task<ApiResponse<List<VisitDto>>> GetMyTodayVisitsAsync(Guid tenantId, Guid doctorUserId)
+    public async Task<ApiResponse<PagedResult<VisitDto>>> GetMyVisitsAsync(Guid tenantId, Guid doctorUserId, MyVisitsFilterRequest request)
     {
         var doctor = await ResolveCallerDoctorAsync(tenantId, doctorUserId);
         if (doctor == null)
-            return ApiResponse<List<VisitDto>>.Error("Doctor profile not found");
+            return ApiResponse<PagedResult<VisitDto>>.Error("Doctor profile not found");
 
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
+        var pageNumber = request.PageNumber <= 0 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize <= 0 ? 20 : Math.Min(request.PageSize, 200);
 
-        var visits = await _context.Visits
+        var query = _context.Visits
             .Include(v => v.Doctor)
             .Include(v => v.Patient)
             .Include(v => v.Prescriptions.Where(p => !p.IsDeleted))
             .Include(v => v.LabRequests.Where(l => !l.IsDeleted))
             .Include(v => v.Invoice)
                 .ThenInclude(i => i!.Payments.Where(p => !p.IsDeleted))
-            .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.DoctorId == doctor.Id && v.StartedAt >= today && v.StartedAt < tomorrow)
+            .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.DoctorId == doctor.Id);
+
+        if (request.FromDate.HasValue)
+        {
+            var from = request.FromDate.Value.Date;
+            query = query.Where(v => v.StartedAt >= from);
+        }
+
+        if (request.ToDate.HasValue)
+        {
+            var toExclusive = request.ToDate.Value.Date.AddDays(1);
+            query = query.Where(v => v.StartedAt < toExclusive);
+        }
+
+        if (request.Source.HasValue)
+            query = query.Where(v => v.Source == request.Source.Value);
+
+        if (request.VisitType.HasValue)
+            query = query.Where(v => v.VisitType == request.VisitType.Value);
+
+        if (request.Status.HasValue)
+            query = query.Where(v => v.Status == request.Status.Value);
+
+        if (request.IsBooking.HasValue)
+        {
+            query = request.IsBooking.Value
+                ? query.Where(v => v.Source == VisitSource.Booking)
+                : query.Where(v => v.Source != VisitSource.Booking);
+        }
+
+        if (request.IsExam.HasValue)
+        {
+            query = request.IsExam.Value
+                ? query.Where(v => v.VisitType == VisitType.Exam)
+                : query.Where(v => v.VisitType != VisitType.Exam);
+        }
+
+        if (request.IsConsultation.HasValue)
+        {
+            query = request.IsConsultation.Value
+                ? query.Where(v => v.VisitType == VisitType.Consultation)
+                : query.Where(v => v.VisitType != VisitType.Consultation);
+        }
+
+        var totalCount = await query.CountAsync();
+        var visits = await query
             .OrderByDescending(v => v.StartedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
         var patientIds = visits.Select(v => v.PatientId).Distinct().ToList();
@@ -342,7 +392,15 @@ public class VisitService : IVisitService
             return dto;
         }).ToList();
 
-        return ApiResponse<List<VisitDto>>.Ok(items, $"Retrieved {visits.Count} visit(s)");
+        var result = new PagedResult<VisitDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return ApiResponse<PagedResult<VisitDto>>.Ok(result, $"Retrieved {items.Count} visit(s)");
     }
 
     public async Task<ApiResponse<PagedResult<PatientDto>>> GetMyPatientsAsync(Guid tenantId, Guid doctorUserId, int pageNumber = 1, int pageSize = 10, string? search = null)
@@ -531,8 +589,12 @@ public class VisitService : IVisitService
         return await _context.Visits
             .Include(v => v.Doctor)
             .Include(v => v.Patient)
+            .Include(v => v.QueueTicket)
+                .ThenInclude(t => t!.DoctorService)
             .Include(v => v.Prescriptions.Where(p => !p.IsDeleted))
             .Include(v => v.LabRequests.Where(l => !l.IsDeleted))
+            .Include(v => v.Invoice)
+                .ThenInclude(i => i!.LineItems.Where(li => !li.IsDeleted))
             .Include(v => v.Invoice)
                 .ThenInclude(i => i!.Payments.Where(p => !p.IsDeleted))
             .FirstOrDefaultAsync(v => v.Id == id && v.TenantId == tenantId && !v.IsDeleted);
@@ -566,10 +628,25 @@ public class VisitService : IVisitService
 
     internal static VisitDto MapVisitToDto(Visit v)
     {
+        var serviceName = v.QueueTicket?.DoctorService?.ServiceName;
+        if (string.IsNullOrWhiteSpace(serviceName))
+        {
+            serviceName = v.Invoice?.LineItems?
+                .Where(li => !li.IsDeleted && !string.IsNullOrWhiteSpace(li.ItemName))
+                .OrderBy(li => li.CreatedAt)
+                .Select(li => li.ItemName)
+                .FirstOrDefault();
+        }
+
+        var ticketStatus = v.QueueTicket?.Status;
+        var isCancelled = ticketStatus == Domain.Enums.TicketStatus.Cancelled;
+
         return new VisitDto
         {
             Id = v.Id,
+            BranchId = v.BranchId,
             VisitType = v.VisitType,
+            Source = v.Source,
             QueueTicketId = v.QueueTicketId,
             DoctorId = v.DoctorId,
             DoctorName = v.Doctor?.Name ?? string.Empty,
@@ -578,6 +655,11 @@ public class VisitService : IVisitService
             PatientPhone = v.Patient?.Phone ?? string.Empty,
             PatientDateOfBirth = v.Patient?.DateOfBirth,
             PatientGender = v.Patient?.Gender.ToString() ?? string.Empty,
+            ServiceName = serviceName,
+            TicketStatus = ticketStatus,
+            TicketCancelledAt = v.QueueTicket?.CancelledAt,
+            IsCancelled = isCancelled,
+            EffectiveStatus = isCancelled ? "Cancelled" : v.Status.ToString(),
             Phone = v.Patient?.Phone ?? string.Empty,
             DateOfBirth = v.Patient?.DateOfBirth,
             Gender = v.Patient?.Gender.ToString() ?? string.Empty,

@@ -47,6 +47,26 @@ public class StaffController : ControllerBase
     }
 
     /// <summary>
+    /// Create payroll-only worker (no login account).
+    /// </summary>
+    [HttpPost("payroll-only")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<StaffDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<StaffDto>>> CreatePayrollOnlyWorker([FromBody] CreatePayrollOnlyWorkerRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<StaffDto>.Error("Tenant context not resolved"));
+
+        var result = await _staffService.CreatePayrollOnlyWorkerAsync(_tenantContext.TenantId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        _logger.LogInformation("Payroll-only worker created: {Name} for tenant {TenantId}", request.Name, _tenantContext.TenantId);
+        return StatusCode(201, result);
+    }
+
+    /// <summary>
     /// List all staff members (paginated)
     /// </summary>
     [HttpGet]

@@ -1,0 +1,53 @@
+﻿{
+    "folders":  [
+                    {
+                        "folder":  "app",
+                        "pathExists":  true,
+                        "totalFileCount":  118,
+                        "sourceFileCount":  116
+                    },
+                    {
+                        "folder":  "actions",
+                        "pathExists":  true,
+                        "totalFileCount":  73,
+                        "sourceFileCount":  73
+                    },
+                    {
+                        "folder":  "components",
+                        "pathExists":  true,
+                        "totalFileCount":  88,
+                        "sourceFileCount":  88
+                    },
+                    {
+                        "folder":  "lib",
+                        "pathExists":  true,
+                        "totalFileCount":  4,
+                        "sourceFileCount":  4
+                    },
+                    {
+                        "folder":  "hooks",
+                        "pathExists":  true,
+                        "totalFileCount":  2,
+                        "sourceFileCount":  2
+                    },
+                    {
+                        "folder":  "store",
+                        "pathExists":  true,
+                        "totalFileCount":  3,
+                        "sourceFileCount":  3
+                    },
+                    {
+                        "folder":  "types",
+                        "pathExists":  true,
+                        "totalFileCount":  19,
+                        "sourceFileCount":  19
+                    },
+                    {
+                        "folder":  "validation",
+                        "pathExists":  true,
+                        "totalFileCount":  17,
+                        "sourceFileCount":  17
+                    }
+                ],
+    "frontendSourceFileCount":  332
+}

@@ -1,3 +1,5 @@
+using EliteClinic.Domain.Enums;
+
 namespace EliteClinic.Domain.Entities;
 
 public class Employee : TenantBaseEntity
@@ -10,6 +12,7 @@ public class Employee : TenantBaseEntity
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
     public bool IsEnabled { get; set; }
+    public WorkerMode WorkerMode { get; set; }
 
     // Navigation
     public ApplicationUser? User { get; set; }
@@ -17,5 +20,6 @@ public class Employee : TenantBaseEntity
     public Employee()
     {
         IsEnabled = true;
+        WorkerMode = WorkerMode.LoginBased;
     }
 }

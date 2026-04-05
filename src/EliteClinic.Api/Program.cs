@@ -130,6 +130,7 @@ builder.Services.AddScoped<IClinicSettingsService, ClinicSettingsService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IDoctorService, DoctorServiceImpl>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IPatientSelfServiceRequestService, PatientSelfServiceRequestService>();
 
 // Phase 3 Services
 builder.Services.AddScoped<IQueueService, QueueService>();
@@ -138,10 +139,13 @@ builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 builder.Services.AddScoped<ILabRequestService, LabRequestService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceNumberService, InvoiceNumberService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
 builder.Services.AddScoped<IPatientCreditService, PatientCreditService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
+builder.Services.AddScoped<IReportsService, ReportsService>();
 builder.Services.AddScoped<IPatientMedicalService, PatientMedicalService>();
 builder.Services.AddScoped<IWorkforceService, WorkforceService>();
 
@@ -154,6 +158,8 @@ builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddHttpClient<IMessageDeliveryProvider, Whats360MessageDeliveryProvider>();
 builder.Services.AddScoped<IDoctorNoteService, DoctorNoteService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBranchAccessService, BranchAccessService>();
+builder.Services.AddScoped<IPartnerService, PartnerService>();
 
 // Phase 5 Services
 builder.Services.AddScoped<IClinicServiceManager, ClinicServiceManager>();

@@ -21,7 +21,11 @@ public class DoctorDto
     public int? UrgentInsertAfterCount { get; set; }
     public bool SupportsUrgent { get; set; }
     public int AvgVisitDurationMinutes { get; set; }
+    public DoctorCompensationMode CompensationMode { get; set; }
+    public decimal CompensationValue { get; set; }
+    public DateTime CompensationEffectiveFrom { get; set; }
     public List<DoctorServiceDto> Services { get; set; } = new();
+    public List<DoctorCompensationHistoryItemDto> CompensationHistory { get; set; } = new();
     public DoctorVisitFieldConfigDto? VisitFieldConfig { get; set; }
     public DateTime CreatedAt { get; set; }
 }
@@ -56,6 +60,14 @@ public class CreateDoctorRequest
 
     [Range(1, 120, ErrorMessage = "AvgVisitDurationMinutes must be between 1 and 120")]
     public int AvgVisitDurationMinutes { get; set; } = 15;
+
+    [Required]
+    public DoctorCompensationMode CompensationMode { get; set; } = DoctorCompensationMode.Percentage;
+
+    [Range(0, 1000000000)]
+    public decimal CompensationValue { get; set; }
+
+    public DateTime? CompensationEffectiveFrom { get; set; }
 }
 
 public class UpdateDoctorRequest
@@ -80,6 +92,14 @@ public class UpdateDoctorRequest
 
     [Range(1, 120)]
     public int AvgVisitDurationMinutes { get; set; } = 15;
+
+    [Required]
+    public DoctorCompensationMode CompensationMode { get; set; } = DoctorCompensationMode.Percentage;
+
+    [Range(0, 1000000000)]
+    public decimal CompensationValue { get; set; }
+
+    public DateTime? CompensationEffectiveFrom { get; set; }
 }
 
 public class PatchDoctorRequest
@@ -93,6 +113,20 @@ public class PatchDoctorRequest
     public bool? UrgentEnabled { get; set; }
     [Range(0, 3)] public int? UrgentInsertAfterCount { get; set; }
     [Range(1, 120)] public int? AvgVisitDurationMinutes { get; set; }
+    public DoctorCompensationMode? CompensationMode { get; set; }
+    [Range(0, 1000000000)] public decimal? CompensationValue { get; set; }
+    public DateTime? CompensationEffectiveFrom { get; set; }
+}
+
+public class DoctorCompensationHistoryItemDto
+{
+    public Guid Id { get; set; }
+    public DoctorCompensationMode Mode { get; set; }
+    public decimal Value { get; set; }
+    public DateTime EffectiveFrom { get; set; }
+    public Guid ChangedByUserId { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class DoctorServiceDto

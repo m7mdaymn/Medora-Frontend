@@ -1,0 +1,787 @@
+﻿{
+    "Interfaces":  [
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IBookingService.cs",
+                           "Interface":  "IBookingService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cBookingDto\u003e\u003e CreateAsync(Guid tenantId, Guid patientUserId, CreateBookingRequest request)",
+                                           "Task\u003cApiResponse\u003cBookingDto\u003e\u003e CancelAsync(Guid tenantId, Guid bookingId, Guid callerUserId, CancelBookingRequest request, bool isAdministrativeAction = false)",
+                                           "Task\u003cApiResponse\u003cBookingDto\u003e\u003e RescheduleAsync(Guid tenantId, Guid bookingId, Guid callerUserId, RescheduleBookingRequest request, bool isAdministrativeAction = false)",
+                                           "Task\u003cApiResponse\u003cBookingDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid bookingId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cBookingDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, Guid? patientId, Guid? doctorId, string? status, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cList\u003cBookingDto\u003e\u003e\u003e GetMyBookingsAsync(Guid tenantId, Guid patientUserId)",
+                                           "Task\u003cApiResponse\u003cList\u003cBookingDto\u003e\u003e\u003e GetBookingsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IBranchAccessService.cs",
+                           "Interface":  "IBranchAccessService",
+                           "Methods":  [
+                                           "Task\u003cHashSet\u003cGuid\u003e?\u003e GetScopedBranchIdsAsync(Guid tenantId, Guid callerUserId, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003e EnsureCanAccessBranchAsync(Guid tenantId, Guid callerUserId, Guid branchId, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IClinicServiceManager.cs",
+                           "Interface":  "IClinicServiceManager",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e CreateAsync(Guid tenantId, CreateClinicServiceRequest request)",
+                                           "Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cClinicServiceDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, int pageNumber = 1, int pageSize = 20, bool? activeOnly = null)",
+                                           "Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e UpdateAsync(Guid tenantId, Guid id, UpdateClinicServiceRequest request)",
+                                           "Task\u003cApiResponse\u003cbool\u003e\u003e DeleteAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cList\u003cDoctorClinicServiceLinkDto\u003e\u003e\u003e GetDoctorLinksAsync(Guid tenantId, Guid doctorId)",
+                                           "Task\u003cApiResponse\u003cDoctorClinicServiceLinkDto\u003e\u003e UpsertDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId, UpsertDoctorClinicServiceLinkRequest request)",
+                                           "Task\u003cApiResponse\u003cbool\u003e\u003e RemoveDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IClinicSettingsService.cs",
+                           "Interface":  "IClinicSettingsService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e GetSettingsAsync(Guid tenantId)",
+                                           "Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e UpdateSettingsAsync(Guid tenantId, UpdateClinicSettingsRequest request)",
+                                           "Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request)",
+                                           "Task\u003cApiResponse\u003cClinicPaymentOptionsDto\u003e\u003e GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false)",
+                                           "Task\u003cApiResponse\u003cList\u003cClinicPaymentMethodDto\u003e\u003e\u003e ReplacePaymentMethodsAsync(Guid tenantId, UpdateClinicPaymentMethodsRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IDoctorNoteService.cs",
+                           "Interface":  "IDoctorNoteService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cDoctorNoteDto\u003e\u003e CreateAsync(Guid tenantId, Guid doctorUserId, CreateDoctorNoteRequest request)",
+                                           "Task\u003cApiResponse\u003cList\u003cDoctorNoteDto\u003e\u003e\u003e GetUnreadAsync(Guid tenantId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cDoctorNoteDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, bool? unreadOnly, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cDoctorNoteDto\u003e\u003e MarkAsReadAsync(Guid tenantId, Guid noteId, Guid readerUserId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IDoctorService.cs",
+                           "Interface":  "IDoctorService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e CreateDoctorAsync(Guid tenantId, CreateDoctorRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cDoctorDto\u003e\u003e\u003e GetAllDoctorsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e GetDoctorByIdAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e UpdateDoctorAsync(Guid tenantId, Guid id, UpdateDoctorRequest request)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e PatchDoctorAsync(Guid tenantId, Guid id, PatchDoctorRequest request)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e EnableDoctorAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e DisableDoctorAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cList\u003cDoctorServiceDto\u003e\u003e\u003e UpdateServicesAsync(Guid tenantId, Guid doctorId, UpdateDoctorServicesRequest request)",
+                                           "Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e UpdateVisitFieldsAsync(Guid tenantId, Guid doctorId, UpdateVisitFieldsRequest request)",
+                                           "Task\u003cApiResponse\u003cDoctorDto\u003e\u003e GetMyProfileAsync(Guid tenantId, Guid doctorUserId)",
+                                           "Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e GetMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId)",
+                                           "Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e UpdateMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId, UpdateVisitFieldsRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IExpenseService.cs",
+                           "Interface":  "IExpenseService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cExpenseDto\u003e\u003e CreateAsync(Guid tenantId, CreateExpenseRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cExpenseDto\u003e\u003e UpdateAsync(Guid tenantId, Guid expenseId, UpdateExpenseRequest request)",
+                                           "Task\u003cApiResponse\u003e DeleteAsync(Guid tenantId, Guid expenseId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cExpenseDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, DateTime? from, DateTime? to, string? category, int pageNumber = 1, int pageSize = 10)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IFileStorageService.cs",
+                           "Interface":  "IFileStorageService",
+                           "Methods":  [
+                                           "Task\u003c(string RelativePath, string PublicUrl, string StoredFileName)\u003e SaveImageAsync(Guid tenantId, string category, IFormFile file, CancellationToken cancellationToken = default)",
+                                           "Task\u003c(string RelativePath, string PublicUrl, string StoredFileName)\u003e SaveFileAsync(Guid tenantId, string category, IFormFile file, CancellationToken cancellationToken = default)",
+                                           "Task DeleteAsync(string relativePath, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IFinanceService.cs",
+                           "Interface":  "IFinanceService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cDailyRevenueDto\u003e\u003e GetDailyRevenueAsync(Guid tenantId, DateTime date)",
+                                           "Task\u003cApiResponse\u003cList\u003cDoctorRevenueDto\u003e\u003e\u003e GetRevenueByDoctorAsync(Guid tenantId, DateTime date, Guid? doctorId, decimal commissionPercent = 0)",
+                                           "Task\u003cApiResponse\u003cMonthlyRevenueDto\u003e\u003e GetMonthlyRevenueAsync(Guid tenantId, int year, int month)",
+                                           "Task\u003cApiResponse\u003cYearlyRevenueDto\u003e\u003e GetYearlyRevenueAsync(Guid tenantId, int year)",
+                                           "Task\u003cApiResponse\u003cProfitReportDto\u003e\u003e GetProfitReportAsync(Guid tenantId, DateTime from, DateTime to)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IInventoryService.cs",
+                           "Interface":  "IInventoryService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e CreateItemAsync(Guid tenantId, CreateInventoryItemRequest request)",
+                                           "Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e UpdateItemAsync(Guid tenantId, Guid itemId, UpdateInventoryItemRequest request)",
+                                           "Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e GetItemByIdAsync(Guid tenantId, Guid itemId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cInventoryItemDto\u003e\u003e\u003e ListItemsAsync(Guid tenantId, InventoryItemsQuery query)",
+                                           "Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e SetActivationAsync(Guid tenantId, Guid itemId, SetInventoryItemActivationRequest request)",
+                                           "Task\u003cApiResponse\u003cVisitInventoryUsageDto\u003e\u003e RecordVisitUsageAsync(Guid tenantId, Guid visitId, Guid callerUserId, RecordVisitInventoryUsageRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IInvoiceNumberService.cs",
+                           "Interface":  "IInvoiceNumberService",
+                           "Methods":  [
+                                           "Task\u003cstring\u003e GenerateNextAsync(Guid tenantId, DateTime? issuedAtUtc = null, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IInvoiceService.cs",
+                           "Interface":  "IInvoiceService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e EnsureInvoiceForVisitAsync(Guid tenantId, Guid visitId, Guid performedByUserId, string? initialNotes = null)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e UpdateInvoiceAsync(Guid tenantId, Guid invoiceId, UpdateInvoiceRequest request)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e GetInvoiceByIdAsync(Guid tenantId, Guid invoiceId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cInvoiceDto\u003e\u003e\u003e GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, string? invoiceNumber = null, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cPaymentDto\u003e\u003e RecordPaymentAsync(Guid tenantId, CreatePaymentRequest request)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e AddAdjustmentAsync(Guid tenantId, Guid invoiceId, AddInvoiceAdjustmentRequest request, Guid performedByUserId)",
+                                           "Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e AddLineItemAsync(Guid tenantId, Guid invoiceId, AddInvoiceLineItemRequest request, Guid performedByUserId)",
+                                           "Task\u003cApiResponse\u003cPaymentDto\u003e\u003e RefundPaymentAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid performedByUserId)",
+                                           "Task\u003cApiResponse\u003cList\u003cPaymentDto\u003e\u003e\u003e GetPaymentsByInvoiceAsync(Guid tenantId, Guid invoiceId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/ILabRequestService.cs",
+                           "Interface":  "ILabRequestService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e CreateAsync(Guid tenantId, Guid visitId, CreateLabRequestRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e UpdateAsync(Guid tenantId, Guid visitId, Guid labId, UpdateLabRequestRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e AddResultAsync(Guid tenantId, Guid visitId, Guid labId, AddLabResultRequest request)",
+                                           "Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e DeleteAsync(Guid tenantId, Guid visitId, Guid labId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cList\u003cLabRequestDto\u003e\u003e\u003e GetByVisitAsync(Guid tenantId, Guid visitId, LabRequestType? type = null)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMarketplaceService.cs",
+                           "Interface":  "IMarketplaceService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPublicMarketplaceItemDto\u003e\u003e\u003e GetPublicItemsAsync(string tenantSlug, PublicMarketplaceItemsQuery query)",
+                                           "Task\u003cApiResponse\u003cPublicMarketplaceItemDto\u003e\u003e GetPublicItemByIdAsync(string tenantSlug, Guid itemId)",
+                                           "Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e CreatePublicOrderAsync(string tenantSlug, CreatePublicMarketplaceOrderRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cMarketplaceOrderDto\u003e\u003e\u003e GetClinicOrdersAsync(Guid tenantId, MarketplaceOrdersQuery query)",
+                                           "Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e GetClinicOrderByIdAsync(Guid tenantId, Guid orderId)",
+                                           "Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e UpdateOrderStatusAsync(Guid tenantId, Guid orderId, Guid changedByUserId, UpdateMarketplaceOrderStatusRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMediaService.cs",
+                           "Interface":  "IMediaService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadClinicLogoAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadClinicImageAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadDoctorPhotoAsync(Guid tenantId, Guid doctorId, IFormFile file, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMessageDeliveryProvider.cs",
+                           "Interface":  "IMessageDeliveryProvider",
+                           "Methods":  [
+                                           "Task\u003cMessageDeliveryResult\u003e DeliverAsync(MessageLog message, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMessageService.cs",
+                           "Interface":  "IMessageService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e SendMessageAsync(Guid tenantId, SendMessageRequest request)",
+                                           "Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e RetryMessageAsync(Guid tenantId, Guid messageId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cMessageLogDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, string? templateName, string? channel, string? status, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid messageId)",
+                                           "Task LogScenarioAsync(Guid tenantId, MessageScenario scenario, Guid? recipientUserId = null, string? recipientPhone = null,",
+                                           "Task LogWorkflowEventAsync(Guid tenantId, string templateName, Guid? recipientUserId = null, string? recipientPhone = null, Dictionary\u003cstring, string\u003e? variables = null)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMessageTemplateRenderer.cs",
+                           "Interface":  "IMessageTemplateRenderer",
+                           "Methods":  [
+                                           "Task\u003cMessageRenderResult\u003e RenderAsync(Guid tenantId, MessageScenario scenario, MessageChannel channel, string language, Dictionary\u003cstring, string\u003e? variables = null, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/INotificationService.cs",
+                           "Interface":  "INotificationService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cNotificationSubscriptionDto\u003e\u003e SubscribeAsync(Guid tenantId, Guid userId, CreateNotificationSubscriptionRequest request)",
+                                           "Task\u003cApiResponse\u003e UnsubscribeAsync(Guid tenantId, Guid subscriptionId, Guid userId)",
+                                           "Task\u003cApiResponse\u003cList\u003cNotificationSubscriptionDto\u003e\u003e\u003e GetMySubscriptionsAsync(Guid tenantId, Guid userId)",
+                                           "Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e SendNotificationAsync(Guid tenantId, SendNotificationRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cInAppNotificationDto\u003e\u003e\u003e GetInAppNotificationsAsync(Guid tenantId, Guid userId, InAppNotificationsQuery query)",
+                                           "Task\u003cApiResponse\u003cInAppNotificationDto\u003e\u003e MarkInAppReadAsync(Guid tenantId, Guid userId, Guid notificationId)",
+                                           "Task\u003cApiResponse\u003cint\u003e\u003e MarkAllInAppReadAsync(Guid tenantId, Guid userId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPartnerService.cs",
+                           "Interface":  "IPartnerService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPartnerDto\u003e\u003e\u003e ListPartnersAsync(Guid tenantId, PartnerType? type, bool activeOnly, int pageNumber = 1, int pageSize = 20)",
+                                           "Task\u003cApiResponse\u003cPartnerDto\u003e\u003e CreatePartnerAsync(Guid tenantId, CreatePartnerRequest request)",
+                                           "Task\u003cApiResponse\u003cPartnerDto\u003e\u003e UpdatePartnerAsync(Guid tenantId, Guid partnerId, UpdatePartnerRequest request)",
+                                           "Task\u003cApiResponse\u003cPartnerDto\u003e\u003e SetPartnerActivationAsync(Guid tenantId, Guid partnerId, bool isActive)",
+                                           "Task\u003cApiResponse\u003cList\u003cPartnerContractDto\u003e\u003e\u003e ListContractsAsync(Guid tenantId, PartnerContractsQuery query)",
+                                           "Task\u003cApiResponse\u003cPartnerContractDto\u003e\u003e CreateContractAsync(Guid tenantId, CreatePartnerContractRequest request)",
+                                           "Task\u003cApiResponse\u003cPartnerContractDto\u003e\u003e UpdateContractAsync(Guid tenantId, Guid contractId, UpdatePartnerContractRequest request)",
+                                           "Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e CreateLabOrderAsync(Guid tenantId, Guid visitId, Guid labRequestId, Guid callerUserId, CreateLabPartnerOrderRequest request)",
+                                           "Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e CreatePrescriptionOrderAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId, CreatePrescriptionPartnerOrderRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPartnerOrderDto\u003e\u003e\u003e ListOrdersAsync(Guid tenantId, Guid callerUserId, PartnerOrdersQuery query)",
+                                           "Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e GetOrderByIdAsync(Guid tenantId, Guid callerUserId, Guid orderId)",
+                                           "Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e UpdateOrderStatusAsync(Guid tenantId, Guid callerUserId, Guid orderId, UpdatePartnerOrderStatusRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPatientCreditService.cs",
+                           "Interface":  "IPatientCreditService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPatientCreditTransactionDto\u003e\u003e IssueCreditAsync(Guid tenantId, IssuePatientCreditRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cPatientCreditTransactionDto\u003e\u003e ConsumeCreditAsync(Guid tenantId, ConsumePatientCreditRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cPatientCreditBalanceDto\u003e\u003e GetBalanceAsync(Guid tenantId, Guid patientId, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPatientCreditTransactionDto\u003e\u003e\u003e GetHistoryAsync(Guid tenantId, Guid patientId, int pageNumber = 1, int pageSize = 20, CancellationToken cancellationToken = default)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPatientMedicalService.cs",
+                           "Interface":  "IPatientMedicalService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPatientMedicalDocumentDto\u003e\u003e UploadDocumentAsync(",
+                                           "Task\u003cApiResponse\u003cList\u003cPatientMedicalDocumentDto\u003e\u003e\u003e ListDocumentsAsync(",
+                                           "Task\u003cApiResponse\u003cPatientMedicalDocumentAccessDto\u003e\u003e GetDocumentAccessAsync(",
+                                           "Task\u003cApiResponse\u003cPatientChronicProfileDto\u003e\u003e GetChronicProfileAsync(",
+                                           "Task\u003cApiResponse\u003cPatientChronicProfileDto\u003e\u003e UpsertChronicProfileAsync(",
+                                           "Task\u003cApiResponse\u003cList\u003cPatientMedicalDocumentThreadDto\u003e\u003e\u003e ListDocumentThreadsAsync(",
+                                           "Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e CreateDocumentThreadAsync(",
+                                           "Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e AddThreadReplyAsync(",
+                                           "Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e CloseThreadAsync("
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPatientSelfServiceRequestService.cs",
+                           "Interface":  "IPatientSelfServiceRequestService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e CreateAsync(",
+                                           "Task\u003cApiResponse\u003cList\u003cPatientSelfServiceRequestListItemDto\u003e\u003e\u003e ListOwnedAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e GetOwnedByIdAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e ReuploadPaymentProofAsync(",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPatientSelfServiceRequestListItemDto\u003e\u003e\u003e GetClinicRequestsAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e GetClinicRequestByIdAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e ApproveAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e RejectAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e RequestReuploadAsync(",
+                                           "Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e AdjustPaidAmountAsync("
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPatientService.cs",
+                           "Interface":  "IPatientService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cCreatePatientResponse\u003e\u003e CreatePatientAsync(Guid tenantId, CreatePatientRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPatientDto\u003e\u003e\u003e GetAllPatientsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10, string? search = null)",
+                                           "Task\u003cApiResponse\u003cPatientDto\u003e\u003e GetPatientByIdAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cPatientDto\u003e\u003e UpdatePatientAsync(Guid tenantId, Guid id, UpdatePatientRequest request)",
+                                           "Task\u003cApiResponse\u003cPatientDto\u003e\u003e PatchPatientAsync(Guid tenantId, Guid id, PatchPatientRequest request)",
+                                           "Task\u003cApiResponse\u003cPatientDto\u003e\u003e AddSubProfileAsync(Guid tenantId, Guid parentId, AddSubProfileRequest request)",
+                                           "Task\u003cApiResponse\u003cResetPasswordResponse\u003e\u003e ResetPasswordAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cSendPatientCredentialsResponse\u003e\u003e SendCredentialsAsync(Guid tenantId, Guid id, SendPatientCredentialsRequest request)",
+                                           "Task\u003cApiResponse\u003cPatientDto\u003e\u003e GetOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)",
+                                           "Task\u003cApiResponse\u003cobject\u003e\u003e DeletePatientAsync(Guid tenantId, Guid id)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPrescriptionService.cs",
+                           "Interface":  "IPrescriptionService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPrescriptionDto\u003e\u003e CreateAsync(Guid tenantId, Guid visitId, CreatePrescriptionRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cPrescriptionDto\u003e\u003e UpdateAsync(Guid tenantId, Guid visitId, Guid prescriptionId, UpdatePrescriptionRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003e DeleteAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cList\u003cPrescriptionDto\u003e\u003e\u003e GetByVisitAsync(Guid tenantId, Guid visitId)",
+                                           "Task\u003cApiResponse\u003cList\u003cPrescriptionRevisionDto\u003e\u003e\u003e GetRevisionsAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IPublicService.cs",
+                           "Interface":  "IPublicService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cPublicLandingDto\u003e\u003e GetLandingAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cPublicClinicDto\u003e\u003e GetClinicProfileAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cList\u003cPublicDoctorDto\u003e\u003e\u003e GetDoctorsAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cList\u003cPublicDoctorDto\u003e\u003e\u003e GetAvailableDoctorsNowAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cList\u003cPublicDoctorServiceDto\u003e\u003e\u003e GetServicesAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cList\u003cPublicWorkingHourDto\u003e\u003e\u003e GetWorkingHoursAsync(string tenantSlug)",
+                                           "Task\u003cApiResponse\u003cClinicPaymentOptionsDto\u003e\u003e GetPaymentOptionsAsync(string tenantSlug)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IQueueService.cs",
+                           "Interface":  "IQueueService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e OpenSessionAsync(Guid tenantId, CreateQueueSessionRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e CloseSessionAsync(Guid tenantId, Guid sessionId, Guid callerUserId, bool forceClose = false)",
+                                           "Task\u003cApiResponse\u003cint\u003e\u003e CloseAllSessionsForDateAsync(Guid tenantId, DateTime date)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cQueueSessionDto\u003e\u003e\u003e GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e GetSessionByIdAsync(Guid tenantId, Guid sessionId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e IssueTicketAsync(Guid tenantId, CreateQueueTicketRequest request)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e CallTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cStartVisitResultDto\u003e\u003e StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e FinishTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e SkipTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e CancelTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e MarkUrgentAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cList\u003cQueueTicketDto\u003e\u003e\u003e GetTicketsBySessionAsync(Guid tenantId, Guid sessionId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cQueueBoardDto\u003e\u003e GetBoardAsync(Guid tenantId)",
+                                           "Task\u003cApiResponse\u003cQueueBoardSessionDto\u003e\u003e GetMyQueueAsync(Guid tenantId, Guid doctorUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e GetMyTicketAsync(Guid tenantId, Guid patientUserId)",
+                                           "Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e GetTicketForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IReportsService.cs",
+                           "Interface":  "IReportsService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cClinicOverviewReportDto\u003e\u003e GetClinicOverviewAsync(Guid tenantId, DateTime fromDate, DateTime toDate, Guid? doctorId = null, VisitType? visitType = null, VisitSource? source = null)",
+                                           "Task\u003cApiResponse\u003cServicesSalesReportDto\u003e\u003e GetServicesSalesAsync(Guid tenantId, DateTime fromDate, DateTime toDate, Guid? doctorId = null, VisitType? visitType = null, VisitSource? source = null)",
+                                           "Task\u003cApiResponse\u003cClinicOverviewReportDto\u003e\u003e GetDoctorOwnOverviewAsync(Guid tenantId, Guid doctorUserId, DateTime fromDate, DateTime toDate, VisitType? visitType = null, VisitSource? source = null)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IStaffService.cs",
+                           "Interface":  "IStaffService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e CreateStaffAsync(Guid tenantId, CreateStaffRequest request)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e CreatePayrollOnlyWorkerAsync(Guid tenantId, CreatePayrollOnlyWorkerRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cStaffDto\u003e\u003e\u003e GetAllStaffAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e GetStaffByIdAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e UpdateStaffAsync(Guid tenantId, Guid id, UpdateStaffRequest request)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e PatchStaffAsync(Guid tenantId, Guid id, PatchStaffRequest request)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e EnableStaffAsync(Guid tenantId, Guid id)",
+                                           "Task\u003cApiResponse\u003cStaffDto\u003e\u003e DisableStaffAsync(Guid tenantId, Guid id)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IVisitService.cs",
+                           "Interface":  "IVisitService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cVisitDto\u003e\u003e CreateVisitAsync(Guid tenantId, CreateVisitRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cVisitDto\u003e\u003e UpdateVisitAsync(Guid tenantId, Guid visitId, UpdateVisitRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cVisitDto\u003e\u003e CompleteVisitAsync(Guid tenantId, Guid visitId, CompleteVisitRequest request, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cVisitDto\u003e\u003e GetVisitByIdAsync(Guid tenantId, Guid visitId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetPatientVisitsAsync(Guid tenantId, Guid patientId, Guid callerUserId, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cPatientSummaryDto\u003e\u003e GetPatientSummaryAsync(Guid tenantId, Guid patientId, Guid callerUserId)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetMyVisitsAsync(Guid tenantId, Guid doctorUserId, MyVisitsFilterRequest request)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cPatientDto\u003e\u003e\u003e GetMyPatientsAsync(Guid tenantId, Guid doctorUserId, int pageNumber = 1, int pageSize = 10, string? search = null)",
+                                           "Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetPatientVisitsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId, int pageNumber = 1, int pageSize = 10)",
+                                           "Task\u003cApiResponse\u003cPatientSummaryDto\u003e\u003e GetPatientSummaryForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)",
+                                           "Task\u003cApiResponse\u003cList\u003cStaleOpenVisitDto\u003e\u003e\u003e GetStaleOpenVisitsAsync(Guid tenantId, int olderThanHours = 12)",
+                                           "Task\u003cApiResponse\u003cVisitDto\u003e\u003e CloseStaleVisitAsync(Guid tenantId, Guid visitId, CloseStaleVisitRequest request)"
+                                       ]
+                       },
+                       {
+                           "File":  "src/EliteClinic.Application/Features/Clinic/Services/IWorkforceService.cs",
+                           "Interface":  "IWorkforceService",
+                           "Methods":  [
+                                           "Task\u003cApiResponse\u003cDoctorCompensationRuleDto\u003e\u003e CreateDoctorCompensationRuleAsync(Guid tenantId, Guid doctorId, Guid changedByUserId, CreateDoctorCompensationRuleRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cList\u003cDoctorCompensationRuleDto\u003e\u003e\u003e ListDoctorCompensationRulesAsync(Guid tenantId, Guid doctorId, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cAttendanceRecordDto\u003e\u003e CreateAttendanceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAttendanceRecordRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cAttendanceRecordDto\u003e\u003e CheckOutAttendanceAsync(Guid tenantId, Guid attendanceId, CheckOutAttendanceRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cList\u003cAttendanceRecordDto\u003e\u003e\u003e ListAttendanceAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, Guid? employeeId, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cAbsenceRecordDto\u003e\u003e CreateAbsenceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAbsenceRecordRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cList\u003cAbsenceRecordDto\u003e\u003e\u003e ListAbsenceRecordsAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, Guid? employeeId, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cSalaryPayoutExpenseDto\u003e\u003e CreateSalaryPayoutAsync(Guid tenantId, Guid recordedByUserId, CreateSalaryPayoutRequest request, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cDailyClosingSnapshotDto\u003e\u003e GenerateDailyClosingSnapshotAsync(Guid tenantId, Guid generatedByUserId, DateTime snapshotDate, CancellationToken cancellationToken = default)",
+                                           "Task\u003cApiResponse\u003cList\u003cDailyClosingSnapshotDto\u003e\u003e\u003e GetDailyClosingSnapshotsAsync(Guid tenantId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default)"
+                                       ]
+                       }
+                   ],
+    "Classes":  [
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/BookingService.cs",
+                        "Class":  "BookingService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cBookingDto\u003e\u003e CreateAsync(Guid tenantId, Guid patientUserId, CreateBookingRequest request)",
+                                              "public async Task\u003cApiResponse\u003cBookingDto\u003e\u003e CancelAsync(Guid tenantId, Guid bookingId, Guid callerUserId, CancelBookingRequest request, bool isAdministrativeAction = false)",
+                                              "public async Task\u003cApiResponse\u003cBookingDto\u003e\u003e RescheduleAsync(Guid tenantId, Guid bookingId, Guid callerUserId, RescheduleBookingRequest request, bool isAdministrativeAction = false)",
+                                              "public async Task\u003cApiResponse\u003cBookingDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid bookingId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cBookingDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, Guid? patientId, Guid? doctorId,",
+                                              "public async Task\u003cApiResponse\u003cList\u003cBookingDto\u003e\u003e\u003e GetMyBookingsAsync(Guid tenantId, Guid patientUserId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cBookingDto\u003e\u003e\u003e GetBookingsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/BranchAccessService.cs",
+                        "Class":  "BranchAccessService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cHashSet\u003cGuid\u003e?\u003e GetScopedBranchIdsAsync(Guid tenantId, Guid callerUserId, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003e EnsureCanAccessBranchAsync(Guid tenantId, Guid callerUserId, Guid branchId, CancellationToken cancellationToken = default)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/ClinicServiceManager.cs",
+                        "Class":  "ClinicServiceManager",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e CreateAsync(Guid tenantId, CreateClinicServiceRequest request)",
+                                              "public async Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cClinicServiceDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, int pageNumber = 1, int pageSize = 20, bool? activeOnly = null)",
+                                              "public async Task\u003cApiResponse\u003cClinicServiceDto\u003e\u003e UpdateAsync(Guid tenantId, Guid id, UpdateClinicServiceRequest request)",
+                                              "public async Task\u003cApiResponse\u003cbool\u003e\u003e DeleteAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDoctorClinicServiceLinkDto\u003e\u003e\u003e GetDoctorLinksAsync(Guid tenantId, Guid doctorId)",
+                                              "public async Task\u003cApiResponse\u003cDoctorClinicServiceLinkDto\u003e\u003e UpsertDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId, UpsertDoctorClinicServiceLinkRequest request)",
+                                              "public async Task\u003cApiResponse\u003cbool\u003e\u003e RemoveDoctorLinkAsync(Guid tenantId, Guid doctorId, Guid clinicServiceId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/ClinicSettingsService.cs",
+                        "Class":  "ClinicSettingsService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e GetSettingsAsync(Guid tenantId)",
+                                              "public async Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e UpdateSettingsAsync(Guid tenantId, UpdateClinicSettingsRequest request)",
+                                              "public async Task\u003cApiResponse\u003cClinicSettingsDto\u003e\u003e PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request)",
+                                              "public async Task\u003cApiResponse\u003cClinicPaymentOptionsDto\u003e\u003e GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cClinicPaymentMethodDto\u003e\u003e\u003e ReplacePaymentMethodsAsync(Guid tenantId, UpdateClinicPaymentMethodsRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/DoctorNoteService.cs",
+                        "Class":  "DoctorNoteService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cDoctorNoteDto\u003e\u003e CreateAsync(Guid tenantId, Guid doctorUserId, CreateDoctorNoteRequest request)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDoctorNoteDto\u003e\u003e\u003e GetUnreadAsync(Guid tenantId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cDoctorNoteDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, bool? unreadOnly, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cDoctorNoteDto\u003e\u003e MarkAsReadAsync(Guid tenantId, Guid noteId, Guid readerUserId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/DoctorService.cs",
+                        "Class":  "DoctorServiceImpl",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e CreateDoctorAsync(Guid tenantId, CreateDoctorRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cDoctorDto\u003e\u003e\u003e GetAllDoctorsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e GetDoctorByIdAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e GetMyProfileAsync(Guid tenantId, Guid doctorUserId)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e UpdateDoctorAsync(Guid tenantId, Guid id, UpdateDoctorRequest request)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e PatchDoctorAsync(Guid tenantId, Guid id, PatchDoctorRequest request)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e EnableDoctorAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cDoctorDto\u003e\u003e DisableDoctorAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDoctorServiceDto\u003e\u003e\u003e UpdateServicesAsync(Guid tenantId, Guid doctorId, UpdateDoctorServicesRequest request)",
+                                              "public async Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e UpdateVisitFieldsAsync(Guid tenantId, Guid doctorId, UpdateVisitFieldsRequest request)",
+                                              "public async Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e GetMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId)",
+                                              "public async Task\u003cApiResponse\u003cDoctorVisitFieldConfigDto\u003e\u003e UpdateMyVisitFieldsAsync(Guid tenantId, Guid doctorUserId, UpdateVisitFieldsRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/ExpenseService.cs",
+                        "Class":  "ExpenseService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cExpenseDto\u003e\u003e CreateAsync(Guid tenantId, CreateExpenseRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cExpenseDto\u003e\u003e UpdateAsync(Guid tenantId, Guid expenseId, UpdateExpenseRequest request)",
+                                              "public async Task\u003cApiResponse\u003e DeleteAsync(Guid tenantId, Guid expenseId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cExpenseDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, DateTime? from, DateTime? to,"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/FinanceService.cs",
+                        "Class":  "FinanceService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cDailyRevenueDto\u003e\u003e GetDailyRevenueAsync(Guid tenantId, DateTime date)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDoctorRevenueDto\u003e\u003e\u003e GetRevenueByDoctorAsync(Guid tenantId, DateTime date, Guid? doctorId, decimal commissionPercent = 0)",
+                                              "public async Task\u003cApiResponse\u003cMonthlyRevenueDto\u003e\u003e GetMonthlyRevenueAsync(Guid tenantId, int year, int month)",
+                                              "public async Task\u003cApiResponse\u003cYearlyRevenueDto\u003e\u003e GetYearlyRevenueAsync(Guid tenantId, int year)",
+                                              "public async Task\u003cApiResponse\u003cProfitReportDto\u003e\u003e GetProfitReportAsync(Guid tenantId, DateTime from, DateTime to)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMessageDeliveryProvider.cs",
+                        "Class":  "MessageDeliveryResult",
+                        "PublicMethods":  [
+
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/IMessageTemplateRenderer.cs",
+                        "Class":  "MessageRenderResult",
+                        "PublicMethods":  [
+
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/InventoryService.cs",
+                        "Class":  "InventoryService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e CreateItemAsync(Guid tenantId, CreateInventoryItemRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e UpdateItemAsync(Guid tenantId, Guid itemId, UpdateInventoryItemRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e GetItemByIdAsync(Guid tenantId, Guid itemId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cInventoryItemDto\u003e\u003e\u003e ListItemsAsync(Guid tenantId, InventoryItemsQuery query)",
+                                              "public async Task\u003cApiResponse\u003cInventoryItemDto\u003e\u003e SetActivationAsync(Guid tenantId, Guid itemId, SetInventoryItemActivationRequest request)",
+                                              "public async Task\u003cApiResponse\u003cVisitInventoryUsageDto\u003e\u003e RecordVisitUsageAsync(Guid tenantId, Guid visitId, Guid callerUserId, RecordVisitInventoryUsageRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/InvoiceNumberService.cs",
+                        "Class":  "InvoiceNumberService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cstring\u003e GenerateNextAsync(Guid tenantId, DateTime? issuedAtUtc = null, CancellationToken cancellationToken = default)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/InvoiceService.cs",
+                        "Class":  "InvoiceService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e EnsureInvoiceForVisitAsync(Guid tenantId, Guid visitId, Guid performedByUserId, string? initialNotes = null)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e UpdateInvoiceAsync(Guid tenantId, Guid invoiceId, UpdateInvoiceRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e GetInvoiceByIdAsync(Guid tenantId, Guid invoiceId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cInvoiceDto\u003e\u003e\u003e GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to,",
+                                              "public async Task\u003cApiResponse\u003cPaymentDto\u003e\u003e RecordPaymentAsync(Guid tenantId, CreatePaymentRequest request)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e AddLineItemAsync(Guid tenantId, Guid invoiceId, AddInvoiceLineItemRequest request, Guid performedByUserId)",
+                                              "public async Task\u003cApiResponse\u003cInvoiceDto\u003e\u003e AddAdjustmentAsync(Guid tenantId, Guid invoiceId, AddInvoiceAdjustmentRequest request, Guid performedByUserId)",
+                                              "public async Task\u003cApiResponse\u003cPaymentDto\u003e\u003e RefundPaymentAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid performedByUserId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPaymentDto\u003e\u003e\u003e GetPaymentsByInvoiceAsync(Guid tenantId, Guid invoiceId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/LabRequestService.cs",
+                        "Class":  "LabRequestService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e CreateAsync(Guid tenantId, Guid visitId, CreateLabRequestRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e UpdateAsync(Guid tenantId, Guid visitId, Guid labId,",
+                                              "public async Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e AddResultAsync(Guid tenantId, Guid visitId, Guid labId, AddLabResultRequest request)",
+                                              "public async Task\u003cApiResponse\u003cLabRequestDto\u003e\u003e DeleteAsync(Guid tenantId, Guid visitId, Guid labId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cLabRequestDto\u003e\u003e\u003e GetByVisitAsync(Guid tenantId, Guid visitId, LabRequestType? type = null)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/MarketplaceService.cs",
+                        "Class":  "MarketplaceService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPublicMarketplaceItemDto\u003e\u003e\u003e GetPublicItemsAsync(string tenantSlug, PublicMarketplaceItemsQuery query)",
+                                              "public async Task\u003cApiResponse\u003cPublicMarketplaceItemDto\u003e\u003e GetPublicItemByIdAsync(string tenantSlug, Guid itemId)",
+                                              "public async Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e CreatePublicOrderAsync(string tenantSlug, CreatePublicMarketplaceOrderRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cMarketplaceOrderDto\u003e\u003e\u003e GetClinicOrdersAsync(Guid tenantId, MarketplaceOrdersQuery query)",
+                                              "public async Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e GetClinicOrderByIdAsync(Guid tenantId, Guid orderId)",
+                                              "public async Task\u003cApiResponse\u003cMarketplaceOrderDto\u003e\u003e UpdateOrderStatusAsync(Guid tenantId, Guid orderId, Guid changedByUserId, UpdateMarketplaceOrderStatusRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/MediaService.cs",
+                        "Class":  "MediaService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadClinicLogoAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadClinicImageAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cMediaFileDto\u003e\u003e UploadDoctorPhotoAsync(Guid tenantId, Guid doctorId, IFormFile file, CancellationToken cancellationToken = default)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/MessageService.cs",
+                        "Class":  "MessageService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e SendMessageAsync(Guid tenantId, SendMessageRequest request)",
+                                              "public async Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e RetryMessageAsync(Guid tenantId, Guid messageId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cMessageLogDto\u003e\u003e\u003e GetAllAsync(Guid tenantId, string? templateName,",
+                                              "public async Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e GetByIdAsync(Guid tenantId, Guid messageId)",
+                                              "public async Task LogWorkflowEventAsync(Guid tenantId, string templateName, Guid? recipientUserId = null, string? recipientPhone = null,",
+                                              "public async Task LogScenarioAsync(Guid tenantId, MessageScenario scenario, Guid? recipientUserId = null, string? recipientPhone = null,"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/MessageTemplateRenderer.cs",
+                        "Class":  "MessageTemplateRenderer",
+                        "PublicMethods":  [
+                                              "public async Task\u003cMessageRenderResult\u003e RenderAsync(",
+                                              "public static MessageRenderResult RenderFromTemplate(string template, Dictionary\u003cstring, string\u003e? variables)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/NotificationService.cs",
+                        "Class":  "NotificationService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cNotificationSubscriptionDto\u003e\u003e SubscribeAsync(Guid tenantId, Guid userId, CreateNotificationSubscriptionRequest request)",
+                                              "public async Task\u003cApiResponse\u003e UnsubscribeAsync(Guid tenantId, Guid subscriptionId, Guid userId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cNotificationSubscriptionDto\u003e\u003e\u003e GetMySubscriptionsAsync(Guid tenantId, Guid userId)",
+                                              "public async Task\u003cApiResponse\u003cMessageLogDto\u003e\u003e SendNotificationAsync(Guid tenantId, SendNotificationRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cInAppNotificationDto\u003e\u003e\u003e GetInAppNotificationsAsync(Guid tenantId, Guid userId, InAppNotificationsQuery query)",
+                                              "public async Task\u003cApiResponse\u003cInAppNotificationDto\u003e\u003e MarkInAppReadAsync(Guid tenantId, Guid userId, Guid notificationId)",
+                                              "public async Task\u003cApiResponse\u003cint\u003e\u003e MarkAllInAppReadAsync(Guid tenantId, Guid userId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PartnerService.cs",
+                        "Class":  "PartnerService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPartnerDto\u003e\u003e\u003e ListPartnersAsync(Guid tenantId, PartnerType? type, bool activeOnly, int pageNumber = 1, int pageSize = 20)",
+                                              "public async Task\u003cApiResponse\u003cPartnerDto\u003e\u003e CreatePartnerAsync(Guid tenantId, CreatePartnerRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPartnerDto\u003e\u003e UpdatePartnerAsync(Guid tenantId, Guid partnerId, UpdatePartnerRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPartnerDto\u003e\u003e SetPartnerActivationAsync(Guid tenantId, Guid partnerId, bool isActive)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPartnerContractDto\u003e\u003e\u003e ListContractsAsync(Guid tenantId, PartnerContractsQuery query)",
+                                              "public async Task\u003cApiResponse\u003cPartnerContractDto\u003e\u003e CreateContractAsync(Guid tenantId, CreatePartnerContractRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPartnerContractDto\u003e\u003e UpdateContractAsync(Guid tenantId, Guid contractId, UpdatePartnerContractRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e CreateLabOrderAsync(Guid tenantId, Guid visitId, Guid labRequestId, Guid callerUserId, CreateLabPartnerOrderRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e CreatePrescriptionOrderAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId, CreatePrescriptionPartnerOrderRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPartnerOrderDto\u003e\u003e\u003e ListOrdersAsync(Guid tenantId, Guid callerUserId, PartnerOrdersQuery query)",
+                                              "public async Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e GetOrderByIdAsync(Guid tenantId, Guid callerUserId, Guid orderId)",
+                                              "public async Task\u003cApiResponse\u003cPartnerOrderDto\u003e\u003e UpdateOrderStatusAsync(Guid tenantId, Guid callerUserId, Guid orderId, UpdatePartnerOrderStatusRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PatientCreditService.cs",
+                        "Class":  "PatientCreditService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPatientCreditTransactionDto\u003e\u003e IssueCreditAsync(Guid tenantId, IssuePatientCreditRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cPatientCreditTransactionDto\u003e\u003e ConsumeCreditAsync(Guid tenantId, ConsumePatientCreditRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cPatientCreditBalanceDto\u003e\u003e GetBalanceAsync(Guid tenantId, Guid patientId, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPatientCreditTransactionDto\u003e\u003e\u003e GetHistoryAsync(Guid tenantId, Guid patientId, int pageNumber = 1, int pageSize = 20, CancellationToken cancellationToken = default)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PatientMedicalService.cs",
+                        "Class":  "PatientMedicalService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPatientMedicalDocumentDto\u003e\u003e UploadDocumentAsync(",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPatientMedicalDocumentDto\u003e\u003e\u003e ListDocumentsAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientMedicalDocumentAccessDto\u003e\u003e GetDocumentAccessAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientChronicProfileDto\u003e\u003e GetChronicProfileAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientChronicProfileDto\u003e\u003e UpsertChronicProfileAsync(",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPatientMedicalDocumentThreadDto\u003e\u003e\u003e ListDocumentThreadsAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e CreateDocumentThreadAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e AddThreadReplyAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientMedicalDocumentThreadDto\u003e\u003e CloseThreadAsync("
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PatientSelfServiceRequestService.cs",
+                        "Class":  "PatientSelfServiceRequestService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e CreateAsync(",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPatientSelfServiceRequestListItemDto\u003e\u003e\u003e ListOwnedAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e GetOwnedByIdAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e ReuploadPaymentProofAsync(",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPatientSelfServiceRequestListItemDto\u003e\u003e\u003e GetClinicRequestsAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e GetClinicRequestByIdAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e ApproveAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e RejectAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e RequestReuploadAsync(",
+                                              "public async Task\u003cApiResponse\u003cPatientSelfServiceRequestDto\u003e\u003e AdjustPaidAmountAsync("
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PatientService.cs",
+                        "Class":  "PatientService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cCreatePatientResponse\u003e\u003e CreatePatientAsync(Guid tenantId, CreatePatientRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPatientDto\u003e\u003e\u003e GetAllPatientsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10, string? search = null)",
+                                              "public async Task\u003cApiResponse\u003cPatientDto\u003e\u003e GetPatientByIdAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cPatientDto\u003e\u003e UpdatePatientAsync(Guid tenantId, Guid id, UpdatePatientRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPatientDto\u003e\u003e PatchPatientAsync(Guid tenantId, Guid id, PatchPatientRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPatientDto\u003e\u003e AddSubProfileAsync(Guid tenantId, Guid parentId, AddSubProfileRequest request)",
+                                              "public async Task\u003cApiResponse\u003cResetPasswordResponse\u003e\u003e ResetPasswordAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cSendPatientCredentialsResponse\u003e\u003e SendCredentialsAsync(Guid tenantId, Guid id, SendPatientCredentialsRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPatientDto\u003e\u003e GetOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)",
+                                              "public async Task\u003cApiResponse\u003cobject\u003e\u003e DeletePatientAsync(Guid tenantId, Guid id)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PrescriptionService.cs",
+                        "Class":  "PrescriptionService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPrescriptionDto\u003e\u003e CreateAsync(Guid tenantId, Guid visitId, CreatePrescriptionRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cPrescriptionDto\u003e\u003e UpdateAsync(Guid tenantId, Guid visitId, Guid prescriptionId,",
+                                              "public async Task\u003cApiResponse\u003e DeleteAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPrescriptionDto\u003e\u003e\u003e GetByVisitAsync(Guid tenantId, Guid visitId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPrescriptionRevisionDto\u003e\u003e\u003e GetRevisionsAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/PublicService.cs",
+                        "Class":  "PublicService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cPublicLandingDto\u003e\u003e GetLandingAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cPublicClinicDto\u003e\u003e GetClinicProfileAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPublicDoctorDto\u003e\u003e\u003e GetDoctorsAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPublicDoctorServiceDto\u003e\u003e\u003e GetServicesAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPublicWorkingHourDto\u003e\u003e\u003e GetWorkingHoursAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cClinicPaymentOptionsDto\u003e\u003e GetPaymentOptionsAsync(string tenantSlug)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cPublicDoctorDto\u003e\u003e\u003e GetAvailableDoctorsNowAsync(string tenantSlug)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/QueueService.cs",
+                        "Class":  "QueueService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e OpenSessionAsync(Guid tenantId, CreateQueueSessionRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e CloseSessionAsync(Guid tenantId, Guid sessionId, Guid callerUserId, bool forceClose = false)",
+                                              "public async Task\u003cApiResponse\u003cint\u003e\u003e CloseAllSessionsForDateAsync(Guid tenantId, DateTime date)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cQueueSessionDto\u003e\u003e\u003e GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cQueueSessionDto\u003e\u003e GetSessionByIdAsync(Guid tenantId, Guid sessionId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e IssueTicketAsync(Guid tenantId, CreateQueueTicketRequest request)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e CallTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cStartVisitResultDto\u003e\u003e StartVisitFromTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e FinishTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e SkipTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e CancelTicketAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e MarkUrgentAsync(Guid tenantId, Guid ticketId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cQueueTicketDto\u003e\u003e\u003e GetTicketsBySessionAsync(Guid tenantId, Guid sessionId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueBoardDto\u003e\u003e GetBoardAsync(Guid tenantId)",
+                                              "public async Task\u003cApiResponse\u003cQueueBoardSessionDto\u003e\u003e GetMyQueueAsync(Guid tenantId, Guid doctorUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e GetMyTicketAsync(Guid tenantId, Guid patientUserId)",
+                                              "public async Task\u003cApiResponse\u003cQueueTicketDto\u003e\u003e GetTicketForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/ReportsService.cs",
+                        "Class":  "ReportsService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cClinicOverviewReportDto\u003e\u003e GetClinicOverviewAsync(",
+                                              "public async Task\u003cApiResponse\u003cServicesSalesReportDto\u003e\u003e GetServicesSalesAsync(",
+                                              "public async Task\u003cApiResponse\u003cClinicOverviewReportDto\u003e\u003e GetDoctorOwnOverviewAsync("
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/StaffService.cs",
+                        "Class":  "StaffService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e CreateStaffAsync(Guid tenantId, CreateStaffRequest request)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e CreatePayrollOnlyWorkerAsync(Guid tenantId, CreatePayrollOnlyWorkerRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cStaffDto\u003e\u003e\u003e GetAllStaffAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e GetStaffByIdAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e UpdateStaffAsync(Guid tenantId, Guid id, UpdateStaffRequest request)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e PatchStaffAsync(Guid tenantId, Guid id, PatchStaffRequest request)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e EnableStaffAsync(Guid tenantId, Guid id)",
+                                              "public async Task\u003cApiResponse\u003cStaffDto\u003e\u003e DisableStaffAsync(Guid tenantId, Guid id)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/VisitService.cs",
+                        "Class":  "VisitService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cVisitDto\u003e\u003e CreateVisitAsync(Guid tenantId, CreateVisitRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cVisitDto\u003e\u003e UpdateVisitAsync(Guid tenantId, Guid visitId, UpdateVisitRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cVisitDto\u003e\u003e CompleteVisitAsync(Guid tenantId, Guid visitId, CompleteVisitRequest request, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cVisitDto\u003e\u003e GetVisitByIdAsync(Guid tenantId, Guid visitId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetPatientVisitsAsync(Guid tenantId, Guid patientId, Guid callerUserId, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cPatientSummaryDto\u003e\u003e GetPatientSummaryAsync(Guid tenantId, Guid patientId, Guid callerUserId)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetMyVisitsAsync(Guid tenantId, Guid doctorUserId, MyVisitsFilterRequest request)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cPatientDto\u003e\u003e\u003e GetMyPatientsAsync(Guid tenantId, Guid doctorUserId, int pageNumber = 1, int pageSize = 10, string? search = null)",
+                                              "public async Task\u003cApiResponse\u003cPagedResult\u003cVisitDto\u003e\u003e\u003e GetPatientVisitsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId, int pageNumber = 1, int pageSize = 10)",
+                                              "public async Task\u003cApiResponse\u003cPatientSummaryDto\u003e\u003e GetPatientSummaryForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cStaleOpenVisitDto\u003e\u003e\u003e GetStaleOpenVisitsAsync(Guid tenantId, int olderThanHours = 12)",
+                                              "public async Task\u003cApiResponse\u003cVisitDto\u003e\u003e CloseStaleVisitAsync(Guid tenantId, Guid visitId, CloseStaleVisitRequest request)"
+                                          ]
+                    },
+                    {
+                        "File":  "src/EliteClinic.Application/Features/Clinic/Services/WorkforceService.cs",
+                        "Class":  "WorkforceService",
+                        "PublicMethods":  [
+                                              "public async Task\u003cApiResponse\u003cDoctorCompensationRuleDto\u003e\u003e CreateDoctorCompensationRuleAsync(Guid tenantId, Guid doctorId, Guid changedByUserId, CreateDoctorCompensationRuleRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDoctorCompensationRuleDto\u003e\u003e\u003e ListDoctorCompensationRulesAsync(Guid tenantId, Guid doctorId, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cAttendanceRecordDto\u003e\u003e CreateAttendanceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAttendanceRecordRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cAbsenceRecordDto\u003e\u003e CreateAbsenceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAbsenceRecordRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cAbsenceRecordDto\u003e\u003e\u003e ListAbsenceRecordsAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, Guid? employeeId, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cAttendanceRecordDto\u003e\u003e CheckOutAttendanceAsync(Guid tenantId, Guid attendanceId, CheckOutAttendanceRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cAttendanceRecordDto\u003e\u003e\u003e ListAttendanceAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, Guid? employeeId, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cSalaryPayoutExpenseDto\u003e\u003e CreateSalaryPayoutAsync(Guid tenantId, Guid recordedByUserId, CreateSalaryPayoutRequest request, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cDailyClosingSnapshotDto\u003e\u003e GenerateDailyClosingSnapshotAsync(Guid tenantId, Guid generatedByUserId, DateTime snapshotDate, CancellationToken cancellationToken = default)",
+                                              "public async Task\u003cApiResponse\u003cList\u003cDailyClosingSnapshotDto\u003e\u003e\u003e GetDailyClosingSnapshotsAsync(Guid tenantId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default)"
+                                          ]
+                    }
+                ]
+}

@@ -1,0 +1,96 @@
+﻿ROOTS: C:\Users\mohammed\AppData\Roaming\Code\User\History; C:\Users\mohammed\AppData\Roaming\Code\Backups; C:\Users\mohammed\AppData\Roaming\Code\User\workspaceStorage
+TARGET_COUNT: 46
+CANDIDATE_COUNT: 0
+
+TARGET: src/EliteClinic.Api/Controllers/ReportsController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/Branch.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/DoctorBranchSchedule.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/VisitSource.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404175657_Phase13_Phase1CoreStabilizationReports.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Api/Controllers/SelfServiceRequestsController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/PatientSelfServiceRequestService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/ClinicPaymentMethod.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/PatientSelfServiceRequest.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/PatientSelfServicePaymentPolicy.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/PatientSelfServiceRequestStatus.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/PatientSelfServiceRequestType.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404183649_Phase14_Phase2SelfServiceRequestFlow.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Api/Controllers/InventoryController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Api/Controllers/MarketplaceOrdersController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/DTOs/InventoryDtos.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/DTOs/MarketplaceDtos.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/IInventoryService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/IMarketplaceService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/InventoryService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/MarketplaceService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/InventoryItem.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/InventoryItemImage.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/MarketplaceOrder.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/MarketplaceOrderItem.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/SalesInvoice.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/SalesInvoiceLineItem.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Entities/VisitInventoryUsage.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/InventoryItemType.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/MarketplaceOrderStatus.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Domain/Enums/SalesInvoiceStatus.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.Designer.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Api/Controllers/PartnerOrdersController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Api/Controllers/PartnersController.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Application/Features/Clinic/Services/PartnerService.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.cs
+  - NO_CANDIDATE
+TARGET: src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.Designer.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/EliteClinic.Tests.csproj
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/DbContextFactory.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/FakeMessageService.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/Phase2SelfServiceWorkflowTests.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/Phase3InventoryMarketplaceTests.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/Phase4PartnersThreadsNotificationsTests.cs
+  - NO_CANDIDATE
+TARGET: tests/EliteClinic.Tests/SystemWideApiContractTests.cs
+  - NO_CANDIDATE
+TARGET: docs/spec-kit/ENDPOINT_INVENTORY_GENERATED.md
+  - NO_CANDIDATE

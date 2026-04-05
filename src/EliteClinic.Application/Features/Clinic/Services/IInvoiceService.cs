@@ -5,6 +5,7 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 
 public interface IInvoiceService
 {
+    Task<ApiResponse<InvoiceDto>> EnsureInvoiceForVisitAsync(Guid tenantId, Guid visitId, Guid performedByUserId, string? initialNotes = null);
     Task<ApiResponse<InvoiceDto>> CreateInvoiceAsync(Guid tenantId, CreateInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> UpdateInvoiceAsync(Guid tenantId, Guid invoiceId, UpdateInvoiceRequest request);
     Task<ApiResponse<InvoiceDto>> PatchInvoiceAsync(Guid tenantId, Guid invoiceId, PatchInvoiceRequest request);

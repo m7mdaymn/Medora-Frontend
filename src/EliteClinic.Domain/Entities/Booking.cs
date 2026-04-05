@@ -9,9 +9,12 @@ namespace EliteClinic.Domain.Entities;
 /// </summary>
 public class Booking : TenantBaseEntity
 {
+    public Guid? BranchId { get; set; }
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public VisitType VisitType { get; set; }
+    public VisitSource Source { get; set; }
     public DateTime BookingDate { get; set; }
     public TimeSpan BookingTime { get; set; }
     public BookingStatus Status { get; set; }
@@ -22,6 +25,7 @@ public class Booking : TenantBaseEntity
 
     // Navigation
     public Patient Patient { get; set; } = null!;
+    public Branch? Branch { get; set; }
     public Doctor Doctor { get; set; } = null!;
     public DoctorService? DoctorService { get; set; }
     public QueueTicket? QueueTicket { get; set; }
@@ -29,5 +33,7 @@ public class Booking : TenantBaseEntity
     public Booking()
     {
         Status = BookingStatus.Confirmed;
+        VisitType = VisitType.Exam;
+        Source = VisitSource.Booking;
     }
 }

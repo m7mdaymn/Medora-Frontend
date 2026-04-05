@@ -1,0 +1,306 @@
+﻿[
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/BookingDtos.cs",
+        "Classes":  [
+                        "BookingDto",
+                        "CreateBookingRequest",
+                        "CancelBookingRequest",
+                        "RescheduleBookingRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/ClinicServiceDtos.cs",
+        "Classes":  [
+                        "ClinicServiceDto",
+                        "CreateClinicServiceRequest",
+                        "UpdateClinicServiceRequest",
+                        "DoctorClinicServiceLinkDto",
+                        "UpsertDoctorClinicServiceLinkRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/ClinicSettingsDtos.cs",
+        "Classes":  [
+                        "ClinicSettingsDto",
+                        "UpdateClinicSettingsRequest",
+                        "PatchClinicSettingsRequest",
+                        "ClinicPaymentMethodDto",
+                        "UpsertClinicPaymentMethodRequest",
+                        "UpdateClinicPaymentMethodsRequest",
+                        "ClinicPaymentOptionsDto",
+                        "WorkingHourDto",
+                        "WorkingHourRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/DoctorDtos.cs",
+        "Classes":  [
+                        "DoctorDto",
+                        "CreateDoctorRequest",
+                        "UpdateDoctorRequest",
+                        "PatchDoctorRequest",
+                        "DoctorCompensationHistoryItemDto",
+                        "DoctorServiceDto",
+                        "DoctorServiceRequest",
+                        "UpdateDoctorServicesRequest",
+                        "DoctorVisitFieldConfigDto",
+                        "UpdateVisitFieldsRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/DoctorNoteDtos.cs",
+        "Classes":  [
+                        "DoctorNoteDto",
+                        "CreateDoctorNoteRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/ExpenseDtos.cs",
+        "Classes":  [
+                        "ExpenseDto",
+                        "CreateExpenseRequest",
+                        "UpdateExpenseRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/FinanceDtos.cs",
+        "Classes":  [
+                        "DailyRevenueDto",
+                        "DoctorRevenueDto",
+                        "MonthlyRevenueDto",
+                        "YearlyRevenueDto",
+                        "ProfitReportDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/InventoryDtos.cs",
+        "Classes":  [
+                        "InventoryItemDto",
+                        "InventoryItemImageDto",
+                        "CreateInventoryItemRequest",
+                        "UpdateInventoryItemRequest",
+                        "InventoryItemsQuery",
+                        "SetInventoryItemActivationRequest",
+                        "RecordVisitInventoryUsageRequest",
+                        "VisitInventoryUsageDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/InvoiceDtos.cs",
+        "Classes":  [
+                        "InvoiceDto",
+                        "CreateInvoiceRequest",
+                        "UpdateInvoiceRequest",
+                        "PatchInvoiceRequest",
+                        "PaymentDto",
+                        "CreatePaymentRequest",
+                        "AddInvoiceAdjustmentRequest",
+                        "RefundInvoiceRequest",
+                        "InvoiceLineItemDto",
+                        "AddInvoiceLineItemRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/LabRequestDtos.cs",
+        "Classes":  [
+                        "LabRequestDto",
+                        "CreateLabRequestRequest",
+                        "UpdateLabRequestRequest",
+                        "AddLabResultRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/MarketplaceDtos.cs",
+        "Classes":  [
+                        "PublicMarketplaceItemDto",
+                        "PublicMarketplaceItemsQuery",
+                        "CreatePublicMarketplaceOrderRequest",
+                        "CreatePublicMarketplaceOrderItemRequest",
+                        "MarketplaceOrderItemDto",
+                        "MarketplaceOrderDto",
+                        "MarketplaceOrdersQuery",
+                        "UpdateMarketplaceOrderStatusRequest",
+                        "SalesInvoiceDto",
+                        "SalesInvoiceLineItemDto",
+                        "PublicBranchDto",
+                        "PublicLandingDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/MediaDtos.cs",
+        "Classes":  [
+                        "MediaFileDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/MessageLogDtos.cs",
+        "Classes":  [
+                        "MessageLogDto",
+                        "SendMessageRequest",
+                        "RetryMessageRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/NotificationDtos.cs",
+        "Classes":  [
+                        "NotificationSubscriptionDto",
+                        "CreateNotificationSubscriptionRequest",
+                        "SendNotificationRequest",
+                        "InAppNotificationDto",
+                        "InAppNotificationsQuery"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PartnerDtos.cs",
+        "Classes":  [
+                        "PartnerDto",
+                        "CreatePartnerRequest",
+                        "UpdatePartnerRequest",
+                        "SetPartnerActivationRequest",
+                        "PartnerContractDto",
+                        "CreatePartnerContractRequest",
+                        "UpdatePartnerContractRequest",
+                        "PartnerContractsQuery",
+                        "PartnerOrderDto",
+                        "PartnerOrderStatusHistoryDto",
+                        "CreateLabPartnerOrderRequest",
+                        "CreatePrescriptionPartnerOrderRequest",
+                        "UpdatePartnerOrderStatusRequest",
+                        "PartnerOrdersQuery"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PatientCreditDtos.cs",
+        "Classes":  [
+                        "PatientCreditBalanceDto",
+                        "PatientCreditTransactionDto",
+                        "IssuePatientCreditRequest",
+                        "ConsumePatientCreditRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PatientDtos.cs",
+        "Classes":  [
+                        "PatientDto",
+                        "PatientSubProfileDto",
+                        "CreatePatientRequest",
+                        "CreatePatientResponse",
+                        "SendPatientCredentialsRequest",
+                        "SendPatientCredentialsResponse",
+                        "UpdatePatientRequest",
+                        "AddSubProfileRequest",
+                        "PatchPatientRequest",
+                        "ResetPasswordResponse"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PatientMedicalDtos.cs",
+        "Classes":  [
+                        "PatientMedicalDocumentDto",
+                        "PatientMedicalDocumentAccessDto",
+                        "UploadPatientMedicalDocumentRequest",
+                        "PatientChronicProfileDto",
+                        "UpsertPatientChronicProfileRequest",
+                        "PatientMedicalDocumentThreadDto",
+                        "PatientMedicalDocumentThreadReplyDto",
+                        "CreatePatientMedicalDocumentThreadRequest",
+                        "AddPatientMedicalDocumentThreadReplyRequest",
+                        "ClosePatientMedicalDocumentThreadRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PrescriptionDtos.cs",
+        "Classes":  [
+                        "PrescriptionDto",
+                        "CreatePrescriptionRequest",
+                        "UpdatePrescriptionRequest",
+                        "PrescriptionRevisionDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/PublicDtos.cs",
+        "Classes":  [
+                        "PublicClinicDto",
+                        "PublicDoctorDto",
+                        "PublicDoctorServiceDto",
+                        "PublicWorkingHourDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/QueueDtos.cs",
+        "Classes":  [
+                        "QueueSessionDto",
+                        "CreateQueueSessionRequest",
+                        "QueueTicketDto",
+                        "CreateQueueTicketRequest",
+                        "CreateQueueTicketWithPaymentRequest",
+                        "StartVisitResultDto",
+                        "QueueBoardDto",
+                        "QueueBoardSessionDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/ReportDtos.cs",
+        "Classes":  [
+                        "ClinicOverviewReportDto",
+                        "DoctorOverviewReportRowDto",
+                        "ServicesSalesReportDto",
+                        "ServiceSalesReportRowDto"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/SelfServiceRequestDtos.cs",
+        "Classes":  [
+                        "PatientSelfServiceRequestListItemDto",
+                        "PatientSelfServiceRequestDocumentDto",
+                        "PatientSelfServicePaymentProofDto",
+                        "PatientSelfServiceRequestDto",
+                        "CreatePatientSelfServiceRequest",
+                        "SelfServiceRequestsQuery",
+                        "ApprovePatientSelfServiceRequest",
+                        "RejectPatientSelfServiceRequest",
+                        "RequestSelfServicePaymentReupload",
+                        "AdjustSelfServicePaidAmountRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/StaffDtos.cs",
+        "Classes":  [
+                        "StaffDto",
+                        "CreateStaffRequest",
+                        "UpdateStaffRequest",
+                        "PatchStaffRequest",
+                        "CreatePayrollOnlyWorkerRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/VisitDtos.cs",
+        "Classes":  [
+                        "VisitDto",
+                        "CreateVisitRequest",
+                        "UpdateVisitRequest",
+                        "CompleteVisitRequest",
+                        "PatientSummaryDto",
+                        "VisitSummaryDto",
+                        "ProfileVisitQueryRequest",
+                        "StaleOpenVisitDto",
+                        "CloseStaleVisitRequest",
+                        "MyVisitsFilterRequest"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Application/Features/Clinic/DTOs/WorkforceDtos.cs",
+        "Classes":  [
+                        "DoctorCompensationRuleDto",
+                        "CreateDoctorCompensationRuleRequest",
+                        "AttendanceRecordDto",
+                        "CreateAttendanceRecordRequest",
+                        "CheckOutAttendanceRequest",
+                        "CreateSalaryPayoutRequest",
+                        "SalaryPayoutExpenseDto",
+                        "DailyClosingSnapshotDto",
+                        "AbsenceRecordDto",
+                        "CreateAbsenceRecordRequest"
+                    ]
+    }
+]

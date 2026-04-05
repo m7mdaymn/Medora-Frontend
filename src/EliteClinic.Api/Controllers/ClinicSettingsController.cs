@@ -91,4 +91,36 @@ public class ClinicSettingsController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("payment-options")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<ClinicPaymentOptionsDto>), 200)]
+    public async Task<ActionResult<ApiResponse<ClinicPaymentOptionsDto>>> GetPaymentOptions([FromQuery] bool activeOnly = false)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<ClinicPaymentOptionsDto>.Error("Tenant context not resolved"));
+
+        var result = await _settingsService.GetPaymentOptionsAsync(_tenantContext.TenantId, activeOnly);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPut("payment-methods")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<ClinicPaymentMethodDto>>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<List<ClinicPaymentMethodDto>>>> ReplacePaymentMethods(
+        [FromBody] UpdateClinicPaymentMethodsRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<ClinicPaymentMethodDto>>.Error("Tenant context not resolved"));
+
+        var result = await _settingsService.ReplacePaymentMethodsAsync(_tenantContext.TenantId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

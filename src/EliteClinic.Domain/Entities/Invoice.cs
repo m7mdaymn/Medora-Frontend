@@ -9,6 +9,7 @@ namespace EliteClinic.Domain.Entities;
 public class Invoice : TenantBaseEntity
 {
     public string InvoiceNumber { get; set; } = string.Empty;
+    public Guid? BranchId { get; set; }
     public Guid VisitId { get; set; }
     public Guid PatientId { get; set; }
     public string PatientNameSnapshot { get; set; } = string.Empty;
@@ -26,6 +27,7 @@ public class Invoice : TenantBaseEntity
     public string? Notes { get; set; }
 
     public Visit Visit { get; set; } = null!;
+    public Branch? Branch { get; set; }
     public Patient Patient { get; set; } = null!;
     public Doctor Doctor { get; set; } = null!;
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();

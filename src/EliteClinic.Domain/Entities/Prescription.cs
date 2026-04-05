@@ -6,6 +6,7 @@ namespace EliteClinic.Domain.Entities;
 public class Prescription : TenantBaseEntity
 {
     public Guid VisitId { get; set; }
+    public Guid? PartnerOrderId { get; set; }
     public string MedicationName { get; set; } = string.Empty;
     public string? Dosage { get; set; }
     public string? Frequency { get; set; }
@@ -13,4 +14,5 @@ public class Prescription : TenantBaseEntity
     public string? Instructions { get; set; }
 
     public Visit Visit { get; set; } = null!;
+    public ICollection<PrescriptionRevision> Revisions { get; set; } = new List<PrescriptionRevision>();
 }

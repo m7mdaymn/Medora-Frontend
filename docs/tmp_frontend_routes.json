@@ -1,0 +1,126 @@
+﻿[
+    {
+        "route":  "/",
+        "sourceFile":  "Frontend/app/page.tsx"
+    },
+    {
+        "route":  "/{*}",
+        "sourceFile":  "Frontend/app/[tenantSlug]/(public)/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/appointments",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/appointments/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/contracts",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/contracts/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/patients",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/patients/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/patients/{*}",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/patients/[patientId]/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/queue",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/queue/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/settings",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/settings/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/visits",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/visits/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctor/visits/{*}",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/doctor/visits/[visitId]/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/doctors",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/doctors/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/expenses",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/expenses/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/invoices",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/invoices/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/patients",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/patients/{*}",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/[id]/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/queue",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/queue/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/reports",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/reports/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/services",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/services/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/settings",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/settings/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/staff",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/staff/page.tsx"
+    },
+    {
+        "route":  "/{*}/login",
+        "sourceFile":  "Frontend/app/[tenantSlug]/login/page.tsx"
+    },
+    {
+        "route":  "/{*}/patient",
+        "sourceFile":  "Frontend/app/[tenantSlug]/patient/(main)/page.tsx"
+    },
+    {
+        "route":  "/{*}/patient/bookings",
+        "sourceFile":  "Frontend/app/[tenantSlug]/patient/(main)/bookings/page.tsx"
+    },
+    {
+        "route":  "/{*}/patient/history",
+        "sourceFile":  "Frontend/app/[tenantSlug]/patient/(main)/history/page.tsx"
+    },
+    {
+        "route":  "/{*}/patient/login",
+        "sourceFile":  "Frontend/app/[tenantSlug]/patient/login/page.tsx"
+    },
+    {
+        "route":  "/{*}/patient/profile",
+        "sourceFile":  "Frontend/app/[tenantSlug]/patient/(main)/profile/page.tsx"
+    },
+    {
+        "route":  "/admin",
+        "sourceFile":  "Frontend/app/(platform)/admin/(dashboard)/page.tsx"
+    },
+    {
+        "route":  "/admin/login",
+        "sourceFile":  "Frontend/app/(platform)/admin/login/page.tsx"
+    },
+    {
+        "route":  "/admin/subscriptions",
+        "sourceFile":  "Frontend/app/(platform)/admin/(dashboard)/subscriptions/page.tsx"
+    },
+    {
+        "route":  "/admin/tenants",
+        "sourceFile":  "Frontend/app/(platform)/admin/(dashboard)/tenants/page.tsx"
+    }
+]

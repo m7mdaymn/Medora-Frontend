@@ -7,6 +7,7 @@ namespace EliteClinic.Application.Features.Clinic.DTOs;
 public class BookingDto
 {
     public Guid Id { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public string PatientPhone { get; set; } = string.Empty;
@@ -14,6 +15,8 @@ public class BookingDto
     public string DoctorName { get; set; } = string.Empty;
     public Guid? DoctorServiceId { get; set; }
     public string? ServiceName { get; set; }
+    public VisitType VisitType { get; set; }
+    public VisitSource Source { get; set; }
     public DateTime BookingDate { get; set; }
     public string BookingTime { get; set; } = string.Empty;
     public BookingStatus Status { get; set; }
@@ -33,8 +36,11 @@ public class CreateBookingRequest
     /// If omitted, the authenticated user's patient profile is used.
     /// </summary>
     public Guid? PatientId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public VisitType VisitType { get; set; } = VisitType.Exam;
+    public VisitSource Source { get; set; } = VisitSource.Booking;
     public DateTime BookingDate { get; set; }
     public string BookingTime { get; set; } = string.Empty;  // HH:mm format
     public string? Notes { get; set; }

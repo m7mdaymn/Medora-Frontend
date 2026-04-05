@@ -44,4 +44,41 @@ public interface IPatientMedicalService
         Guid callerUserId,
         bool isPatientActor,
         CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<List<PatientMedicalDocumentThreadDto>>> ListDocumentThreadsAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<PatientMedicalDocumentThreadDto>> CreateDocumentThreadAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        CreatePatientMedicalDocumentThreadRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<PatientMedicalDocumentThreadDto>> AddThreadReplyAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        AddPatientMedicalDocumentThreadReplyRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<PatientMedicalDocumentThreadDto>> CloseThreadAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        ClosePatientMedicalDocumentThreadRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default);
 }

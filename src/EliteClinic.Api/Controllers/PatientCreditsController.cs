@@ -1,7 +1,5 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
-using EliteClinic.Application.Features.Clinic.Services;
-using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +10,8 @@ namespace EliteClinic.Api.Controllers;
 [Authorize]
 public class PatientCreditsController : ControllerBase
 {
-    private readonly IPatientCreditService _patientCreditService;
-    private readonly ITenantContext _tenantContext;
-
-    public PatientCreditsController(IPatientCreditService patientCreditService, ITenantContext tenantContext)
+    public PatientCreditsController()
     {
-        _patientCreditService = patientCreditService;
-        _tenantContext = tenantContext;
     }
 
     [HttpGet("{patientId:guid}/balance")]
@@ -26,11 +19,8 @@ public class PatientCreditsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<PatientCreditBalanceDto>), 200)]
     public async Task<ActionResult<ApiResponse<PatientCreditBalanceDto>>> GetBalance(Guid patientId, CancellationToken cancellationToken)
     {
-        if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<PatientCreditBalanceDto>.Error("Tenant context not resolved"));
-
-        var result = await _patientCreditService.GetBalanceAsync(_tenantContext.TenantId, patientId, cancellationToken);
-        return Ok(result);
+        await Task.CompletedTask;
+        return StatusCode(410, ApiResponse<PatientCreditBalanceDto>.Error("Patient credits are deprecated. Use direct refund workflow."));
     }
 
     [HttpGet("{patientId:guid}/history")]
@@ -42,10 +32,7 @@ public class PatientCreditsController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<PagedResult<PatientCreditTransactionDto>>.Error("Tenant context not resolved"));
-
-        var result = await _patientCreditService.GetHistoryAsync(_tenantContext.TenantId, patientId, pageNumber, pageSize, cancellationToken);
-        return Ok(result);
+        await Task.CompletedTask;
+        return StatusCode(410, ApiResponse<PagedResult<PatientCreditTransactionDto>>.Error("Patient credits are deprecated. Use direct refund workflow."));
     }
 }

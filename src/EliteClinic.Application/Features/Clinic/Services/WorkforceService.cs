@@ -18,7 +18,7 @@ public class WorkforceService : IWorkforceService
         _context = context;
     }
 
-    public async Task<ApiResponse<DoctorCompensationRuleDto>> CreateDoctorCompensationRuleAsync(Guid tenantId, Guid doctorId, CreateDoctorCompensationRuleRequest request, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<DoctorCompensationRuleDto>> CreateDoctorCompensationRuleAsync(Guid tenantId, Guid doctorId, Guid changedByUserId, CreateDoctorCompensationRuleRequest request, CancellationToken cancellationToken = default)
     {
         var doctor = await _context.Doctors
             .FirstOrDefaultAsync(d => d.TenantId == tenantId && !d.IsDeleted && d.Id == doctorId, cancellationToken);
@@ -29,43 +29,51 @@ public class WorkforceService : IWorkforceService
         if (request.EffectiveTo.HasValue && request.EffectiveTo.Value < request.EffectiveFrom)
             return ApiResponse<DoctorCompensationRuleDto>.Error("EffectiveTo must be greater than or equal to EffectiveFrom");
 
-        var overlaps = await _context.DoctorCompensationRules
-            .Where(r => r.TenantId == tenantId && !r.IsDeleted && r.DoctorId == doctorId)
-            .AnyAsync(r =>
-                (r.EffectiveTo == null || r.EffectiveTo >= request.EffectiveFrom) &&
-                (!request.EffectiveTo.HasValue || r.EffectiveFrom <= request.EffectiveTo.Value), cancellationToken);
+        var effectiveFrom = request.EffectiveFrom == default ? DateTime.UtcNow : request.EffectiveFrom;
 
-        if (overlaps)
-            return ApiResponse<DoctorCompensationRuleDto>.Error("Compensation rule overlaps with an existing effective range");
-
-        var rule = new DoctorCompensationRule
+        var history = new DoctorCompensationHistory
         {
             TenantId = tenantId,
             DoctorId = doctorId,
             Mode = request.Mode,
             Value = request.Value,
-            EffectiveFrom = request.EffectiveFrom,
-            EffectiveTo = request.EffectiveTo,
-            IsActive = true
+            EffectiveFrom = effectiveFrom,
+            ChangedByUserId = changedByUserId,
+            Notes = request.EffectiveTo.HasValue
+                ? $"Effective to {request.EffectiveTo.Value:yyyy-MM-dd}"
+                : "Compensation updated"
         };
 
-        _context.DoctorCompensationRules.Add(rule);
+        doctor.CompensationMode = request.Mode;
+        doctor.CompensationValue = request.Value;
+        doctor.CompensationEffectiveFrom = effectiveFrom;
+
+        _context.DoctorCompensationHistories.Add(history);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<DoctorCompensationRuleDto>.Created(MapRule(rule), "Compensation rule created");
+        return ApiResponse<DoctorCompensationRuleDto>.Created(MapRuleFromHistory(history), "Compensation rule created");
     }
 
     public async Task<ApiResponse<List<DoctorCompensationRuleDto>>> ListDoctorCompensationRulesAsync(Guid tenantId, Guid doctorId, CancellationToken cancellationToken = default)
     {
-        var rules = await _context.DoctorCompensationRules
+        var history = await _context.DoctorCompensationHistories
+            .Where(h => h.TenantId == tenantId && !h.IsDeleted && h.DoctorId == doctorId)
+            .OrderByDescending(h => h.EffectiveFrom)
+            .ToListAsync(cancellationToken);
+
+        if (history.Count > 0)
+            return ApiResponse<List<DoctorCompensationRuleDto>>.Ok(history.Select(MapRuleFromHistory).ToList(), $"Retrieved {history.Count} rule(s)");
+
+        // Compatibility fallback for tenants with legacy standalone rules not yet migrated.
+        var legacyRules = await _context.DoctorCompensationRules
             .Where(r => r.TenantId == tenantId && !r.IsDeleted && r.DoctorId == doctorId)
             .OrderByDescending(r => r.EffectiveFrom)
             .ToListAsync(cancellationToken);
 
-        return ApiResponse<List<DoctorCompensationRuleDto>>.Ok(rules.Select(MapRule).ToList(), $"Retrieved {rules.Count} rule(s)");
+        return ApiResponse<List<DoctorCompensationRuleDto>>.Ok(legacyRules.Select(MapRuleFromLegacy).ToList(), $"Retrieved {legacyRules.Count} rule(s)");
     }
 
-    public async Task<ApiResponse<AttendanceRecordDto>> CreateAttendanceRecordAsync(Guid tenantId, CreateAttendanceRecordRequest request, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<AttendanceRecordDto>> CreateAttendanceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAttendanceRecordRequest request, CancellationToken cancellationToken = default)
     {
         if (!request.DoctorId.HasValue && !request.EmployeeId.HasValue)
             return ApiResponse<AttendanceRecordDto>.Error("Either doctorId or employeeId is required");
@@ -108,6 +116,8 @@ public class WorkforceService : IWorkforceService
             TenantId = tenantId,
             DoctorId = request.DoctorId,
             EmployeeId = request.EmployeeId,
+            BranchId = request.BranchId,
+            EnteredByUserId = enteredByUserId,
             CheckInAt = checkInAt,
             LateMinutes = request.LateMinutes,
             IsAbsent = request.IsAbsent
@@ -118,6 +128,82 @@ public class WorkforceService : IWorkforceService
 
         var saved = await GetAttendanceWithIncludesAsync(tenantId, attendance.Id, cancellationToken);
         return ApiResponse<AttendanceRecordDto>.Created(MapAttendance(saved!), "Attendance recorded");
+    }
+
+    public async Task<ApiResponse<AbsenceRecordDto>> CreateAbsenceRecordAsync(Guid tenantId, Guid enteredByUserId, CreateAbsenceRecordRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!request.DoctorId.HasValue && !request.EmployeeId.HasValue)
+            return ApiResponse<AbsenceRecordDto>.Error("Either doctorId or employeeId is required");
+
+        if (request.DoctorId.HasValue && request.EmployeeId.HasValue)
+            return ApiResponse<AbsenceRecordDto>.Error("Specify either doctorId or employeeId, not both");
+
+        if (request.ToDate.Date < request.FromDate.Date)
+            return ApiResponse<AbsenceRecordDto>.Error("toDate must be on or after fromDate");
+
+        if (request.DoctorId.HasValue)
+        {
+            var doctorExists = await _context.Doctors
+                .AnyAsync(d => d.TenantId == tenantId && !d.IsDeleted && d.Id == request.DoctorId.Value, cancellationToken);
+            if (!doctorExists)
+                return ApiResponse<AbsenceRecordDto>.Error("Doctor not found");
+        }
+
+        if (request.EmployeeId.HasValue)
+        {
+            var employeeExists = await _context.Employees
+                .AnyAsync(e => e.TenantId == tenantId && !e.IsDeleted && e.Id == request.EmployeeId.Value, cancellationToken);
+            if (!employeeExists)
+                return ApiResponse<AbsenceRecordDto>.Error("Employee not found");
+        }
+
+        var absence = new AbsenceRecord
+        {
+            TenantId = tenantId,
+            DoctorId = request.DoctorId,
+            EmployeeId = request.EmployeeId,
+            FromDate = request.FromDate.Date,
+            ToDate = request.ToDate.Date,
+            Reason = request.Reason.Trim(),
+            IsPaid = request.IsPaid,
+            Notes = request.Notes,
+            EnteredByUserId = enteredByUserId,
+            BranchId = request.BranchId
+        };
+
+        _context.AbsenceRecords.Add(absence);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var saved = await _context.AbsenceRecords
+            .Include(a => a.Doctor)
+            .Include(a => a.Employee)
+            .FirstOrDefaultAsync(a => a.TenantId == tenantId && !a.IsDeleted && a.Id == absence.Id, cancellationToken);
+
+        return ApiResponse<AbsenceRecordDto>.Created(MapAbsence(saved!), "Absence recorded");
+    }
+
+    public async Task<ApiResponse<List<AbsenceRecordDto>>> ListAbsenceRecordsAsync(Guid tenantId, DateTime? from, DateTime? to, Guid? doctorId, Guid? employeeId, CancellationToken cancellationToken = default)
+    {
+        var query = _context.AbsenceRecords
+            .Include(a => a.Doctor)
+            .Include(a => a.Employee)
+            .Where(a => a.TenantId == tenantId && !a.IsDeleted);
+
+        if (from.HasValue)
+            query = query.Where(a => a.ToDate >= from.Value.Date);
+        if (to.HasValue)
+            query = query.Where(a => a.FromDate <= to.Value.Date);
+        if (doctorId.HasValue)
+            query = query.Where(a => a.DoctorId == doctorId.Value);
+        if (employeeId.HasValue)
+            query = query.Where(a => a.EmployeeId == employeeId.Value);
+
+        var items = await query
+            .OrderByDescending(a => a.FromDate)
+            .ThenByDescending(a => a.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return ApiResponse<List<AbsenceRecordDto>>.Ok(items.Select(MapAbsence).ToList(), $"Retrieved {items.Count} absence record(s)");
     }
 
     public async Task<ApiResponse<AttendanceRecordDto>> CheckOutAttendanceAsync(Guid tenantId, Guid attendanceId, CheckOutAttendanceRequest request, CancellationToken cancellationToken = default)
@@ -317,7 +403,7 @@ public class WorkforceService : IWorkforceService
         };
     }
 
-    private static DoctorCompensationRuleDto MapRule(DoctorCompensationRule rule)
+    private static DoctorCompensationRuleDto MapRuleFromLegacy(DoctorCompensationRule rule)
     {
         return new DoctorCompensationRuleDto
         {
@@ -332,6 +418,21 @@ public class WorkforceService : IWorkforceService
         };
     }
 
+    private static DoctorCompensationRuleDto MapRuleFromHistory(DoctorCompensationHistory history)
+    {
+        return new DoctorCompensationRuleDto
+        {
+            Id = history.Id,
+            DoctorId = history.DoctorId,
+            Mode = history.Mode,
+            Value = history.Value,
+            EffectiveFrom = history.EffectiveFrom,
+            EffectiveTo = null,
+            IsActive = true,
+            CreatedAt = history.CreatedAt
+        };
+    }
+
     private static AttendanceRecordDto MapAttendance(AttendanceRecord attendance)
     {
         return new AttendanceRecordDto
@@ -341,12 +442,34 @@ public class WorkforceService : IWorkforceService
             EmployeeName = attendance.Employee?.Name,
             DoctorId = attendance.DoctorId,
             DoctorName = attendance.Doctor?.Name,
+            BranchId = attendance.BranchId,
+            EnteredByUserId = attendance.EnteredByUserId,
             CheckInAt = attendance.CheckInAt,
             CheckOutAt = attendance.CheckOutAt,
             LateMinutes = attendance.LateMinutes,
             OvertimeMinutes = attendance.OvertimeMinutes,
             IsAbsent = attendance.IsAbsent,
             CreatedAt = attendance.CreatedAt
+        };
+    }
+
+    private static AbsenceRecordDto MapAbsence(AbsenceRecord absence)
+    {
+        return new AbsenceRecordDto
+        {
+            Id = absence.Id,
+            EmployeeId = absence.EmployeeId,
+            EmployeeName = absence.Employee?.Name,
+            DoctorId = absence.DoctorId,
+            DoctorName = absence.Doctor?.Name,
+            FromDate = absence.FromDate,
+            ToDate = absence.ToDate,
+            Reason = absence.Reason,
+            IsPaid = absence.IsPaid,
+            Notes = absence.Notes,
+            EnteredByUserId = absence.EnteredByUserId,
+            BranchId = absence.BranchId,
+            CreatedAt = absence.CreatedAt
         };
     }
 

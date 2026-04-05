@@ -140,6 +140,72 @@ public class NotificationService : INotificationService
         }, "PWA notification sent successfully");
     }
 
+    public async Task<ApiResponse<PagedResult<InAppNotificationDto>>> GetInAppNotificationsAsync(Guid tenantId, Guid userId, InAppNotificationsQuery query)
+    {
+        var q = _context.InAppNotifications
+            .Where(n => n.TenantId == tenantId && !n.IsDeleted && n.UserId == userId)
+            .AsQueryable();
+
+        if (query.UnreadOnly)
+            q = q.Where(n => !n.IsRead);
+
+        var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+        var pageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 200);
+
+        var total = await q.CountAsync();
+        var rows = await q
+            .OrderByDescending(n => n.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return ApiResponse<PagedResult<InAppNotificationDto>>.Ok(new PagedResult<InAppNotificationDto>
+        {
+            Items = rows.Select(MapInApp).ToList(),
+            TotalCount = total,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        }, $"Retrieved {rows.Count} in-app notification(s)");
+    }
+
+    public async Task<ApiResponse<InAppNotificationDto>> MarkInAppReadAsync(Guid tenantId, Guid userId, Guid notificationId)
+    {
+        var entity = await _context.InAppNotifications
+            .FirstOrDefaultAsync(n => n.TenantId == tenantId && !n.IsDeleted && n.UserId == userId && n.Id == notificationId);
+
+        if (entity == null)
+            return ApiResponse<InAppNotificationDto>.Error("In-app notification not found");
+
+        if (!entity.IsRead)
+        {
+            entity.IsRead = true;
+            entity.ReadAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return ApiResponse<InAppNotificationDto>.Ok(MapInApp(entity), "In-app notification marked as read");
+    }
+
+    public async Task<ApiResponse<int>> MarkAllInAppReadAsync(Guid tenantId, Guid userId)
+    {
+        var unread = await _context.InAppNotifications
+            .Where(n => n.TenantId == tenantId && !n.IsDeleted && n.UserId == userId && !n.IsRead)
+            .ToListAsync();
+
+        if (!unread.Any())
+            return ApiResponse<int>.Ok(0, "No unread notifications");
+
+        var now = DateTime.UtcNow;
+        foreach (var item in unread)
+        {
+            item.IsRead = true;
+            item.ReadAt = now;
+        }
+
+        await _context.SaveChangesAsync();
+        return ApiResponse<int>.Ok(unread.Count, $"Marked {unread.Count} notification(s) as read");
+    }
+
     private static NotificationSubscriptionDto MapToDto(NotificationSubscription ns) => new()
     {
         Id = ns.Id,
@@ -148,5 +214,18 @@ public class NotificationService : INotificationService
         IsActive = ns.IsActive,
         LastUsedAt = ns.LastUsedAt,
         CreatedAt = ns.CreatedAt
+    };
+
+    private static InAppNotificationDto MapInApp(InAppNotification notification) => new()
+    {
+        Id = notification.Id,
+        Type = notification.Type,
+        Title = notification.Title,
+        Body = notification.Body,
+        EntityType = notification.EntityType,
+        EntityId = notification.EntityId,
+        IsRead = notification.IsRead,
+        ReadAt = notification.ReadAt,
+        CreatedAt = notification.CreatedAt
     };
 }

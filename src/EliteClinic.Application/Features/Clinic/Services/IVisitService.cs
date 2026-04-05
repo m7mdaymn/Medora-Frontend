@@ -11,7 +11,7 @@ public interface IVisitService
     Task<ApiResponse<VisitDto>> GetVisitByIdAsync(Guid tenantId, Guid visitId, Guid callerUserId);
     Task<ApiResponse<PagedResult<VisitDto>>> GetPatientVisitsAsync(Guid tenantId, Guid patientId, Guid callerUserId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<PatientSummaryDto>> GetPatientSummaryAsync(Guid tenantId, Guid patientId, Guid callerUserId);
-    Task<ApiResponse<List<VisitDto>>> GetMyTodayVisitsAsync(Guid tenantId, Guid doctorUserId);
+    Task<ApiResponse<PagedResult<VisitDto>>> GetMyVisitsAsync(Guid tenantId, Guid doctorUserId, MyVisitsFilterRequest request);
     Task<ApiResponse<PagedResult<PatientDto>>> GetMyPatientsAsync(Guid tenantId, Guid doctorUserId, int pageNumber = 1, int pageSize = 10, string? search = null);
     Task<ApiResponse<PagedResult<VisitDto>>> GetPatientVisitsForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<PatientSummaryDto>> GetPatientSummaryForOwnedProfileAsync(Guid tenantId, Guid patientUserId, Guid patientId);

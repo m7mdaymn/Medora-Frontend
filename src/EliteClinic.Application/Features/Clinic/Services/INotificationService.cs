@@ -9,4 +9,7 @@ public interface INotificationService
     Task<ApiResponse> UnsubscribeAsync(Guid tenantId, Guid subscriptionId, Guid userId);
     Task<ApiResponse<List<NotificationSubscriptionDto>>> GetMySubscriptionsAsync(Guid tenantId, Guid userId);
     Task<ApiResponse<MessageLogDto>> SendNotificationAsync(Guid tenantId, SendNotificationRequest request);
+    Task<ApiResponse<PagedResult<InAppNotificationDto>>> GetInAppNotificationsAsync(Guid tenantId, Guid userId, InAppNotificationsQuery query);
+    Task<ApiResponse<InAppNotificationDto>> MarkInAppReadAsync(Guid tenantId, Guid userId, Guid notificationId);
+    Task<ApiResponse<int>> MarkAllInAppReadAsync(Guid tenantId, Guid userId);
 }

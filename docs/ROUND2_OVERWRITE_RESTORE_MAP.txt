@@ -1,0 +1,149 @@
+﻿TARGETS=48
+RESTORED=47
+NO_MATCH=1
+
+RESTORED_FILES:
+- src/EliteClinic.Api/Controllers/ClinicSettingsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-7eb1180b\gggO.cs ts=1775327552071
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-7eb1180b\entries.json id=gggO.cs
+- src/EliteClinic.Api/Controllers/ExpensesController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\564ef685\hCnG.cs ts=1775324479306
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\564ef685\entries.json id=hCnG.cs
+- src/EliteClinic.Api/Controllers/LabRequestsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\57db4c73\zIlc.cs ts=1775334195155
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\57db4c73\entries.json id=zIlc.cs
+- src/EliteClinic.Api/Controllers/NotificationsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-311f5724\DD0h.cs ts=1775334138438
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-311f5724\entries.json id=DD0h.cs
+- src/EliteClinic.Api/Controllers/PatientCreditsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\86c378b\z2y0.cs ts=1775325283061
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\86c378b\entries.json id=z2y0.cs
+- src/EliteClinic.Api/Controllers/PatientMedicalController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\50127af4\QErP.cs ts=1775334323527
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\50127af4\entries.json id=QErP.cs
+- src/EliteClinic.Api/Controllers/PrescriptionsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-266cfa35\5P6f.cs ts=1775334211165
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-266cfa35\entries.json id=5P6f.cs
+- src/EliteClinic.Api/Controllers/PublicController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-3ea6ca89\D0VX.cs ts=1775330577046
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-3ea6ca89\entries.json id=D0VX.cs
+- src/EliteClinic.Api/Controllers/StaffController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-419b101c\5iCS.cs ts=1775324472957
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-419b101c\entries.json id=5iCS.cs
+- src/EliteClinic.Api/Controllers/VisitsController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\d5d35b8\MNTf.cs ts=1775330624987
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\d5d35b8\entries.json id=MNTf.cs
+- src/EliteClinic.Api/Controllers/WorkforceController.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-40aea76\OQVS.cs ts=1775324686412
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-40aea76\entries.json id=OQVS.cs
+- src/EliteClinic.Api/Program.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\2237c324\60KS.cs ts=1775334264689
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\2237c324\entries.json id=60KS.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/BookingDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\222d2b83\VskT.cs ts=1775324326701
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\222d2b83\entries.json id=VskT.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/DoctorDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\252409d9\Wi0K.cs ts=1775324346738
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\252409d9\entries.json id=Wi0K.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/InvoiceDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-448a25d1\hbtl.cs ts=1775230631395
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-448a25d1\entries.json id=hbtl.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/PublicDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-458a3eb1\3To4.cs ts=1774271050982
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-458a3eb1\entries.json id=3To4.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/QueueDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-212c4fb5\zhve.cs ts=1775324319979
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-212c4fb5\entries.json id=zhve.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/StaffDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\400b2f9c\xJ2a.cs ts=1775324916455
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\400b2f9c\entries.json id=xJ2a.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/VisitDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-766bd92f\fLEx.cs ts=1775324336068
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-766bd92f\entries.json id=fLEx.cs
+- src/EliteClinic.Application/Features/Clinic/DTOs/WorkforceDtos.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\6fd381c2\UtyZ.cs ts=1775324364175
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\6fd381c2\entries.json id=UtyZ.cs
+- src/EliteClinic.Application/Features/Clinic/Services/BookingService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-64a57ac6\TzwN.cs ts=1775324597164
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-64a57ac6\entries.json id=TzwN.cs
+- src/EliteClinic.Application/Features/Clinic/Services/ClinicSettingsService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\7013091c\xpvd.cs ts=1775327301047
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\7013091c\entries.json id=xpvd.cs
+- src/EliteClinic.Application/Features/Clinic/Services/DoctorService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\1e1c3410\D0AL.cs ts=1775324796012
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\1e1c3410\entries.json id=D0AL.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IClinicSettingsService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\27126d15\FJM3.cs ts=1775327276206
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\27126d15\entries.json id=FJM3.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IInvoiceService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6cb486cb\tj5Q.cs ts=1775330444237
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6cb486cb\entries.json id=tj5Q.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IPublicService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-4d3d22d\muG5.cs ts=1775330535501
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-4d3d22d\entries.json id=muG5.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IStaffService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-42005f18\8bw3.cs ts=1775324436930
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-42005f18\entries.json id=8bw3.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IVisitService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\17d76193\VQZ5.cs ts=1775324624268
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\17d76193\entries.json id=VQZ5.cs
+- src/EliteClinic.Application/Features/Clinic/Services/IWorkforceService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\7a2a4482\k0ft.cs ts=1775324683492
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\7a2a4482\entries.json id=k0ft.cs
+- src/EliteClinic.Application/Features/Clinic/Services/PublicService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-716f3f26\KECy.cs ts=1775330558342
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-716f3f26\entries.json id=KECy.cs
+- src/EliteClinic.Application/Features/Clinic/Services/QueueService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-557fe20e\FSGe.cs ts=1775324978972
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-557fe20e\entries.json id=FSGe.cs
+- src/EliteClinic.Application/Features/Clinic/Services/StaffService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-1c36eeff\w42g.cs ts=1775324466408
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-1c36eeff\entries.json id=w42g.cs
+- src/EliteClinic.Application/Features/Clinic/Services/VisitService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\3da0d1ac\xyCW.cs ts=1775324641002
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\3da0d1ac\entries.json id=xyCW.cs
+- src/EliteClinic.Application/Features/Clinic/Services/WorkforceService.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-40e3ffe5\4yUT.cs ts=1775324699855
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-40e3ffe5\entries.json id=4yUT.cs
+- src/EliteClinic.Domain/Entities/AttendanceRecord.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-17b45454\MpZH.cs ts=1775324231013
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-17b45454\entries.json id=MpZH.cs
+- src/EliteClinic.Domain/Entities/Booking.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-53802843\eYlL.cs ts=1775324211221
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-53802843\entries.json id=eYlL.cs
+- src/EliteClinic.Domain/Entities/ClinicSettings.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\54af2b7b\GZO3.cs ts=1775327013554
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\54af2b7b\entries.json id=GZO3.cs
+- src/EliteClinic.Domain/Entities/Doctor.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\d525b07\sU4z.cs ts=1775324189486
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\d525b07\entries.json id=sU4z.cs
+- src/EliteClinic.Domain/Entities/Employee.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\5e2ad18\440B.cs ts=1775324194741
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\5e2ad18\entries.json id=440B.cs
+- src/EliteClinic.Domain/Entities/Expense.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-cf25ca2\BhF2.cs ts=1775324226177
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-cf25ca2\entries.json id=BhF2.cs
+- src/EliteClinic.Domain/Entities/Invoice.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\7062bc69\HQCi.cs ts=1775324220357
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\7062bc69\entries.json id=HQCi.cs
+- src/EliteClinic.Domain/Entities/LabRequest.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6a48fefc\8Eo2.cs ts=1775333423877
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6a48fefc\entries.json id=8Eo2.cs
+- src/EliteClinic.Domain/Entities/Prescription.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-57bd0bd4\UZ60.cs ts=1775333433067
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-57bd0bd4\entries.json id=UZ60.cs
+- src/EliteClinic.Domain/Entities/QueueSession.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-254b7df\05Ak.cs ts=1775324199448
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-254b7df\entries.json id=05Ak.cs
+- src/EliteClinic.Domain/Entities/QueueTicket.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\7c9db219\dZy8.cs ts=1775324204768
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\7c9db219\entries.json id=dZy8.cs
+- src/EliteClinic.Domain/Entities/Visit.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\2b919b8b\VcRU.cs ts=1775324216281
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\2b919b8b\entries.json id=VcRU.cs
+- src/EliteClinic.Infrastructure/Data/EliteClinicDbContext.cs
+  snapshot=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6976f906\MAdl.cs ts=1775333603360
+  entry=C:\Users\mohammed\AppData\Roaming\Code\User\History\-6976f906\entries.json id=MAdl.cs
+
+NO_MATCH_FILES:
+- src/EliteClinic.Application/Features/Clinic/Services/SessionClosureBackgroundService.cs

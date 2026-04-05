@@ -1,0 +1,73 @@
+﻿ROUND2 migration recovery from VS Code editor state
+Generated: 2026-04-05 16:35:37 +02:00
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404175657_Phase13_Phase1CoreStabilizationReports.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404175657_Phase13_Phase1CoreStabilizationReports.Designer.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404183649_Phase14_Phase2SelfServiceRequestFlow.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404183649_Phase14_Phase2SelfServiceRequestFlow.Designer.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.Designer.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Target: src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.Designer.cs
+FoundInState: no
+FoundInHistory: no
+SelectedSource: none
+SourcePath: <none>
+Recovered: no
+
+Summary:
+TotalTargets: 8
+RecoveredYes: 0
+RecoveredAlreadyExists: 0
+RecoveredNo: 8
+UnresolvedTargets: 8
+- src/EliteClinic.Infrastructure/Migrations/20260404175657_Phase13_Phase1CoreStabilizationReports.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404175657_Phase13_Phase1CoreStabilizationReports.Designer.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404183649_Phase14_Phase2SelfServiceRequestFlow.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404183649_Phase14_Phase2SelfServiceRequestFlow.Designer.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404192914_Phase15_Phase3InventoryMarketplaceSales.Designer.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.cs
+- src/EliteClinic.Infrastructure/Migrations/20260404202657_Phase16_Phase4PartnersThreadsNotifications.Designer.cs

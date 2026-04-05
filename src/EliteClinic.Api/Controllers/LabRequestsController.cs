@@ -15,11 +15,13 @@ namespace EliteClinic.Api.Controllers;
 public class LabRequestsController : ControllerBase
 {
     private readonly ILabRequestService _labRequestService;
+    private readonly IPartnerService _partnerService;
     private readonly ITenantContext _tenantContext;
 
-    public LabRequestsController(ILabRequestService labRequestService, ITenantContext tenantContext)
+    public LabRequestsController(ILabRequestService labRequestService, IPartnerService partnerService, ITenantContext tenantContext)
     {
         _labRequestService = labRequestService;
+        _partnerService = partnerService;
         _tenantContext = tenantContext;
     }
 
@@ -38,6 +40,22 @@ public class LabRequestsController : ControllerBase
             return BadRequest(ApiResponse<LabRequestDto>.Error("Tenant context not resolved"));
 
         var result = await _labRequestService.CreateAsync(_tenantContext.TenantId, visitId, request, GetCurrentUserId());
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    [HttpPost("{labRequestId:guid}/partner-order")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerOrderDto>>> CreatePartnerOrder(Guid visitId, Guid labRequestId, [FromBody] CreateLabPartnerOrderRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerOrderDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.CreateLabOrderAsync(_tenantContext.TenantId, visitId, labRequestId, GetCurrentUserId(), request);
         if (!result.Success)
             return BadRequest(result);
 

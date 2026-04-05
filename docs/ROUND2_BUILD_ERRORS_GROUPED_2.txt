@@ -1,0 +1,252 @@
+﻿BUILD_EXIT=1
+ERROR_LINES=502
+UNIQUE=62
+
+COUNT=32
+SYMBOL=Visit
+MESSAGE='Visit' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'Visit' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=30
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'InventoryItems' and no accessible extension method 'InventoryItems' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=28
+SYMBOL=Visit
+MESSAGE='Visit' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'Visit' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=22
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationValue' and no accessible extension method 'CompensationValue' accepting a first argument of type 'Doctor' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=22
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationEffectiveFrom' and no accessible extension method 'CompensationEffectiveFrom' accepting a first argument of type 'Doctor' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=22
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationMode' and no accessible extension method 'CompensationMode' accepting a first argument of type 'Doctor' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=18
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'Partners' and no accessible extension method 'Partners' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=18
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'Branches' and no accessible extension method 'Branches' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=16
+SYMBOL=QueueTicket
+MESSAGE='QueueTicket' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'QueueTicket' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=16
+SYMBOL=QueueSession
+MESSAGE='QueueSession' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'QueueSession' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=16
+SYMBOL=ClinicSettings
+MESSAGE='ClinicSettings' does not contain a definition for 'SelfServiceRequestExpiryHours' and no accessible extension method 'SelfServiceRequestExpiryHours' accepting a first argument of type 'ClinicSettings' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=14
+SYMBOL=QueueTicket
+MESSAGE='QueueTicket' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'QueueTicket' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=14
+SYMBOL=ClinicSettings
+MESSAGE='ClinicSettings' does not contain a definition for 'SelfServicePaymentPolicy' and no accessible extension method 'SelfServicePaymentPolicy' accepting a first argument of type 'ClinicSettings' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'PartnerContracts' and no accessible extension method 'PartnerContracts' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'MarketplaceOrders' and no accessible extension method 'MarketplaceOrders' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'IsDeleted' and no accessible extension method 'IsDeleted' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'TenantId' and no accessible extension method 'TenantId' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'PatientSelfServiceRequests' and no accessible extension method 'PatientSelfServiceRequests' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'DoctorCompensationHistories' and no accessible extension method 'DoctorCompensationHistories' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=10
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'ClinicPaymentMethods' and no accessible extension method 'ClinicPaymentMethods' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=8
+SYMBOL=QueueTicket
+MESSAGE='QueueTicket' does not contain a definition for 'Source' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=8
+SYMBOL=QueueTicket
+MESSAGE='QueueTicket' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=8
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'IsActive' and no accessible extension method 'IsActive' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=8
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationHistory' and no accessible extension method 'CompensationHistory' accepting a first argument of type 'Doctor' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=8
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'PartnerOrders' and no accessible extension method 'PartnerOrders' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'Images' and no accessible extension method 'Images' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'PartnerOrderStatusHistories' and no accessible extension method 'PartnerOrderStatusHistories' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'Booking' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'AbsenceRecords' and no accessible extension method 'AbsenceRecords' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=Visit
+MESSAGE='Visit' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=Employee
+MESSAGE='Employee' does not contain a definition for 'WorkerMode' and no accessible extension method 'WorkerMode' accepting a first argument of type 'Employee' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'Booking' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=Visit
+MESSAGE='Visit' does not contain a definition for 'Source' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=6
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'InventoryItemImages' and no accessible extension method 'InventoryItemImages' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=Invoice
+MESSAGE='Invoice' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=Prescription
+MESSAGE='Prescription' does not contain a definition for 'PartnerOrderId' and no accessible extension method 'PartnerOrderId' accepting a first argument of type 'Prescription' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'SalesInvoices' and no accessible extension method 'SalesInvoices' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=Employee
+MESSAGE='Employee' does not contain a definition for 'WorkerMode' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'DoctorBranchSchedules' and no accessible extension method 'DoctorBranchSchedules' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=LabRequest
+MESSAGE='LabRequest' does not contain a definition for 'PartnerOrderId' and no accessible extension method 'PartnerOrderId' accepting a first argument of type 'LabRequest' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=4
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'Id' and no accessible extension method 'Id' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=AttendanceRecord
+MESSAGE='AttendanceRecord' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'VisitInventoryUsages' and no accessible extension method 'VisitInventoryUsages' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=AttendanceRecord
+MESSAGE='AttendanceRecord' does not contain a definition for 'EnteredByUserId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationMode' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationValue' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'PatientSelfServiceRequestDocuments' and no accessible extension method 'PatientSelfServiceRequestDocuments' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'VisitType' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'Source' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=QueueSession
+MESSAGE='QueueSession' does not contain a definition for 'BranchId' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Booking
+MESSAGE='Booking' does not contain a definition for 'VisitType' and no accessible extension method 'VisitType' accepting a first argument of type 'Booking' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'Branch' and no accessible extension method 'Branch' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Doctor
+MESSAGE='Doctor' does not contain a definition for 'CompensationEffectiveFrom' [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=Invoice
+MESSAGE='Invoice' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'Invoice' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'InternalOnly' and no accessible extension method 'InternalOnly' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=AttendanceRecord
+MESSAGE='AttendanceRecord' does not contain a definition for 'BranchId' and no accessible extension method 'BranchId' accepting a first argument of type 'AttendanceRecord' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=AttendanceRecord
+MESSAGE='AttendanceRecord' does not contain a definition for 'EnteredByUserId' and no accessible extension method 'EnteredByUserId' accepting a first argument of type 'AttendanceRecord' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'Active' and no accessible extension method 'Active' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=EliteClinicDbContext
+MESSAGE='EliteClinicDbContext' does not contain a definition for 'InAppNotifications' and no accessible extension method 'InAppNotifications' accepting a first argument of type 'EliteClinicDbContext' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+
+COUNT=2
+SYMBOL=TEntity
+MESSAGE='TEntity' does not contain a definition for 'SellablePublicly' and no accessible extension method 'SellablePublicly' accepting a first argument of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [C:\DATA\Elite Clinic\src\EliteClinic.Application\EliteClinic.Application.csproj]
+

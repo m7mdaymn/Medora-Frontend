@@ -9,4 +9,5 @@ public interface IPrescriptionService
     Task<ApiResponse<PrescriptionDto>> UpdateAsync(Guid tenantId, Guid visitId, Guid prescriptionId, UpdatePrescriptionRequest request, Guid callerUserId);
     Task<ApiResponse> DeleteAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId);
     Task<ApiResponse<List<PrescriptionDto>>> GetByVisitAsync(Guid tenantId, Guid visitId);
+    Task<ApiResponse<List<PrescriptionRevisionDto>>> GetRevisionsAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId);
 }

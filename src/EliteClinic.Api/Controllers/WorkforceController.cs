@@ -33,7 +33,7 @@ public class WorkforceController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<DoctorCompensationRuleDto>.Error("Tenant context not resolved"));
 
-        var result = await _workforceService.CreateDoctorCompensationRuleAsync(_tenantContext.TenantId, doctorId, request, cancellationToken);
+        var result = await _workforceService.CreateDoctorCompensationRuleAsync(_tenantContext.TenantId, doctorId, GetCurrentUserId(), request, cancellationToken);
         if (!result.Success)
             return BadRequest(result);
 
@@ -61,11 +61,44 @@ public class WorkforceController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<AttendanceRecordDto>.Error("Tenant context not resolved"));
 
-        var result = await _workforceService.CreateAttendanceRecordAsync(_tenantContext.TenantId, request, cancellationToken);
+        var result = await _workforceService.CreateAttendanceRecordAsync(_tenantContext.TenantId, GetCurrentUserId(), request, cancellationToken);
         if (!result.Success)
             return BadRequest(result);
 
         return StatusCode(201, result);
+    }
+
+    [HttpPost("absence")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<AbsenceRecordDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<AbsenceRecordDto>>> CreateAbsence([FromBody] CreateAbsenceRecordRequest request, CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<AbsenceRecordDto>.Error("Tenant context not resolved"));
+
+        var result = await _workforceService.CreateAbsenceRecordAsync(_tenantContext.TenantId, GetCurrentUserId(), request, cancellationToken);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    [HttpGet("absence")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<AbsenceRecordDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<List<AbsenceRecordDto>>>> ListAbsence(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] Guid? doctorId,
+        [FromQuery] Guid? employeeId,
+        CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<AbsenceRecordDto>>.Error("Tenant context not resolved"));
+
+        var result = await _workforceService.ListAbsenceRecordsAsync(_tenantContext.TenantId, from, to, doctorId, employeeId, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPut("attendance/{attendanceId:guid}/checkout")]

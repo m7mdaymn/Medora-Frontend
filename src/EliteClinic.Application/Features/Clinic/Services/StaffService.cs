@@ -1,6 +1,7 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
+using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,9 @@ public class StaffService : IStaffService
 
     public async Task<ApiResponse<StaffDto>> CreateStaffAsync(Guid tenantId, CreateStaffRequest request)
     {
+        if (request.WorkerMode == WorkerMode.PayrollOnly)
+            return ApiResponse<StaffDto>.Error("Use payroll-only worker creation flow for WorkerMode=PayrollOnly");
+
         // Check username uniqueness
         var existingUser = await _userManager.FindByNameAsync(request.Username);
         if (existingUser != null)
@@ -58,6 +62,7 @@ public class StaffService : IStaffService
             Name = request.Name,
             Phone = request.Phone,
             Role = role,
+            WorkerMode = WorkerMode.LoginBased,
             Salary = request.Salary,
             HireDate = request.HireDate,
             Notes = request.Notes,
@@ -68,6 +73,39 @@ public class StaffService : IStaffService
         await _context.SaveChangesAsync();
 
         return ApiResponse<StaffDto>.Created(MapToDto(employee, user), "Staff member created successfully");
+    }
+
+    public async Task<ApiResponse<StaffDto>> CreatePayrollOnlyWorkerAsync(Guid tenantId, CreatePayrollOnlyWorkerRequest request)
+    {
+        var role = !string.IsNullOrWhiteSpace(request.Role)
+            ? request.Role
+            : "PayrollOnly";
+
+        var employee = new Employee
+        {
+            TenantId = tenantId,
+            UserId = null,
+            Name = request.Name,
+            Phone = request.Phone,
+            Role = role,
+            WorkerMode = WorkerMode.PayrollOnly,
+            Salary = request.Salary,
+            HireDate = request.HireDate,
+            Notes = request.Notes,
+            IsEnabled = true
+        };
+
+        _context.Employees.Add(employee);
+        await _context.SaveChangesAsync();
+
+        var syntheticUser = new ApplicationUser
+        {
+            Id = Guid.Empty,
+            UserName = string.Empty,
+            DisplayName = employee.Name
+        };
+
+        return ApiResponse<StaffDto>.Created(MapToDto(employee, syntheticUser), "Payroll-only worker created successfully");
     }
 
     public async Task<ApiResponse<PagedResult<StaffDto>>> GetAllStaffAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)
@@ -120,13 +158,17 @@ public class StaffService : IStaffService
 
         employee.Name = request.Name;
         employee.Phone = request.Phone;
+        employee.WorkerMode = request.WorkerMode;
         employee.Salary = request.Salary;
         employee.HireDate = request.HireDate;
         employee.Notes = request.Notes;
 
         // Update ApplicationUser display name
-        employee.User.DisplayName = request.Name;
-        await _userManager.UpdateAsync(employee.User);
+        if (employee.User != null)
+        {
+            employee.User.DisplayName = request.Name;
+            await _userManager.UpdateAsync(employee.User);
+        }
 
         await _context.SaveChangesAsync();
 
@@ -142,13 +184,19 @@ public class StaffService : IStaffService
         if (employee == null)
             return ApiResponse<StaffDto>.Error("Staff member not found");
 
-        if (request.Name != null) { employee.Name = request.Name; employee.User.DisplayName = request.Name; }
+        if (request.Name != null)
+        {
+            employee.Name = request.Name;
+            if (employee.User != null)
+                employee.User.DisplayName = request.Name;
+        }
         if (request.Phone != null) employee.Phone = request.Phone;
+        if (request.WorkerMode.HasValue) employee.WorkerMode = request.WorkerMode.Value;
         if (request.Salary.HasValue) employee.Salary = request.Salary;
         if (request.HireDate.HasValue) employee.HireDate = request.HireDate;
         if (request.Notes != null) employee.Notes = request.Notes;
 
-        if (request.Name != null)
+        if (request.Name != null && employee.User != null)
             await _userManager.UpdateAsync(employee.User);
 
         await _context.SaveChangesAsync();
@@ -166,8 +214,11 @@ public class StaffService : IStaffService
             return ApiResponse<StaffDto>.Error("Staff member not found");
 
         employee.IsEnabled = true;
-        employee.User.IsActive = true;
-        await _userManager.UpdateAsync(employee.User);
+        if (employee.User != null)
+        {
+            employee.User.IsActive = true;
+            await _userManager.UpdateAsync(employee.User);
+        }
         await _context.SaveChangesAsync();
 
         return ApiResponse<StaffDto>.Ok(MapToDto(employee, employee.User), "Staff member enabled successfully");
@@ -183,19 +234,25 @@ public class StaffService : IStaffService
             return ApiResponse<StaffDto>.Error("Staff member not found");
 
         // Protect: cannot disable a ClinicOwner through staff endpoints
-        var roles = await _userManager.GetRolesAsync(employee.User);
-        if (roles.Contains("ClinicOwner"))
-            return ApiResponse<StaffDto>.Error("Cannot disable the clinic owner");
+        if (employee.User != null)
+        {
+            var roles = await _userManager.GetRolesAsync(employee.User);
+            if (roles.Contains("ClinicOwner"))
+                return ApiResponse<StaffDto>.Error("Cannot disable the clinic owner");
+        }
 
         employee.IsEnabled = false;
-        employee.User.IsActive = false;
-        await _userManager.UpdateAsync(employee.User);
+        if (employee.User != null)
+        {
+            employee.User.IsActive = false;
+            await _userManager.UpdateAsync(employee.User);
+        }
         await _context.SaveChangesAsync();
 
         return ApiResponse<StaffDto>.Ok(MapToDto(employee, employee.User), "Staff member disabled successfully");
     }
 
-    private static StaffDto MapToDto(Employee employee, ApplicationUser user)
+    private static StaffDto MapToDto(Employee employee, ApplicationUser? user)
     {
         return new StaffDto
         {
@@ -204,8 +261,9 @@ public class StaffService : IStaffService
             Name = employee.Name,
             Phone = employee.Phone,
             Role = employee.Role,
-            Username = user.UserName ?? string.Empty,
+            Username = user?.UserName ?? string.Empty,
             Salary = employee.Salary,
+            WorkerMode = employee.WorkerMode,
             HireDate = employee.HireDate,
             Notes = employee.Notes,
             IsEnabled = employee.IsEnabled,

@@ -14,12 +14,14 @@ namespace EliteClinic.Api.Controllers;
 public class VisitsController : ControllerBase
 {
     private readonly IVisitService _visitService;
+    private readonly IInventoryService _inventoryService;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<VisitsController> _logger;
 
-    public VisitsController(IVisitService visitService, ITenantContext tenantContext, ILogger<VisitsController> logger)
+    public VisitsController(IVisitService visitService, IInventoryService inventoryService, ITenantContext tenantContext, ILogger<VisitsController> logger)
     {
         _visitService = visitService;
+        _inventoryService = inventoryService;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -139,17 +141,17 @@ public class VisitsController : ControllerBase
     }
 
     /// <summary>
-    /// Doctor self endpoint: today's visits for the authenticated doctor.
+    /// Doctor self endpoint: filtered visits list.
     /// </summary>
-    [HttpGet("my/today")]
+    [HttpGet("my")]
     [Authorize(Roles = "Doctor,SuperAdmin")]
-    [ProducesResponseType(typeof(ApiResponse<List<VisitDto>>), 200)]
-    public async Task<ActionResult<ApiResponse<List<VisitDto>>>> GetMyTodayVisits()
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<VisitDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<PagedResult<VisitDto>>>> GetMyVisits([FromQuery] MyVisitsFilterRequest request)
     {
         if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<List<VisitDto>>.Error("Tenant context not resolved"));
+            return BadRequest(ApiResponse<PagedResult<VisitDto>>.Error("Tenant context not resolved"));
 
-        var result = await _visitService.GetMyTodayVisitsAsync(_tenantContext.TenantId, GetCurrentUserId());
+        var result = await _visitService.GetMyVisitsAsync(_tenantContext.TenantId, GetCurrentUserId(), request);
         if (!result.Success)
             return BadRequest(result);
 
@@ -203,6 +205,25 @@ public class VisitsController : ControllerBase
 
         var payload = request ?? new CloseStaleVisitRequest();
         var result = await _visitService.CloseStaleVisitAsync(_tenantContext.TenantId, id, payload);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Record inventory usage inside a visit. Doctors are restricted to their own visits.
+    /// </summary>
+    [HttpPost("{id:guid}/inventory-usage")]
+    [Authorize(Roles = "Doctor,ClinicOwner,ClinicManager,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<VisitInventoryUsageDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public async Task<ActionResult<ApiResponse<VisitInventoryUsageDto>>> RecordInventoryUsage(Guid id, [FromBody] RecordVisitInventoryUsageRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<VisitInventoryUsageDto>.Error("Tenant context not resolved"));
+
+        var result = await _inventoryService.RecordVisitUsageAsync(_tenantContext.TenantId, id, GetCurrentUserId(), request);
         if (!result.Success)
             return BadRequest(result);
 

@@ -1,3 +1,4 @@
+using EliteClinic.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace EliteClinic.Application.Features.Clinic.DTOs;
@@ -13,6 +14,7 @@ public class StaffDto
     public string Role { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public decimal? Salary { get; set; }
+    public WorkerMode WorkerMode { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
     public bool IsEnabled { get; set; }
@@ -41,6 +43,8 @@ public class CreateStaffRequest
     [StringLength(20)]
     public string? Phone { get; set; }
 
+    public WorkerMode WorkerMode { get; set; } = WorkerMode.LoginBased;
+
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
@@ -55,6 +59,8 @@ public class UpdateStaffRequest
     [StringLength(20)]
     public string? Phone { get; set; }
 
+    public WorkerMode WorkerMode { get; set; } = WorkerMode.LoginBased;
+
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
@@ -64,6 +70,24 @@ public class PatchStaffRequest
 {
     [StringLength(200)] public string? Name { get; set; }
     [StringLength(20)] public string? Phone { get; set; }
+    public WorkerMode? WorkerMode { get; set; }
+    public decimal? Salary { get; set; }
+    public DateTime? HireDate { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class CreatePayrollOnlyWorkerRequest
+{
+    [Required(ErrorMessage = "Name is required")]
+    [StringLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
+    public string Name { get; set; } = string.Empty;
+
+    [StringLength(20)]
+    public string? Phone { get; set; }
+
+    [StringLength(50)]
+    public string? Role { get; set; }
+
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }

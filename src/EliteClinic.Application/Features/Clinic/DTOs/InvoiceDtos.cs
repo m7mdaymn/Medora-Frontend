@@ -22,6 +22,7 @@ public class InvoiceDto
     public decimal CreditAmount { get; set; }
     public bool HasPendingSettlement { get; set; }
     public decimal PendingSettlementAmount { get; set; }
+    public EncounterFinancialState? EncounterFinancialState { get; set; }
     public decimal TotalRefunded { get; set; }
     public DateTime? CreditIssuedAt { get; set; }
     public string? Notes { get; set; }

@@ -12,18 +12,15 @@ public class QueueService : IQueueService
     private readonly EliteClinicDbContext _context;
     private readonly IMessageService _messageService;
     private readonly IInvoiceNumberService _invoiceNumberService;
-    private readonly IPatientCreditService _patientCreditService;
 
     public QueueService(
         EliteClinicDbContext context,
         IMessageService messageService,
-        IInvoiceNumberService invoiceNumberService,
-        IPatientCreditService patientCreditService)
+        IInvoiceNumberService invoiceNumberService)
     {
         _context = context;
         _messageService = messageService;
         _invoiceNumberService = invoiceNumberService;
-        _patientCreditService = patientCreditService;
     }
 
     // ── Sessions ───────────────────────────────────────────────────
@@ -65,6 +62,7 @@ public class QueueService : IQueueService
         {
             TenantId = tenantId,
             DoctorId = request.DoctorId,
+            BranchId = request.BranchId,
             Notes = request.Notes,
             IsActive = true,
             StartedAt = DateTime.UtcNow
@@ -101,9 +99,11 @@ public class QueueService : IQueueService
                 {
                     TenantId = tenantId,
                     SessionId = session.Id,
+                    BranchId = booking.BranchId ?? session.BranchId,
                     PatientId = booking.PatientId,
                     DoctorId = booking.DoctorId,
                     DoctorServiceId = booking.DoctorServiceId,
+                    Source = booking.Source,
                     TicketNumber = ticketNum,
                     Status = TicketStatus.Waiting,
                     IsUrgent = false,
@@ -153,7 +153,7 @@ public class QueueService : IQueueService
             foreach (var ticket in inVisitTickets)
             {
                 ticket.Status = TicketStatus.NoShow;
-                await PreserveCreditForUnservedTicketAsync(tenantId, ticket.Id, CreditReason.SessionForceClosedUnserved, session.Id);
+                await AutoRefundForUnservedTicketAsync(tenantId, ticket.Id, "Session force-closed before service", session.Id);
             }
         }
 
@@ -161,7 +161,7 @@ public class QueueService : IQueueService
         foreach (var ticket in session.Tickets.Where(t => t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called))
         {
             ticket.Status = TicketStatus.NoShow;
-            await PreserveCreditForUnservedTicketAsync(tenantId, ticket.Id, CreditReason.NoShowRetainedByPolicy, session.Id);
+            await AutoRefundForUnservedTicketAsync(tenantId, ticket.Id, "Ticket marked as no-show at session close", session.Id);
         }
 
         session.IsActive = false;
@@ -169,8 +169,8 @@ public class QueueService : IQueueService
         await _context.SaveChangesAsync();
 
         return ApiResponse<QueueSessionDto>.Ok(MapSessionToDto(session), forceClose
-            ? "Session force-closed. Unserved tickets marked as no-show with financial entitlement preserved where applicable."
-            : "Session closed. Remaining tickets marked as no-show.");
+            ? "Session force-closed. Unserved tickets marked as no-show and auto-refunded where applicable."
+            : "Session closed. Remaining tickets marked as no-show and auto-refunded where applicable.");
     }
 
     public async Task<ApiResponse<int>> CloseAllSessionsForDateAsync(Guid tenantId, DateTime date)
@@ -189,14 +189,14 @@ public class QueueService : IQueueService
             foreach (var ticket in session.Tickets.Where(t => t.Status == TicketStatus.Waiting || t.Status == TicketStatus.Called))
             {
                 ticket.Status = TicketStatus.NoShow;
-                await PreserveCreditForUnservedTicketAsync(tenantId, ticket.Id, CreditReason.SessionAutoClosedUnserved, session.Id);
+                await AutoRefundForUnservedTicketAsync(tenantId, ticket.Id, "Session auto-closed before service", session.Id);
             }
             session.IsActive = false;
             session.ClosedAt = DateTime.UtcNow;
         }
 
         await _context.SaveChangesAsync();
-        return ApiResponse<int>.Ok(sessions.Count, $"Closed {sessions.Count} session(s). Remaining tickets marked as no-show.");
+        return ApiResponse<int>.Ok(sessions.Count, $"Closed {sessions.Count} session(s). Remaining tickets marked as no-show and auto-refunded where applicable.");
     }
 
     public async Task<ApiResponse<PagedResult<QueueSessionDto>>> GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)
@@ -287,9 +287,11 @@ public class QueueService : IQueueService
         {
             TenantId = tenantId,
             SessionId = request.SessionId,
+            BranchId = request.BranchId ?? session.BranchId,
             PatientId = request.PatientId,
             DoctorId = request.DoctorId,
             DoctorServiceId = request.DoctorServiceId,
+            Source = request.Source,
             TicketNumber = maxTicketNum + 1,
             Status = TicketStatus.Waiting,
             IsUrgent = request.IsUrgent && IsUrgentEnabledForDoctor(doctor),
@@ -410,9 +412,11 @@ public class QueueService : IQueueService
         {
             TenantId = tenantId,
             SessionId = request.SessionId,
+            BranchId = request.BranchId ?? session.BranchId,
             PatientId = request.PatientId,
             DoctorId = request.DoctorId,
             DoctorServiceId = resolvedDoctorServiceId,
+            Source = request.Source,
             TicketNumber = maxTicketNum + 1,
             Status = TicketStatus.Waiting,
             IsUrgent = request.IsUrgent && IsUrgentEnabledForDoctor(doctor),
@@ -420,6 +424,22 @@ public class QueueService : IQueueService
             Notes = request.Notes
         };
         _context.QueueTickets.Add(ticket);
+
+        // with-payment should always persist the encounter shell so VisitType remains stable.
+        var visit = new Visit
+        {
+            TenantId = tenantId,
+            QueueTicketId = ticket.Id,
+            DoctorId = request.DoctorId,
+            PatientId = request.PatientId,
+            BranchId = ticket.BranchId,
+            Source = request.Source,
+            VisitType = request.VisitType,
+            Status = VisitStatus.Open,
+            Complaint = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes,
+            StartedAt = DateTime.UtcNow
+        };
+        _context.Visits.Add(visit);
 
         // Create upfront visit + invoice when this is a payment/intake flow.
         if (request.DoctorServiceId.HasValue || effectivePaidAmount > 0)
@@ -431,24 +451,12 @@ public class QueueService : IQueueService
                 ? InvoiceStatus.Unpaid
                 : (paidAmount >= invoiceAmount ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid);
 
-            var visit = new Visit
-            {
-                TenantId = tenantId,
-                QueueTicketId = ticket.Id,
-                DoctorId = request.DoctorId,
-                PatientId = request.PatientId,
-                VisitType = request.VisitType,
-                Status = VisitStatus.Open,
-                Complaint = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes,
-                StartedAt = DateTime.UtcNow
-            };
-            _context.Visits.Add(visit);
-
             var invoice = new Invoice
             {
                 TenantId = tenantId,
                 InvoiceNumber = await _invoiceNumberService.GenerateNextAsync(tenantId),
                 VisitId = visit.Id,
+                BranchId = ticket.BranchId,
                 PatientId = request.PatientId,
                 PatientNameSnapshot = patient.Name,
                 PatientPhoneSnapshot = patient.Phone,
@@ -610,6 +618,8 @@ public class QueueService : IQueueService
                 QueueTicketId = ticket.Id,
                 DoctorId = ticket.DoctorId,
                 PatientId = ticket.PatientId,
+                BranchId = ticket.BranchId,
+                Source = ticket.Source,
                 Status = VisitStatus.Open,
                 Complaint = string.IsNullOrWhiteSpace(ticket.Notes) ? null : ticket.Notes,
                 StartedAt = DateTime.UtcNow
@@ -620,6 +630,11 @@ public class QueueService : IQueueService
         {
             visit.Complaint = ticket.Notes;
         }
+
+        if (visit.BranchId == null && ticket.BranchId.HasValue)
+            visit.BranchId = ticket.BranchId;
+        if (visit.Source == VisitSource.WalkInTicket && ticket.Source != VisitSource.WalkInTicket)
+            visit.Source = ticket.Source;
 
         await _context.SaveChangesAsync();
 
@@ -851,6 +866,7 @@ public class QueueService : IQueueService
                 {
                     SessionId = s.Id,
                     DoctorId = s.DoctorId,
+                    BranchId = s.BranchId,
                     DoctorName = s.Doctor?.Name,
                     IsActive = s.IsActive,
                     WaitingCount = tickets.Count(t => t.Status == TicketStatus.Waiting),
@@ -907,6 +923,7 @@ public class QueueService : IQueueService
         {
             SessionId = session.Id,
             DoctorId = doctor.Id,
+            BranchId = session.BranchId,
             DoctorName = doctor.Name,
             IsActive = session.IsActive,
             WaitingCount = tickets.Count(t => t.Status == TicketStatus.Waiting),
@@ -990,6 +1007,7 @@ public class QueueService : IQueueService
         {
             Id = s.Id,
             DoctorId = s.DoctorId,
+            BranchId = s.BranchId,
             DoctorName = s.Doctor?.Name,
             StartedAt = s.StartedAt,
             ClosedAt = s.ClosedAt,
@@ -1008,10 +1026,15 @@ public class QueueService : IQueueService
         {
             Id = t.Id,
             SessionId = t.SessionId,
+            BranchId = t.BranchId,
             PatientId = t.PatientId,
             PatientName = t.Patient?.Name ?? string.Empty,
             DoctorId = t.DoctorId,
             DoctorName = t.Doctor?.Name ?? string.Empty,
+            Source = t.Source,
+            IsFromBooking = t.Source == VisitSource.Booking,
+            IsFromWalkIn = t.Source == VisitSource.WalkInTicket,
+            IsFromSelfService = IsSelfServiceSource(t.Source),
             DoctorServiceId = t.DoctorServiceId,
             ServiceName = t.DoctorService?.ServiceName,
             TicketNumber = t.TicketNumber,
@@ -1074,18 +1097,18 @@ public class QueueService : IQueueService
 
         var visits = await _context.Visits
             .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.QueueTicketId.HasValue && ticketIds.Contains(v.QueueTicketId.Value))
-            .Select(v => new { v.Id, v.QueueTicketId })
+            .Select(v => new { v.Id, v.QueueTicketId, v.VisitType, v.Source })
             .ToListAsync();
 
         var visitByTicketId = visits
             .Where(v => v.QueueTicketId.HasValue)
             .GroupBy(v => v.QueueTicketId!.Value)
-            .ToDictionary(g => g.Key, g => g.First().Id);
+            .ToDictionary(g => g.Key, g => g.First());
 
         if (!visitByTicketId.Any())
             return;
 
-        var visitIds = visitByTicketId.Values.ToList();
+        var visitIds = visitByTicketId.Values.Select(v => v.Id).ToList();
         var invoices = await _context.Invoices
             .Include(i => i.LineItems.Where(li => !li.IsDeleted))
             .Include(i => i.Payments.Where(p => !p.IsDeleted))
@@ -1098,9 +1121,16 @@ public class QueueService : IQueueService
 
         foreach (var ticket in tickets)
         {
-            if (!visitByTicketId.TryGetValue(ticket.Id, out var visitId))
+            if (!visitByTicketId.TryGetValue(ticket.Id, out var visitInfo))
                 continue;
+
+            var visitId = visitInfo.Id;
             ticket.VisitId = visitId;
+            ticket.VisitType = visitInfo.VisitType;
+            ticket.Source = visitInfo.Source;
+            ticket.IsFromBooking = visitInfo.Source == VisitSource.Booking;
+            ticket.IsFromWalkIn = visitInfo.Source == VisitSource.WalkInTicket;
+            ticket.IsFromSelfService = IsSelfServiceSource(visitInfo.Source);
             if (!invoiceByVisitId.TryGetValue(visitId, out var invoice))
                 continue;
             ticket.InvoiceId = invoice.Id;
@@ -1188,6 +1218,12 @@ public class QueueService : IQueueService
         return doctor.UrgentEnabled && doctor.UrgentCaseMode != UrgentCaseMode.Disabled;
     }
 
+    private static bool IsSelfServiceSource(VisitSource source)
+    {
+        return source == VisitSource.PatientSelfServiceTicket
+            || source == VisitSource.PatientSelfServiceBooking;
+    }
+
     private static int ResolveUrgentInsertAfterCount(Doctor? doctor)
     {
         if (doctor == null)
@@ -1267,41 +1303,44 @@ public class QueueService : IQueueService
         return result;
     }
 
-    private async Task PreserveCreditForUnservedTicketAsync(Guid tenantId, Guid ticketId, CreditReason reason, Guid? sessionId = null)
+    private async Task AutoRefundForUnservedTicketAsync(Guid tenantId, Guid ticketId, string reason, Guid? sessionId = null)
     {
         var visit = await _context.Visits
             .FirstOrDefaultAsync(v => v.TenantId == tenantId && !v.IsDeleted && v.QueueTicketId == ticketId);
         if (visit == null)
             return;
 
-        if (reason == CreditReason.NoShowRetainedByPolicy)
-        {
-            var settings = await _context.ClinicSettings.FirstOrDefaultAsync(s => s.TenantId == tenantId && !s.IsDeleted);
-            if (settings == null || !settings.RetainCreditOnNoShow)
-                return;
-        }
-
         var invoice = await _context.Invoices
             .FirstOrDefaultAsync(i => i.TenantId == tenantId && !i.IsDeleted && i.VisitId == visit.Id);
         if (invoice == null || invoice.PaidAmount <= 0 || invoice.IsServiceRendered)
             return;
 
-        invoice.CreditAmount = invoice.PaidAmount;
-        invoice.CreditIssuedAt = DateTime.UtcNow;
-        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
-            ? "Credit entitlement preserved due to unserved session closure"
-            : $"{invoice.Notes} | Credit entitlement preserved due to unserved session closure";
+        var refundAmount = invoice.PaidAmount;
+        var noteContext = sessionId.HasValue
+            ? $"{reason} (session: {sessionId.Value})"
+            : reason;
 
-        await _patientCreditService.IssueCreditAsync(tenantId, new IssuePatientCreditRequest
+        _context.Payments.Add(new Payment
         {
-            PatientId = visit.PatientId,
-            Amount = invoice.PaidAmount,
-            Reason = reason,
+            TenantId = tenantId,
             InvoiceId = invoice.Id,
-            QueueTicketId = ticketId,
-            QueueSessionId = sessionId,
-            Notes = invoice.Notes
+            Amount = -refundAmount,
+            PaymentMethod = "AutoRefund",
+            Notes = noteContext,
+            PaidAt = DateTime.UtcNow
         });
+
+        invoice.Amount = 0;
+        invoice.PaidAmount = 0;
+        invoice.RemainingAmount = 0;
+        invoice.CreditAmount = 0;
+        invoice.CreditIssuedAt = null;
+        invoice.HasPendingSettlement = false;
+        invoice.PendingSettlementAmount = 0;
+        invoice.Status = InvoiceStatus.Refunded;
+        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
+            ? $"Auto-refunded before service: {noteContext}"
+            : $"{invoice.Notes} | Auto-refunded before service: {noteContext}";
 
     }
 

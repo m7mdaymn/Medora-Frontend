@@ -95,4 +95,44 @@ public class NotificationsController : ControllerBase
 
         return StatusCode(201, result);
     }
+
+    [HttpGet("in-app")]
+    [Authorize(Roles = "Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<InAppNotificationDto>>), 200)]
+    public async Task<ActionResult<ApiResponse<PagedResult<InAppNotificationDto>>>> GetInApp([FromQuery] InAppNotificationsQuery query)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PagedResult<InAppNotificationDto>>.Error("Tenant context not resolved"));
+
+        var result = await _notificationService.GetInAppNotificationsAsync(_tenantContext.TenantId, GetCurrentUserId(), query);
+        return Ok(result);
+    }
+
+    [HttpPost("in-app/{id:guid}/read")]
+    [Authorize(Roles = "Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<InAppNotificationDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<InAppNotificationDto>), 400)]
+    public async Task<ActionResult<ApiResponse<InAppNotificationDto>>> MarkInAppRead(Guid id)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<InAppNotificationDto>.Error("Tenant context not resolved"));
+
+        var result = await _notificationService.MarkInAppReadAsync(_tenantContext.TenantId, GetCurrentUserId(), id);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("in-app/mark-all-read")]
+    [Authorize(Roles = "Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<int>), 200)]
+    public async Task<ActionResult<ApiResponse<int>>> MarkAllInAppRead()
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<int>.Error("Tenant context not resolved"));
+
+        var result = await _notificationService.MarkAllInAppReadAsync(_tenantContext.TenantId, GetCurrentUserId());
+        return Ok(result);
+    }
 }

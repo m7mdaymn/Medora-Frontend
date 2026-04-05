@@ -1,0 +1,330 @@
+﻿ROUND2 HISTORY ENTRIES SCAN
+Generated: 2026-04-05 11:24:09
+ENTRY_JSON_COUNT=2507
+TARGET_COUNT=47
+MATCHED_TARGET_COUNT=41
+SNAP_FILE_HITS=72
+MATCH_RECORD_COUNT=50
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/InventoryController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/InventoryController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\5ceec1e8\entries.json
+SNAPSHOTS:
+- F4Bg.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/MarketplaceOrdersController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/MarketplaceOrdersController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-130e374c\entries.json
+SNAPSHOTS:
+- m4it.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/PartnerOrdersController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/PartnerOrdersController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\699e2417\entries.json
+SNAPSHOTS:
+- hqk8.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/PartnersController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/PartnersController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\6b6286f5\entries.json
+SNAPSHOTS:
+- iwMY.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/ReportsController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/ReportsController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-3c276d1b\entries.json
+SNAPSHOTS:
+- oI8n.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/ReportsController.cs
+RESOURCE: file:///c%3A/DATA/SAASs/Mobilytics/src/NovaNode.Api/Controllers/ReportsController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\3e298d8d\entries.json
+SNAPSHOTS:
+- 7ABQ.cs : EXISTS
+- MSwP.cs : EXISTS
+- fxQI.cs : EXISTS
+- kxBh.cs : EXISTS
+- DHeh.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Api/Controllers/SelfServiceRequestsController.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Api/Controllers/SelfServiceRequestsController.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\3e527b7\entries.json
+SNAPSHOTS:
+- GBbQ.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/DTOs/InventoryDtos.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/DTOs/InventoryDtos.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-38dab360\entries.json
+SNAPSHOTS:
+- QpUK.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/DTOs/MarketplaceDtos.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/DTOs/MarketplaceDtos.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-2b1553af\entries.json
+SNAPSHOTS:
+- ricT.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/DTOs/SelfServiceRequestDtos.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/DTOs/SelfServiceRequestDtos.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\77b15f92\entries.json
+SNAPSHOTS:
+- fjDj.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/IInventoryService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IInventoryService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-e8edb1c\entries.json
+SNAPSHOTS:
+- rU0x.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/IMarketplaceService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IMarketplaceService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-4a8614ad\entries.json
+SNAPSHOTS:
+- SbNl.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/InventoryService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IInventoryService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-e8edb1c\entries.json
+SNAPSHOTS:
+- rU0x.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/InventoryService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/InventoryService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\3662e07d\entries.json
+SNAPSHOTS:
+- tUqQ.cs : EXISTS
+- ygoA.cs : EXISTS
+- Bd1u.cs : EXISTS
+- 2Oun.cs : EXISTS
+- K38f.cs : EXISTS
+- klbM.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/MarketplaceService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IMarketplaceService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-4a8614ad\entries.json
+SNAPSHOTS:
+- SbNl.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/MarketplaceService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/MarketplaceService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-7b14db54\entries.json
+SNAPSHOTS:
+- 8kmL.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/PartnerService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IPartnerService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-6300f2f0\entries.json
+SNAPSHOTS:
+- It6l.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/PartnerService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/PartnerService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\762cdae9\entries.json
+SNAPSHOTS:
+- B7BB.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/PatientSelfServiceRequestService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IPatientSelfServiceRequestService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\28f21b33\entries.json
+SNAPSHOTS:
+- xd5Z.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/PatientSelfServiceRequestService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/PatientSelfServiceRequestService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-496c7b34\entries.json
+SNAPSHOTS:
+- mVXT.cs : EXISTS
+- BbpB.cs : EXISTS
+- 1vXL.cs : EXISTS
+- VJNi.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/ReportsService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/IReportsService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\69e7f947\entries.json
+SNAPSHOTS:
+- rflE.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Application/Features/Clinic/Services/ReportsService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Application/Features/Clinic/Services/ReportsService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\4315c720\entries.json
+SNAPSHOTS:
+- d9DJ.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/Branch.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/Branch.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-584a2c5c\entries.json
+SNAPSHOTS:
+- 8fdc.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/ClinicPaymentMethod.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/ClinicPaymentMethod.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\598f9bd7\entries.json
+SNAPSHOTS:
+- YT7V.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/DoctorBranchSchedule.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/DoctorBranchSchedule.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-2afa95d2\entries.json
+SNAPSHOTS:
+- s6pj.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/InventoryItem.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/InventoryItem.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-6a4e6039\entries.json
+SNAPSHOTS:
+- Wrle.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/InventoryItemImage.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/InventoryItemImage.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-1c10f306\entries.json
+SNAPSHOTS:
+- Z6XH.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/MarketplaceOrder.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/MarketplaceOrder.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-7b9eac1d\entries.json
+SNAPSHOTS:
+- DgxP.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/MarketplaceOrderItem.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/MarketplaceOrderItem.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-4549b6b0\entries.json
+SNAPSHOTS:
+- tvHJ.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/PatientSelfServiceRequest.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/PatientSelfServiceRequest.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-59a31b95\entries.json
+SNAPSHOTS:
+- 87OJ.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/SalesInvoice.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/SalesInvoice.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\49f1de65\entries.json
+SNAPSHOTS:
+- UXFp.cs : EXISTS
+- SwJJ.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/SalesInvoiceLineItem.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/SalesInvoiceLineItem.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-3b6b9b42\entries.json
+SNAPSHOTS:
+- 8WSn.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Entities/VisitInventoryUsage.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Entities/VisitInventoryUsage.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\6c1d8ce6\entries.json
+SNAPSHOTS:
+- H6kW.cs : EXISTS
+- rSby.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/InventoryItemType.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/InventoryItemType.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\3b24f6e8\entries.json
+SNAPSHOTS:
+- qZaM.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/MarketplaceOrderStatus.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/MarketplaceOrderStatus.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\22f89e76\entries.json
+SNAPSHOTS:
+- VMrp.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/PatientSelfServicePaymentPolicy.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/PatientSelfServicePaymentPolicy.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-74d3b383\entries.json
+SNAPSHOTS:
+- UiZw.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/PatientSelfServiceRequestStatus.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/PatientSelfServiceRequestStatus.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-6a920cac\entries.json
+SNAPSHOTS:
+- IjZl.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/PatientSelfServiceRequestType.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/PatientSelfServiceRequestType.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-503b6f4\entries.json
+SNAPSHOTS:
+- Wp9V.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/SalesInvoiceStatus.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/SalesInvoiceStatus.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\7a5759f8\entries.json
+SNAPSHOTS:
+- qiJ0.cs : EXISTS
+
+TARGET_PATH: src/EliteClinic.Domain/Enums/VisitSource.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Domain/Enums/VisitSource.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-76b396d5\entries.json
+SNAPSHOTS:
+- ODi3.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/DbContextFactory.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/src/EliteClinic.Infrastructure/Data/DesignTimeDbContextFactory.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-9d83d54\entries.json
+SNAPSHOTS:
+- wIjt.cs : EXISTS
+- jhrr.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/DbContextFactory.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/DbContextFactory.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\b7b3a3f\entries.json
+SNAPSHOTS:
+- 6D8l.cs : EXISTS
+- dFJt.cs : EXISTS
+- MHVA.cs : EXISTS
+- rCIi.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/DbContextFactory.cs
+RESOURCE: file:///c%3A/DATA/SAASs/Mobilytics/src/NovaNode.Infrastructure/Persistence/AppDbContextFactory.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-62469dd\entries.json
+SNAPSHOTS:
+- 0kl4.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/DbContextFactory.cs
+RESOURCE: file:///c%3A/DATA/SAASs/Structra/backend/src/Structra.Infrastructure/Persistence/StructraDbContextFactory.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-34fc3e46\entries.json
+SNAPSHOTS:
+- EFSp.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/EliteClinic.Tests.csproj
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/EliteClinic.Tests.csproj
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\2bbff613\entries.json
+SNAPSHOTS:
+- 5myn.csproj : EXISTS
+- 558h.csproj : EXISTS
+- KxWj.csproj : EXISTS
+- retO.csproj : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/FakeMessageService.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/FakeMessageService.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\3f4b3495\entries.json
+SNAPSHOTS:
+- XJbv.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/Phase2SelfServiceWorkflowTests.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/Phase2SelfServiceWorkflowTests.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\15f0ce48\entries.json
+SNAPSHOTS:
+- 9UwP.cs : EXISTS
+- g4UE.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/Phase3InventoryMarketplaceTests.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/Phase3InventoryMarketplaceTests.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\5d65de8a\entries.json
+SNAPSHOTS:
+- DnKp.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/Phase4PartnersThreadsNotificationsTests.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/Phase4PartnersThreadsNotificationsTests.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\-49e4c53a\entries.json
+SNAPSHOTS:
+- 8lWq.cs : EXISTS
+
+TARGET_PATH: tests/EliteClinic.Tests/SystemWideApiContractTests.cs
+RESOURCE: file:///c%3A/DATA/Elite%20Clinic/tests/EliteClinic.Tests/SystemWideApiContractTests.cs
+ENTRY_JSON: C:\Users\mohammed\AppData\Roaming\Code\User\History\23ebe781\entries.json
+SNAPSHOTS:
+- 1N4F.cs : EXISTS
+

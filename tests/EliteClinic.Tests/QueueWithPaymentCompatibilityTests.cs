@@ -632,7 +632,7 @@ public class QueueWithPaymentCompatibilityTests
 
     private static QueueService BuildQueueService(EliteClinic.Infrastructure.Data.EliteClinicDbContext ctx)
     {
-        return new QueueService(ctx, new FakeMessageService(), new FakeInvoiceNumberService(), new PatientCreditService(ctx, new FakeMessageService()));
+        return new QueueService(ctx, new FakeMessageService(), new FakeInvoiceNumberService());
     }
 
     private static async Task<(Doctor Doctor, Patient Patient, QueueSession Session)> SeedCoreAsync(EliteClinic.Infrastructure.Data.EliteClinicDbContext ctx, Guid tenantId)

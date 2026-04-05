@@ -113,6 +113,120 @@ public class PatientMedicalController : ControllerBase
         return File(stream, result.Data.ContentType, result.Data.OriginalFileName);
     }
 
+    [HttpGet("medical-documents/{documentId:guid}/threads")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<List<PatientMedicalDocumentThreadDto>>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<List<PatientMedicalDocumentThreadDto>>), 400)]
+    public async Task<ActionResult<ApiResponse<List<PatientMedicalDocumentThreadDto>>>> ListDocumentThreads(
+        Guid patientId,
+        Guid documentId,
+        CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<List<PatientMedicalDocumentThreadDto>>.Error("Tenant context not resolved"));
+
+        var result = await _patientMedicalService.ListDocumentThreadsAsync(
+            _tenantContext.TenantId,
+            patientId,
+            documentId,
+            GetCurrentUserId(),
+            IsPatientRole(),
+            cancellationToken);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("medical-documents/{documentId:guid}/threads")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PatientMedicalDocumentThreadDto>>> CreateDocumentThread(
+        Guid patientId,
+        Guid documentId,
+        [FromBody] CreatePatientMedicalDocumentThreadRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PatientMedicalDocumentThreadDto>.Error("Tenant context not resolved"));
+
+        var result = await _patientMedicalService.CreateDocumentThreadAsync(
+            _tenantContext.TenantId,
+            patientId,
+            documentId,
+            request,
+            GetCurrentUserId(),
+            IsPatientRole(),
+            cancellationToken);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
+    [HttpPost("medical-documents/{documentId:guid}/threads/{threadId:guid}/replies")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PatientMedicalDocumentThreadDto>>> AddThreadReply(
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        [FromBody] AddPatientMedicalDocumentThreadReplyRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PatientMedicalDocumentThreadDto>.Error("Tenant context not resolved"));
+
+        var result = await _patientMedicalService.AddThreadReplyAsync(
+            _tenantContext.TenantId,
+            patientId,
+            documentId,
+            threadId,
+            request,
+            GetCurrentUserId(),
+            IsPatientRole(),
+            cancellationToken);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("medical-documents/{documentId:guid}/threads/{threadId:guid}/close")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<PatientMedicalDocumentThreadDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PatientMedicalDocumentThreadDto>>> CloseThread(
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        [FromBody] ClosePatientMedicalDocumentThreadRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PatientMedicalDocumentThreadDto>.Error("Tenant context not resolved"));
+
+        var result = await _patientMedicalService.CloseThreadAsync(
+            _tenantContext.TenantId,
+            patientId,
+            documentId,
+            threadId,
+            request,
+            GetCurrentUserId(),
+            IsPatientRole(),
+            cancellationToken);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpGet("chronic-conditions")]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PatientChronicProfileDto>), 200)]

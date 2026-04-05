@@ -28,7 +28,7 @@ public class ExpensesController : ControllerBase
     /// Add expense
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ExpenseDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<ExpenseDto>>> Create([FromBody] CreateExpenseRequest request)

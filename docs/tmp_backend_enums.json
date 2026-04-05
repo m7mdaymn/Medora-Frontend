@@ -1,0 +1,329 @@
+﻿[
+    {
+        "File":  "src/EliteClinic.Domain/Enums/BookingStatus.cs",
+        "Enum":  "BookingStatus",
+        "Members":  [
+                        "Confirmed",
+                        "Cancelled",
+                        "Rescheduled",
+                        "Completed"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/ChronicConditionType.cs",
+        "Enum":  "ChronicConditionType",
+        "Members":  [
+                        "Diabetes",
+                        "Hypertension",
+                        "CardiacDisease",
+                        "Asthma",
+                        "Other"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/CreditReason.cs",
+        "Enum":  "CreditReason",
+        "Members":  [
+                        "DoctorAbsent",
+                        "SessionForceClosedUnserved",
+                        "SessionAutoClosedUnserved",
+                        "ClinicCancellationAfterPayment",
+                        "NoShowRetainedByPolicy",
+                        "ManualAdjustment",
+                        "CreditConsumption",
+                        "CreditExpiration"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/CreditTransactionType.cs",
+        "Enum":  "CreditTransactionType",
+        "Members":  [
+                        "Issued",
+                        "Consumed",
+                        "Adjusted",
+                        "Reversed",
+                        "Expired"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/DoctorCompensationMode.cs",
+        "Enum":  "DoctorCompensationMode",
+        "Members":  [
+                        "Salary",
+                        "Percentage",
+                        "FixedPerVisit"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/DocumentCategory.cs",
+        "Enum":  "DocumentCategory",
+        "Members":  [
+                        "Lab",
+                        "Radiology",
+                        "OtherMedicalDocument"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/EncounterFinancialState.cs",
+        "Enum":  "EncounterFinancialState",
+        "Members":  [
+                        "NotStarted",
+                        "PendingSettlement",
+                        "FinanciallySettled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/EncounterLifecycleState.cs",
+        "Enum":  "EncounterLifecycleState",
+        "Members":  [
+                        "Draft",
+                        "InProgress",
+                        "MedicallyCompleted",
+                        "FullyClosed"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/FinanceActionType.cs",
+        "Enum":  "FinanceActionType",
+        "Members":  [
+                        "Refund",
+                        "Credit",
+                        "Void",
+                        "Reverse",
+                        "Adjustment"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/Gender.cs",
+        "Enum":  "Gender",
+        "Members":  [
+                        "Male",
+                        "Female"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/InAppNotificationType.cs",
+        "Enum":  "InAppNotificationType",
+        "Members":  [
+                        "PartnerOrderStatusChanged",
+                        "MedicalDocumentThreadUpdated",
+                        "PrescriptionRevised",
+                        "System"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/InventoryItemType.cs",
+        "Enum":  "InventoryItemType",
+        "Members":  [
+                        "Medicine",
+                        "Tool",
+                        "Equipment",
+                        "Consumable"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/InvoiceStatus.cs",
+        "Enum":  "InvoiceStatus",
+        "Members":  [
+                        "Unpaid",
+                        "PartiallyPaid",
+                        "Paid",
+                        "Refunded"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/LabRequestType.cs",
+        "Enum":  "LabRequestType",
+        "Members":  [
+                        "Lab",
+                        "Imaging"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/MarketplaceOrderStatus.cs",
+        "Enum":  "MarketplaceOrderStatus",
+        "Members":  [
+                        "Pending",
+                        "WhatsAppRedirected",
+                        "Confirmed",
+                        "Cancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/MedicalDocumentThreadStatus.cs",
+        "Enum":  "MedicalDocumentThreadStatus",
+        "Members":  [
+                        "Open",
+                        "Closed"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/MessageChannel.cs",
+        "Enum":  "MessageChannel",
+        "Members":  [
+                        "WhatsApp",
+                        "PWA"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/MessageScenario.cs",
+        "Enum":  "MessageScenario",
+        "Members":  [
+                        "PatientAccountCreated",
+                        "QueueTicketIssued",
+                        "QueueTurnReady",
+                        "MedicationReminder",
+                        "CreditIssued",
+                        "BookingConfirmed",
+                        "BookingCancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/MessageStatus.cs",
+        "Enum":  "MessageStatus",
+        "Members":  [
+                        "Pending",
+                        "Sending",
+                        "Sent",
+                        "Delivered",
+                        "Read",
+                        "Failed",
+                        "Retrying"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/PartnerOrderStatus.cs",
+        "Enum":  "PartnerOrderStatus",
+        "Members":  [
+                        "Draft",
+                        "Sent",
+                        "Accepted",
+                        "InProgress",
+                        "Completed",
+                        "Cancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/PartnerType.cs",
+        "Enum":  "PartnerType",
+        "Members":  [
+                        "Laboratory",
+                        "Radiology",
+                        "Pharmacy"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/PatientSelfServicePaymentPolicy.cs",
+        "Enum":  "PatientSelfServicePaymentPolicy",
+        "Members":  [
+                        "FullOnly",
+                        "PartialAllowed"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/PatientSelfServiceRequestStatus.cs",
+        "Enum":  "PatientSelfServiceRequestStatus",
+        "Members":  [
+                        "PendingPaymentReview",
+                        "PaymentApproved",
+                        "ConvertedToQueueTicket",
+                        "ConvertedToBooking",
+                        "Rejected",
+                        "ReuploadRequested",
+                        "Expired"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/PatientSelfServiceRequestType.cs",
+        "Enum":  "PatientSelfServiceRequestType",
+        "Members":  [
+                        "SameDayTicket",
+                        "FutureBooking"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/SalesInvoiceStatus.cs",
+        "Enum":  "SalesInvoiceStatus",
+        "Members":  [
+                        "Issued",
+                        "Cancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/SubscriptionStatus.cs",
+        "Enum":  "SubscriptionStatus",
+        "Members":  [
+                        "Active",
+                        "Expired",
+                        "Cancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/TenantStatus.cs",
+        "Enum":  "TenantStatus",
+        "Members":  [
+                        "Active",
+                        "Suspended",
+                        "Blocked",
+                        "Inactive"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/TicketStatus.cs",
+        "Enum":  "TicketStatus",
+        "Members":  [
+                        "Waiting",
+                        "Called",
+                        "InVisit",
+                        "Completed",
+                        "Skipped",
+                        "NoShow",
+                        "Cancelled"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/UrgentCaseMode.cs",
+        "Enum":  "UrgentCaseMode",
+        "Members":  [
+                        "Disabled",
+                        "UrgentNext",
+                        "UrgentBucket",
+                        "UrgentFront"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/VisitSource.cs",
+        "Enum":  "VisitSource",
+        "Members":  [
+                        "WalkInTicket",
+                        "Booking",
+                        "ConsultationBooking",
+                        "PatientSelfServiceTicket",
+                        "PatientSelfServiceBooking"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/VisitStatus.cs",
+        "Enum":  "VisitStatus",
+        "Members":  [
+                        "Open",
+                        "Completed"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/VisitType.cs",
+        "Enum":  "VisitType",
+        "Members":  [
+                        "Exam",
+                        "Consultation"
+                    ]
+    },
+    {
+        "File":  "src/EliteClinic.Domain/Enums/WorkerMode.cs",
+        "Enum":  "WorkerMode",
+        "Members":  [
+                        "LoginBased",
+                        "PayrollOnly"
+                    ]
+    }
+]

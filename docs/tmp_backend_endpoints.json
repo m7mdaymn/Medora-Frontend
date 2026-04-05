@@ -1,0 +1,1472 @@
+﻿[
+    {
+        "Method":  "POST",
+        "Route":  "/api/auth/login",
+        "Controller":  "AuthController",
+        "Action":  "Login",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/auth/me",
+        "Controller":  "AuthController",
+        "Action":  "GetMe",
+        "Auth":  "Authorized"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/auth/patient/login",
+        "Controller":  "AuthController",
+        "Action":  "PatientLogin",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/auth/refresh",
+        "Controller":  "AuthController",
+        "Action":  "Refresh",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/bookings",
+        "Controller":  "BookingsController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/bookings",
+        "Controller":  "BookingsController",
+        "Action":  "Create",
+        "Auth":  "Roles: Patient,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/bookings/{id:guid}",
+        "Controller":  "BookingsController",
+        "Action":  "GetById",
+        "Auth":  "Roles: Patient,ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/bookings/{id:guid}/cancel",
+        "Controller":  "BookingsController",
+        "Action":  "Cancel",
+        "Auth":  "Roles: Patient,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/bookings/{id:guid}/reschedule",
+        "Controller":  "BookingsController",
+        "Action":  "Reschedule",
+        "Auth":  "Roles: Patient,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/bookings/my",
+        "Controller":  "BookingsController",
+        "Action":  "GetMyBookings",
+        "Auth":  "Roles: Patient"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctor-notes",
+        "Controller":  "DoctorNotesController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/doctor-notes",
+        "Controller":  "DoctorNotesController",
+        "Action":  "Create",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/doctor-notes/{id:guid}/read",
+        "Controller":  "DoctorNotesController",
+        "Action":  "MarkAsRead",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctor-notes/unread",
+        "Controller":  "DoctorNotesController",
+        "Action":  "GetUnread",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors",
+        "Controller":  "DoctorsController",
+        "Action":  "GetAllDoctors",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/doctors",
+        "Controller":  "DoctorsController",
+        "Action":  "CreateDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors/{id:guid}",
+        "Controller":  "DoctorsController",
+        "Action":  "GetDoctorById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/doctors/{id:guid}",
+        "Controller":  "DoctorsController",
+        "Action":  "PatchDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/doctors/{id:guid}",
+        "Controller":  "DoctorsController",
+        "Action":  "UpdateDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/doctors/{id:guid}/disable",
+        "Controller":  "DoctorsController",
+        "Action":  "DisableDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/doctors/{id:guid}/enable",
+        "Controller":  "DoctorsController",
+        "Action":  "EnableDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/doctors/{id:guid}/services",
+        "Controller":  "DoctorsController",
+        "Action":  "UpdateServices",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/doctors/{id:guid}/visit-fields",
+        "Controller":  "DoctorsController",
+        "Action":  "UpdateVisitFields",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors/me",
+        "Controller":  "DoctorsController",
+        "Action":  "GetMyProfile",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors/me/patients",
+        "Controller":  "DoctorsController",
+        "Action":  "GetMyPatients",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors/me/patients/{patientId:guid}/history",
+        "Controller":  "DoctorsController",
+        "Action":  "GetMyPatientHistory",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/doctors/me/visit-fields",
+        "Controller":  "DoctorsController",
+        "Action":  "GetMyVisitFields",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/doctors/me/visit-fields",
+        "Controller":  "DoctorsController",
+        "Action":  "UpdateMyVisitFields",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/expenses",
+        "Controller":  "ExpensesController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/expenses",
+        "Controller":  "ExpensesController",
+        "Action":  "Create",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/expenses/{id:guid}",
+        "Controller":  "ExpensesController",
+        "Action":  "Delete",
+        "Auth":  "Roles: ClinicOwner,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/expenses/{id:guid}",
+        "Controller":  "ExpensesController",
+        "Action":  "Update",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/finance/by-doctor",
+        "Controller":  "FinanceController",
+        "Action":  "GetByDoctor",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/finance/daily",
+        "Controller":  "FinanceController",
+        "Action":  "GetDailyRevenue",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/finance/monthly",
+        "Controller":  "FinanceController",
+        "Action":  "GetMonthly",
+        "Auth":  "Roles: ClinicOwner,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/finance/profit",
+        "Controller":  "FinanceController",
+        "Action":  "GetProfit",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/finance/yearly",
+        "Controller":  "FinanceController",
+        "Action":  "GetYearly",
+        "Auth":  "Roles: ClinicOwner,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/inventory/items",
+        "Controller":  "InventoryController",
+        "Action":  "GetItems",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/inventory/items",
+        "Controller":  "InventoryController",
+        "Action":  "Create",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/inventory/items/{itemId:guid}",
+        "Controller":  "InventoryController",
+        "Action":  "GetItemById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/inventory/items/{itemId:guid}",
+        "Controller":  "InventoryController",
+        "Action":  "Update",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/inventory/items/{itemId:guid}/activation",
+        "Controller":  "InventoryController",
+        "Action":  "SetActivation",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/invoices",
+        "Controller":  "InvoicesController",
+        "Action":  "GetInvoices",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/invoices",
+        "Controller":  "InvoicesController",
+        "Action":  "CreateInvoice",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/invoices/{id:guid}",
+        "Controller":  "InvoicesController",
+        "Action":  "GetInvoice",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/invoices/{id:guid}",
+        "Controller":  "InvoicesController",
+        "Action":  "PatchInvoice",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/invoices/{id:guid}",
+        "Controller":  "InvoicesController",
+        "Action":  "UpdateInvoice",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/invoices/{id:guid}/adjustments",
+        "Controller":  "InvoicesController",
+        "Action":  "AddAdjustment",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/invoices/{id:guid}/line-items",
+        "Controller":  "InvoicesController",
+        "Action":  "AddLineItem",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/invoices/{id:guid}/payments",
+        "Controller":  "InvoicesController",
+        "Action":  "GetPayments",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/invoices/{id:guid}/refund",
+        "Controller":  "InvoicesController",
+        "Action":  "Refund",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/marketplace/orders",
+        "Controller":  "MarketplaceOrdersController",
+        "Action":  "GetOrders",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/marketplace/orders/{orderId:guid}",
+        "Controller":  "MarketplaceOrdersController",
+        "Action":  "GetOrderById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/marketplace/orders/{orderId:guid}/status",
+        "Controller":  "MarketplaceOrdersController",
+        "Action":  "UpdateStatus",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/media/clinic-image",
+        "Controller":  "MediaController",
+        "Action":  "UploadClinicImage",
+        "Auth":  "Roles: ClinicOwner,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/media/clinic-logo",
+        "Controller":  "MediaController",
+        "Action":  "UploadClinicLogo",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/media/doctors/{doctorId:guid}/photo",
+        "Controller":  "MediaController",
+        "Action":  "UploadDoctorPhoto",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/messages",
+        "Controller":  "MessagesController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/messages/{id:guid}",
+        "Controller":  "MessagesController",
+        "Action":  "GetById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/messages/{id:guid}/retry",
+        "Controller":  "MessagesController",
+        "Action":  "Retry",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/messages/send",
+        "Controller":  "MessagesController",
+        "Action":  "Send",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/notifications/{id:guid}",
+        "Controller":  "NotificationsController",
+        "Action":  "Unsubscribe",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/notifications/in-app",
+        "Controller":  "NotificationsController",
+        "Action":  "GetInApp",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/notifications/in-app/{id:guid}/read",
+        "Controller":  "NotificationsController",
+        "Action":  "MarkInAppRead",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/notifications/in-app/mark-all-read",
+        "Controller":  "NotificationsController",
+        "Action":  "MarkAllInAppRead",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/notifications/my",
+        "Controller":  "NotificationsController",
+        "Action":  "GetMySubscriptions",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/notifications/send",
+        "Controller":  "NotificationsController",
+        "Action":  "SendNotification",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/notifications/subscribe",
+        "Controller":  "NotificationsController",
+        "Action":  "Subscribe",
+        "Auth":  "Roles: Patient,Doctor,ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/partner-orders",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "List",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "GetById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partner-orders/{orderId:guid}/status",
+        "Controller":  "PartnerOrdersController",
+        "Action":  "UpdateStatus",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/partners",
+        "Controller":  "PartnersController",
+        "Action":  "List",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partners",
+        "Controller":  "PartnersController",
+        "Action":  "Create",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/partners/{partnerId:guid}",
+        "Controller":  "PartnersController",
+        "Action":  "Update",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partners/{partnerId:guid}/activation",
+        "Controller":  "PartnersController",
+        "Action":  "SetActivation",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/partners/contracts",
+        "Controller":  "PartnersController",
+        "Action":  "ListContracts",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/partners/contracts",
+        "Controller":  "PartnersController",
+        "Action":  "CreateContract",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/partners/contracts/{contractId:guid}",
+        "Controller":  "PartnersController",
+        "Action":  "UpdateContract",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}",
+        "Controller":  "PatientAppController",
+        "Action":  "GetProfile",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/bookings",
+        "Controller":  "PatientAppController",
+        "Action":  "GetBookings",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/queue-ticket",
+        "Controller":  "PatientAppController",
+        "Action":  "GetQueueTicket",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/summary",
+        "Controller":  "PatientAppController",
+        "Action":  "GetSummary",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-app/profiles/{patientId:guid}/visits",
+        "Controller":  "PatientAppController",
+        "Action":  "GetVisits",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-credits/{patientId:guid}/balance",
+        "Controller":  "PatientCreditsController",
+        "Action":  "GetBalance",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patient-credits/{patientId:guid}/history",
+        "Controller":  "PatientCreditsController",
+        "Action":  "GetHistory",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients",
+        "Controller":  "PatientsController",
+        "Action":  "GetAllPatients",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients",
+        "Controller":  "PatientsController",
+        "Action":  "CreatePatient",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/patients/{id:guid}",
+        "Controller":  "PatientsController",
+        "Action":  "DeletePatient",
+        "Auth":  "Roles: ClinicOwner,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{id:guid}",
+        "Controller":  "PatientsController",
+        "Action":  "GetPatientById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/patients/{id:guid}",
+        "Controller":  "PatientsController",
+        "Action":  "PatchPatient",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/patients/{id:guid}",
+        "Controller":  "PatientsController",
+        "Action":  "UpdatePatient",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{id:guid}/profiles",
+        "Controller":  "PatientsController",
+        "Action":  "AddSubProfile",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{id:guid}/reset-password",
+        "Controller":  "PatientsController",
+        "Action":  "ResetPassword",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{id:guid}/send-credentials",
+        "Controller":  "PatientsController",
+        "Action":  "SendCredentials",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/chronic-conditions",
+        "Controller":  "PatientMedicalController",
+        "Action":  "GetChronicProfile",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/patients/{patientId:guid}/chronic-conditions",
+        "Controller":  "PatientMedicalController",
+        "Action":  "UpsertChronicProfile",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents",
+        "Controller":  "PatientMedicalController",
+        "Action":  "ListDocuments",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents",
+        "Controller":  "PatientMedicalController",
+        "Action":  "UploadDocument",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}",
+        "Controller":  "PatientMedicalController",
+        "Action":  "DownloadDocument",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads",
+        "Controller":  "PatientMedicalController",
+        "Action":  "ListDocumentThreads",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads",
+        "Controller":  "PatientMedicalController",
+        "Action":  "CreateDocumentThread",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/close",
+        "Controller":  "PatientMedicalController",
+        "Action":  "CloseThread",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/replies",
+        "Controller":  "PatientMedicalController",
+        "Action":  "AddThreadReply",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,Doctor,Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/summary",
+        "Controller":  "VisitsController",
+        "Action":  "GetPatientSummary",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/patients/{patientId:guid}/visits",
+        "Controller":  "VisitsController",
+        "Action":  "GetPatientVisits",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/payments",
+        "Controller":  "InvoicesController",
+        "Action":  "RecordPayment",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/board",
+        "Controller":  "QueueBoardController",
+        "Action":  "GetBoard",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/my-queue",
+        "Controller":  "QueueBoardController",
+        "Action":  "GetMyQueue",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/my-ticket",
+        "Controller":  "QueueBoardController",
+        "Action":  "GetMyTicket",
+        "Auth":  "Roles: Patient,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/sessions",
+        "Controller":  "QueueSessionsController",
+        "Action":  "GetSessions",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/sessions",
+        "Controller":  "QueueSessionsController",
+        "Action":  "OpenSession",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/sessions/{id:guid}",
+        "Controller":  "QueueSessionsController",
+        "Action":  "GetSession",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/sessions/{id:guid}/close",
+        "Controller":  "QueueSessionsController",
+        "Action":  "CloseSession",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/queue/sessions/{id:guid}/tickets",
+        "Controller":  "QueueSessionsController",
+        "Action":  "GetTickets",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/sessions/close-all",
+        "Controller":  "QueueSessionsController",
+        "Action":  "CloseAllSessions",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets",
+        "Controller":  "QueueTicketsController",
+        "Action":  "IssueTicket",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/call",
+        "Controller":  "QueueTicketsController",
+        "Action":  "CallTicket",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/cancel",
+        "Controller":  "QueueTicketsController",
+        "Action":  "CancelTicket",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/finish",
+        "Controller":  "QueueTicketsController",
+        "Action":  "FinishTicket",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/skip",
+        "Controller":  "QueueTicketsController",
+        "Action":  "SkipTicket",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/start-visit",
+        "Controller":  "QueueTicketsController",
+        "Action":  "StartVisit",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/{id:guid}/urgent",
+        "Controller":  "QueueTicketsController",
+        "Action":  "MarkUrgent",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/queue/tickets/with-payment",
+        "Controller":  "QueueTicketsController",
+        "Action":  "IssueTicketWithPayment",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/reports/my-overview",
+        "Controller":  "ReportsController",
+        "Action":  "GetMyOverview",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/reports/overview",
+        "Controller":  "ReportsController",
+        "Action":  "GetOverview",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/reports/services",
+        "Controller":  "ReportsController",
+        "Action":  "GetServicesSales",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/self-service-requests",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/self-service-requests/{requestId:guid}",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "GetById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/adjust-paid-amount",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "AdjustPaidAmount",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/approve",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "Approve",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/reject",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "Reject",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/request-reupload",
+        "Controller":  "SelfServiceRequestsController",
+        "Action":  "RequestReupload",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/services",
+        "Controller":  "ClinicServicesController",
+        "Action":  "GetAll",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager,Doctor,Receptionist,Nurse"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/services",
+        "Controller":  "ClinicServicesController",
+        "Action":  "Create",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/services/{id:guid}",
+        "Controller":  "ClinicServicesController",
+        "Action":  "Delete",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/services/{id:guid}",
+        "Controller":  "ClinicServicesController",
+        "Action":  "GetById",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager,Doctor,Receptionist,Nurse"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/services/{id:guid}",
+        "Controller":  "ClinicServicesController",
+        "Action":  "Update",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/services/doctors/{doctorId:guid}/links",
+        "Controller":  "ClinicServicesController",
+        "Action":  "GetDoctorLinks",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager,Doctor,Receptionist"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/services/doctors/{doctorId:guid}/links/{clinicServiceId:guid}",
+        "Controller":  "ClinicServicesController",
+        "Action":  "RemoveDoctorLink",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/services/doctors/{doctorId:guid}/links/{clinicServiceId:guid}",
+        "Controller":  "ClinicServicesController",
+        "Action":  "UpsertDoctorLink",
+        "Auth":  "Roles: SuperAdmin,ClinicOwner,ClinicManager"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/settings",
+        "Controller":  "ClinicSettingsController",
+        "Action":  "GetSettings",
+        "Auth":  "Authorized"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/settings",
+        "Controller":  "ClinicSettingsController",
+        "Action":  "PatchSettings",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/settings",
+        "Controller":  "ClinicSettingsController",
+        "Action":  "UpdateSettings",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/settings/payment-methods",
+        "Controller":  "ClinicSettingsController",
+        "Action":  "ReplacePaymentMethods",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/settings/payment-options",
+        "Controller":  "ClinicSettingsController",
+        "Action":  "GetPaymentOptions",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/staff",
+        "Controller":  "StaffController",
+        "Action":  "GetAllStaff",
+        "Auth":  "Authorized"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/staff",
+        "Controller":  "StaffController",
+        "Action":  "CreateStaff",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/staff/{id:guid}",
+        "Controller":  "StaffController",
+        "Action":  "GetStaffById",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PATCH",
+        "Route":  "/api/clinic/staff/{id:guid}",
+        "Controller":  "StaffController",
+        "Action":  "PatchStaff",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/staff/{id:guid}",
+        "Controller":  "StaffController",
+        "Action":  "UpdateStaff",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/staff/{id:guid}/disable",
+        "Controller":  "StaffController",
+        "Action":  "DisableStaff",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/staff/{id:guid}/enable",
+        "Controller":  "StaffController",
+        "Action":  "EnableStaff",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/staff/payroll-only",
+        "Controller":  "StaffController",
+        "Action":  "CreatePayrollOnlyWorker",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits",
+        "Controller":  "VisitsController",
+        "Action":  "CreateVisit",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/{id:guid}",
+        "Controller":  "VisitsController",
+        "Action":  "GetVisit",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/visits/{id:guid}",
+        "Controller":  "VisitsController",
+        "Action":  "UpdateVisit",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{id:guid}/complete",
+        "Controller":  "VisitsController",
+        "Action":  "CompleteVisit",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{id:guid}/inventory-usage",
+        "Controller":  "VisitsController",
+        "Action":  "RecordInventoryUsage",
+        "Auth":  "Roles: Doctor,ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs",
+        "Controller":  "LabRequestsController",
+        "Action":  "GetByVisit",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs",
+        "Controller":  "LabRequestsController",
+        "Action":  "Create",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{id:guid}",
+        "Controller":  "LabRequestsController",
+        "Action":  "Delete",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{id:guid}",
+        "Controller":  "LabRequestsController",
+        "Action":  "Update",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{id:guid}/result",
+        "Controller":  "LabRequestsController",
+        "Action":  "AddResult",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{labRequestId:guid}/partner-order",
+        "Controller":  "LabRequestsController",
+        "Action":  "CreatePartnerOrder",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions",
+        "Controller":  "PrescriptionsController",
+        "Action":  "GetByVisit",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions",
+        "Controller":  "PrescriptionsController",
+        "Action":  "Create",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}",
+        "Controller":  "PrescriptionsController",
+        "Action":  "Delete",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}",
+        "Controller":  "PrescriptionsController",
+        "Action":  "Update",
+        "Auth":  "Roles: ClinicOwner,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}/revisions",
+        "Controller":  "PrescriptionsController",
+        "Action":  "GetRevisions",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{prescriptionId:guid}/partner-order",
+        "Controller":  "PrescriptionsController",
+        "Action":  "CreatePartnerOrder",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/visits/maintenance/{id:guid}/close",
+        "Controller":  "VisitsController",
+        "Action":  "CloseStaleVisit",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/maintenance/stale-open",
+        "Controller":  "VisitsController",
+        "Action":  "GetStaleOpenVisits",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/my",
+        "Controller":  "VisitsController",
+        "Action":  "GetMyVisits",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/visits/my/patients",
+        "Controller":  "VisitsController",
+        "Action":  "GetMyPatients",
+        "Auth":  "Roles: Doctor,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/workforce/absence",
+        "Controller":  "WorkforceController",
+        "Action":  "ListAbsence",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/workforce/absence",
+        "Controller":  "WorkforceController",
+        "Action":  "CreateAbsence",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/workforce/attendance",
+        "Controller":  "WorkforceController",
+        "Action":  "ListAttendance",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/workforce/attendance",
+        "Controller":  "WorkforceController",
+        "Action":  "CreateAttendance",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/clinic/workforce/attendance/{attendanceId:guid}/checkout",
+        "Controller":  "WorkforceController",
+        "Action":  "CheckOutAttendance",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/workforce/daily-closing",
+        "Controller":  "WorkforceController",
+        "Action":  "GetDailyClosingSnapshots",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/workforce/daily-closing/generate",
+        "Controller":  "WorkforceController",
+        "Action":  "GenerateDailyClosing",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules",
+        "Controller":  "WorkforceController",
+        "Action":  "ListCompensationRules",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules",
+        "Controller":  "WorkforceController",
+        "Action":  "CreateCompensationRule",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/clinic/workforce/salary-payouts",
+        "Controller":  "WorkforceController",
+        "Action":  "CreateSalaryPayout",
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/health",
+        "Controller":  "HealthController",
+        "Action":  "GetHealth",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/platform/feature-flags/{tenantId}",
+        "Controller":  "FeatureFlagsController",
+        "Action":  "GetFeatureFlags",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/platform/feature-flags/{tenantId}",
+        "Controller":  "FeatureFlagsController",
+        "Action":  "UpdateFeatureFlags",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/platform/subscriptions",
+        "Controller":  "SubscriptionsController",
+        "Action":  "GetAllSubscriptions",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/subscriptions",
+        "Controller":  "SubscriptionsController",
+        "Action":  "CreateSubscription",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/subscriptions/{id}/cancel",
+        "Controller":  "SubscriptionsController",
+        "Action":  "CancelSubscription",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/subscriptions/{id}/extend",
+        "Controller":  "SubscriptionsController",
+        "Action":  "ExtendSubscription",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/subscriptions/{id}/mark-paid",
+        "Controller":  "SubscriptionsController",
+        "Action":  "MarkPaid",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/platform/tenants",
+        "Controller":  "TenantsController",
+        "Action":  "GetAllTenants",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/tenants",
+        "Controller":  "TenantsController",
+        "Action":  "CreateTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "DELETE",
+        "Route":  "/api/platform/tenants/{id}",
+        "Controller":  "TenantsController",
+        "Action":  "DeleteTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/platform/tenants/{id}",
+        "Controller":  "TenantsController",
+        "Action":  "GetTenantById",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "PUT",
+        "Route":  "/api/platform/tenants/{id}",
+        "Controller":  "TenantsController",
+        "Action":  "UpdateTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/tenants/{id}/activate",
+        "Controller":  "TenantsController",
+        "Action":  "ActivateTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/tenants/{id}/block",
+        "Controller":  "TenantsController",
+        "Action":  "BlockTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/platform/tenants/{id}/suspend",
+        "Controller":  "TenantsController",
+        "Action":  "SuspendTenant",
+        "Auth":  "Roles: SuperAdmin"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/clinic",
+        "Controller":  "PublicController",
+        "Action":  "GetClinicProfile",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/doctors",
+        "Controller":  "PublicController",
+        "Action":  "GetDoctors",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/doctors/available-now",
+        "Controller":  "PublicController",
+        "Action":  "GetAvailableDoctorsNow",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/landing",
+        "Controller":  "PublicController",
+        "Action":  "GetLanding",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/marketplace/items",
+        "Controller":  "PublicController",
+        "Action":  "GetMarketplaceItems",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/marketplace/items/{itemId:guid}",
+        "Controller":  "PublicController",
+        "Action":  "GetMarketplaceItemById",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "POST",
+        "Route":  "/api/public/{slug}/marketplace/orders",
+        "Controller":  "PublicController",
+        "Action":  "CreateMarketplaceOrder",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/payment-options",
+        "Controller":  "PublicController",
+        "Action":  "GetPaymentOptions",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/services",
+        "Controller":  "PublicController",
+        "Action":  "GetServices",
+        "Auth":  "Unspecified"
+    },
+    {
+        "Method":  "GET",
+        "Route":  "/api/public/{slug}/working-hours",
+        "Controller":  "PublicController",
+        "Action":  "GetWorkingHours",
+        "Auth":  "Unspecified"
+    }
+]

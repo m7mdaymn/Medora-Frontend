@@ -8,6 +8,7 @@ public class QueueSessionDto
 {
     public Guid Id { get; set; }
     public Guid? DoctorId { get; set; }
+    public Guid? BranchId { get; set; }
     public string? DoctorName { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
@@ -22,6 +23,7 @@ public class QueueSessionDto
 public class CreateQueueSessionRequest
 {
     public Guid? DoctorId { get; set; }
+    public Guid? BranchId { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -31,12 +33,18 @@ public class QueueTicketDto
 {
     public Guid Id { get; set; }
     public Guid SessionId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid? VisitId { get; set; }
     public Guid? InvoiceId { get; set; }
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public Guid DoctorId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
+    public VisitSource Source { get; set; }
+    public VisitType? VisitType { get; set; }
+    public bool IsFromBooking { get; set; }
+    public bool IsFromWalkIn { get; set; }
+    public bool IsFromSelfService { get; set; }
     public Guid? DoctorServiceId { get; set; }
     public string? ServiceName { get; set; }
     public decimal? InvoiceAmount { get; set; }
@@ -62,8 +70,11 @@ public class QueueTicketDto
 public class CreateQueueTicketRequest
 {
     public Guid SessionId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
+    public VisitSource Source { get; set; } = VisitSource.WalkInTicket;
+    public VisitType VisitType { get; set; } = VisitType.Exam;
     public Guid? DoctorServiceId { get; set; }
     public bool IsUrgent { get; set; }
     public string? Notes { get; set; }
@@ -75,9 +86,11 @@ public class CreateQueueTicketRequest
 public class CreateQueueTicketWithPaymentRequest
 {
     public Guid SessionId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid? DoctorServiceId { get; set; }
+    public VisitSource Source { get; set; } = VisitSource.WalkInTicket;
     public bool IsUrgent { get; set; }
     public string? Notes { get; set; }
     public VisitType VisitType { get; set; } = VisitType.Exam;
@@ -109,6 +122,7 @@ public class QueueBoardSessionDto
 {
     public Guid SessionId { get; set; }
     public Guid? DoctorId { get; set; }
+    public Guid? BranchId { get; set; }
     public string? DoctorName { get; set; }
     public bool IsActive { get; set; }
     public int WaitingCount { get; set; }

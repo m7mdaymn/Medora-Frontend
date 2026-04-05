@@ -1,6 +1,7 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
+using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -207,6 +208,250 @@ public class PatientMedicalService : IPatientMedicalService
         return ApiResponse<PatientChronicProfileDto>.Ok(MapChronic(profile), "Chronic profile updated");
     }
 
+    public async Task<ApiResponse<List<PatientMedicalDocumentThreadDto>>> ListDocumentThreadsAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default)
+    {
+        var access = await EnsurePatientAccessAsync(tenantId, patientId, callerUserId, isPatientActor, cancellationToken);
+        if (!access.Allowed)
+            return ApiResponse<List<PatientMedicalDocumentThreadDto>>.Error(access.Message);
+
+        var document = await EnsureDocumentExistsAsync(tenantId, patientId, documentId, cancellationToken);
+        if (document == null)
+            return ApiResponse<List<PatientMedicalDocumentThreadDto>>.Error("Medical document not found");
+
+        var threads = await _context.PatientMedicalDocumentThreads
+            .Include(t => t.Replies.Where(r => !r.IsDeleted))
+            .Where(t => t.TenantId == tenantId && !t.IsDeleted && t.PatientId == patientId && t.DocumentId == documentId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return ApiResponse<List<PatientMedicalDocumentThreadDto>>.Ok(
+            threads.Select(t => MapThread(t, isPatientActor)).ToList(),
+            $"Retrieved {threads.Count} thread(s)");
+    }
+
+    public async Task<ApiResponse<PatientMedicalDocumentThreadDto>> CreateDocumentThreadAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        CreatePatientMedicalDocumentThreadRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default)
+    {
+        var access = await EnsurePatientAccessAsync(tenantId, patientId, callerUserId, isPatientActor, cancellationToken);
+        if (!access.Allowed)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error(access.Message);
+
+        var document = await EnsureDocumentExistsAsync(tenantId, patientId, documentId, cancellationToken);
+        if (document == null)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Medical document not found");
+
+        if (string.IsNullOrWhiteSpace(request.Subject))
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Subject is required");
+
+        var thread = new PatientMedicalDocumentThread
+        {
+            TenantId = tenantId,
+            PatientId = patientId,
+            DocumentId = documentId,
+            CreatedByUserId = callerUserId,
+            Subject = request.Subject.Trim(),
+            Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+            Status = MedicalDocumentThreadStatus.Open
+        };
+
+        _context.PatientMedicalDocumentThreads.Add(thread);
+
+        if (!string.IsNullOrWhiteSpace(request.InitialMessage))
+        {
+            _context.PatientMedicalDocumentThreadReplies.Add(new PatientMedicalDocumentThreadReply
+            {
+                TenantId = tenantId,
+                ThreadId = thread.Id,
+                AuthorUserId = callerUserId,
+                Message = request.InitialMessage.Trim(),
+                IsInternalNote = false
+            });
+        }
+
+        await AddThreadNotificationAsync(
+            tenantId,
+            patientId,
+            document.UploadedByUserId,
+            callerUserId,
+            thread.Id,
+            "Medical document thread updated",
+            "A new discussion thread was opened on a medical document",
+            cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var saved = await _context.PatientMedicalDocumentThreads
+            .Include(t => t.Replies.Where(r => !r.IsDeleted))
+            .FirstAsync(t => t.TenantId == tenantId && !t.IsDeleted && t.Id == thread.Id, cancellationToken);
+
+        return ApiResponse<PatientMedicalDocumentThreadDto>.Created(MapThread(saved, isPatientActor), "Medical document thread created");
+    }
+
+    public async Task<ApiResponse<PatientMedicalDocumentThreadDto>> AddThreadReplyAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        AddPatientMedicalDocumentThreadReplyRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default)
+    {
+        var access = await EnsurePatientAccessAsync(tenantId, patientId, callerUserId, isPatientActor, cancellationToken);
+        if (!access.Allowed)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error(access.Message);
+
+        var document = await EnsureDocumentExistsAsync(tenantId, patientId, documentId, cancellationToken);
+        if (document == null)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Medical document not found");
+
+        var thread = await _context.PatientMedicalDocumentThreads
+            .Include(t => t.Replies.Where(r => !r.IsDeleted))
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId && !t.IsDeleted && t.Id == threadId && t.PatientId == patientId && t.DocumentId == documentId, cancellationToken);
+
+        if (thread == null)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Thread not found");
+
+        if (thread.Status == MedicalDocumentThreadStatus.Closed)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Thread is already closed");
+
+        if (string.IsNullOrWhiteSpace(request.Message))
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Reply message is required");
+
+        if (isPatientActor && request.IsInternalNote)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Patients cannot submit internal notes");
+
+        _context.PatientMedicalDocumentThreadReplies.Add(new PatientMedicalDocumentThreadReply
+        {
+            TenantId = tenantId,
+            ThreadId = thread.Id,
+            AuthorUserId = callerUserId,
+            Message = request.Message.Trim(),
+            IsInternalNote = request.IsInternalNote
+        });
+
+        await AddThreadNotificationAsync(
+            tenantId,
+            patientId,
+            document.UploadedByUserId,
+            callerUserId,
+            thread.Id,
+            "Medical document thread updated",
+            "A new reply was posted on a medical document thread",
+            cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var updated = await _context.PatientMedicalDocumentThreads
+            .Include(t => t.Replies.Where(r => !r.IsDeleted))
+            .FirstAsync(t => t.TenantId == tenantId && !t.IsDeleted && t.Id == threadId, cancellationToken);
+
+        return ApiResponse<PatientMedicalDocumentThreadDto>.Ok(MapThread(updated, isPatientActor), "Reply added successfully");
+    }
+
+    public async Task<ApiResponse<PatientMedicalDocumentThreadDto>> CloseThreadAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid documentId,
+        Guid threadId,
+        ClosePatientMedicalDocumentThreadRequest request,
+        Guid callerUserId,
+        bool isPatientActor,
+        CancellationToken cancellationToken = default)
+    {
+        var access = await EnsurePatientAccessAsync(tenantId, patientId, callerUserId, isPatientActor, cancellationToken);
+        if (!access.Allowed)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error(access.Message);
+
+        var document = await EnsureDocumentExistsAsync(tenantId, patientId, documentId, cancellationToken);
+        if (document == null)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Medical document not found");
+
+        var thread = await _context.PatientMedicalDocumentThreads
+            .Include(t => t.Replies.Where(r => !r.IsDeleted))
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId && !t.IsDeleted && t.Id == threadId && t.PatientId == patientId && t.DocumentId == documentId, cancellationToken);
+
+        if (thread == null)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Thread not found");
+
+        if (thread.Status == MedicalDocumentThreadStatus.Closed)
+            return ApiResponse<PatientMedicalDocumentThreadDto>.Error("Thread is already closed");
+
+        thread.Status = MedicalDocumentThreadStatus.Closed;
+        thread.ClosedAt = DateTime.UtcNow;
+        thread.ClosedByUserId = callerUserId;
+
+        if (!string.IsNullOrWhiteSpace(request.Notes))
+            thread.Notes = string.IsNullOrWhiteSpace(thread.Notes) ? request.Notes.Trim() : $"{thread.Notes} | {request.Notes.Trim()}";
+
+        await AddThreadNotificationAsync(
+            tenantId,
+            patientId,
+            document.UploadedByUserId,
+            callerUserId,
+            thread.Id,
+            "Medical document thread closed",
+            "A medical document thread has been closed",
+            cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return ApiResponse<PatientMedicalDocumentThreadDto>.Ok(MapThread(thread, isPatientActor), "Thread closed successfully");
+    }
+
+    private async Task<PatientMedicalDocument?> EnsureDocumentExistsAsync(Guid tenantId, Guid patientId, Guid documentId, CancellationToken cancellationToken)
+    {
+        return await _context.PatientMedicalDocuments
+            .FirstOrDefaultAsync(d => d.TenantId == tenantId && !d.IsDeleted && d.PatientId == patientId && d.Id == documentId, cancellationToken);
+    }
+
+    private async Task AddThreadNotificationAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid uploadedByUserId,
+        Guid actorUserId,
+        Guid threadId,
+        string title,
+        string body,
+        CancellationToken cancellationToken)
+    {
+        var patientUserId = await _context.Patients
+            .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == patientId)
+            .Select(p => (Guid?)p.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var recipients = new HashSet<Guid>();
+        if (patientUserId.HasValue)
+            recipients.Add(patientUserId.Value);
+        recipients.Add(uploadedByUserId);
+        recipients.Remove(actorUserId);
+
+        foreach (var userId in recipients)
+        {
+            _context.InAppNotifications.Add(new InAppNotification
+            {
+                TenantId = tenantId,
+                UserId = userId,
+                Type = InAppNotificationType.MedicalDocumentThreadUpdated,
+                Title = title,
+                Body = body,
+                EntityType = nameof(PatientMedicalDocumentThread),
+                EntityId = threadId
+            });
+        }
+    }
+
     private async Task<(bool Allowed, string Message)> EnsurePatientAccessAsync(
         Guid tenantId,
         Guid patientId,
@@ -283,6 +528,36 @@ public class PatientMedicalService : IPatientMedicalService
             FileSizeBytes = document.FileSizeBytes,
             Notes = document.Notes,
             CreatedAt = document.CreatedAt
+        };
+    }
+
+    private static PatientMedicalDocumentThreadDto MapThread(PatientMedicalDocumentThread thread, bool isPatientActor)
+    {
+        return new PatientMedicalDocumentThreadDto
+        {
+            Id = thread.Id,
+            PatientId = thread.PatientId,
+            DocumentId = thread.DocumentId,
+            CreatedByUserId = thread.CreatedByUserId,
+            Subject = thread.Subject,
+            Status = thread.Status,
+            ClosedAt = thread.ClosedAt,
+            ClosedByUserId = thread.ClosedByUserId,
+            Notes = thread.Notes,
+            Replies = thread.Replies
+                .Where(r => !r.IsDeleted && (!isPatientActor || !r.IsInternalNote))
+                .OrderBy(r => r.CreatedAt)
+                .Select(r => new PatientMedicalDocumentThreadReplyDto
+                {
+                    Id = r.Id,
+                    ThreadId = r.ThreadId,
+                    AuthorUserId = r.AuthorUserId,
+                    Message = r.Message,
+                    IsInternalNote = r.IsInternalNote,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToList(),
+            CreatedAt = thread.CreatedAt
         };
     }
 
