@@ -3,7 +3,12 @@
 import { fetchApi } from '@/lib/fetchApi'
 import { IPaginatedData } from '@/types/api'
 import { IPatient } from '@/types/patient'
-import { ICreditBalance, ICreditHistoryItem, IPatientSummary } from '@/types/patient-app'
+import {
+  ICreditBalance,
+  ICreditHistoryItem,
+  IPatientPartnerOrderTimelineItem,
+  IPatientSummary,
+} from '@/types/patient-app'
 import { IVisit } from '@/types/visit'
 import { IQueueTicket } from '../../types/queue'
 import { IBooking } from '../../types/booking'
@@ -69,7 +74,20 @@ export async function getPatientBookingsAppAction(tenantSlug: string, patientId:
   })
 }
 
-// 6. جلب رصيد المحفظة (الـ Credit)
+// 6. جلب رحلة الطلبات الخارجية (المعامل/الأشعة/الصيدليات) للمريض
+export async function getPatientPartnerOrdersAppAction(tenantSlug: string, patientId: string) {
+  return await fetchApi<IPatientPartnerOrderTimelineItem[]>(
+    `/api/clinic/patient-app/profiles/${patientId}/partner-orders`,
+    {
+      method: 'GET',
+      tenantSlug,
+      authType: 'patient',
+      cache: 'no-store',
+    },
+  )
+}
+
+// 7. جلب رصيد المحفظة (الـ Credit)
 export async function getPatientCreditBalanceAction(tenantSlug: string, patientId: string) {
   return await fetchApi<ICreditBalance>(`/api/clinic/patient-credits/${patientId}/balance`, {
     method: 'GET',
@@ -79,7 +97,7 @@ export async function getPatientCreditBalanceAction(tenantSlug: string, patientI
   })
 }
 
-// 7. جلب سجل حركات الرصيد (History)
+// 8. جلب سجل حركات الرصيد (History)
 export async function getPatientCreditHistoryAction(
   tenantSlug: string,
   patientId: string,

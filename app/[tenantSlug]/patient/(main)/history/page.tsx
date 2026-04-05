@@ -1,6 +1,9 @@
 'use client'
 
-import { getPatientVisitsAppAction } from '@/actions/patient-app/profile'
+import {
+  getPatientPartnerOrdersAppAction,
+  getPatientVisitsAppAction,
+} from '@/actions/patient-app/profile'
 import { ProfileSwitcher } from '@/components/patient/profile-switcher'
 import {
   Accordion,
@@ -13,6 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { usePatientAuthStore } from '@/store/usePatientAuthStore'
 import {
   Calendar,
+  CircleCheck,
+  Clock3,
   Pill,
   SearchX,
   Stethoscope,
@@ -36,7 +41,13 @@ export default function PatientHistoryPage() {
     () => getPatientVisitsAppAction(tenantSlug, activeProfileId!, page, 10),
   )
 
+  const { data: partnerOrdersRes, isLoading: partnerOrdersLoading } = useSWR(
+    activeProfileId ? ['patientPartnerOrders', tenantSlug, activeProfileId] : null,
+    () => getPatientPartnerOrdersAppAction(tenantSlug, activeProfileId!),
+  )
+
   const visits = historyRes?.data?.items || []
+  const partnerOrders = partnerOrdersRes?.data || []
 
   if (!activeProfileId) return null
 
@@ -195,6 +206,75 @@ export default function PatientHistoryPage() {
                 تظهر هنا نتائج كشوفاتك السابقة فور اعتمادها
               </p>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* رحلة الطلبات الخارجية */}
+      <div className='space-y-3'>
+        <div className='flex items-center gap-2 text-[10px] font-bold text-muted-foreground px-1 uppercase tracking-wider'>
+          <TestTube className='w-3 h-3' /> متابعة التحاليل والخدمات الخارجية
+        </div>
+
+        {partnerOrdersLoading ? (
+          <div className='space-y-2'>
+            <Skeleton className='h-20 w-full rounded-2xl' />
+            <Skeleton className='h-20 w-full rounded-2xl' />
+          </div>
+        ) : partnerOrders.length > 0 ? (
+          <div className='grid gap-2'>
+            {partnerOrders.map((item) => (
+              <div
+                key={item.id}
+                className='rounded-2xl border border-border/40 bg-background p-3 shadow-sm space-y-2'
+              >
+                <div className='flex items-start justify-between gap-2'>
+                  <div>
+                    <p className='text-sm font-bold text-foreground'>{item.partnerName}</p>
+                    <p className='text-[10px] text-muted-foreground'>
+                      {item.serviceName || 'خدمة خارجية'}
+                    </p>
+                  </div>
+                  <span className='text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-bold'>
+                    {item.status === 'Completed'
+                      ? 'مكتمل'
+                      : item.status === 'InProgress'
+                        ? 'جاري التنفيذ'
+                        : item.status === 'Accepted'
+                          ? 'مقبول'
+                          : item.status === 'Sent'
+                            ? 'مرسل'
+                            : item.status}
+                  </span>
+                </div>
+
+                <div className='grid gap-1 text-[10px] text-muted-foreground'>
+                  {item.scheduledAt && (
+                    <div className='flex items-center gap-1.5'>
+                      <Clock3 className='w-3 h-3' />
+                      موعد الحضور:{' '}
+                      {new Date(item.scheduledAt).toLocaleString('ar-EG', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  )}
+
+                  {item.resultSummary && (
+                    <div className='flex items-start gap-1.5 text-foreground'>
+                      <CircleCheck className='w-3 h-3 mt-0.5 text-emerald-600' />
+                      <span>{item.resultSummary}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className='rounded-2xl border border-dashed border-border/60 p-4 text-center text-[11px] text-muted-foreground'>
+            لا توجد طلبات خارجية مرتبطة بسجلك حالياً.
           </div>
         )}
       </div>
