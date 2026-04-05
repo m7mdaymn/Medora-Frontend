@@ -140,6 +140,10 @@ public class PartnerOrderDto
     public Guid? PartnerContractId { get; set; }
     public Guid BranchId { get; set; }
     public Guid VisitId { get; set; }
+    public Guid PatientId { get; set; }
+    public string PatientName { get; set; } = string.Empty;
+    public Guid DoctorId { get; set; }
+    public string DoctorName { get; set; } = string.Empty;
     public Guid? LabRequestId { get; set; }
     public Guid? PrescriptionId { get; set; }
     public Guid? PartnerServiceCatalogItemId { get; set; }

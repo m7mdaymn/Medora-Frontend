@@ -690,6 +690,9 @@ public class PartnerService : IPartnerService
             .Include(o => o.Partner)
             .Include(o => o.StatusHistory.Where(h => !h.IsDeleted))
             .Include(o => o.Visit)
+            .ThenInclude(v => v.Patient)
+            .Include(o => o.Visit)
+            .ThenInclude(v => v.Doctor)
             .Where(o => o.TenantId == tenantId && !o.IsDeleted)
             .AsQueryable();
 
@@ -1096,6 +1099,9 @@ public class PartnerService : IPartnerService
             .Include(o => o.PartnerServiceCatalogItem)
             .Include(o => o.StatusHistory.Where(h => !h.IsDeleted))
             .Include(o => o.Visit)
+            .ThenInclude(v => v.Patient)
+            .Include(o => o.Visit)
+            .ThenInclude(v => v.Doctor)
             .FirstOrDefaultAsync(o => o.TenantId == tenantId && !o.IsDeleted && o.Id == orderId);
     }
 
@@ -1368,6 +1374,10 @@ public class PartnerService : IPartnerService
             PartnerContractId = order.PartnerContractId,
             BranchId = order.BranchId,
             VisitId = order.VisitId,
+            PatientId = order.Visit.PatientId,
+            PatientName = order.Visit.Patient?.Name ?? string.Empty,
+            DoctorId = order.Visit.DoctorId,
+            DoctorName = order.Visit.Doctor?.Name ?? string.Empty,
             LabRequestId = order.LabRequestId,
             PrescriptionId = order.PrescriptionId,
             PartnerServiceCatalogItemId = order.PartnerServiceCatalogItemId,
