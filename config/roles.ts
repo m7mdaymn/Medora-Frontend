@@ -6,6 +6,8 @@ export const ROLES = {
   CLINIC_MANAGER: 'ClinicManager',
   RECEPTIONIST: 'Receptionist',
   DOCTOR: 'Doctor',
+  NURSE: 'Nurse',
+  CONTRACTOR: 'Contractor',
   PATIENT: 'Patient',
 } as const
 
@@ -36,6 +38,8 @@ export const ROLE_CONFIG: Record<
   [ROLES.CLINIC_OWNER]: { label: 'مالك العيادة', variant: 'default' },
   [ROLES.CLINIC_MANAGER]: { label: 'مدير عيادة', variant: 'default' },
   [ROLES.DOCTOR]: { label: 'طبيب', variant: 'default' },
+  [ROLES.NURSE]: { label: 'تمريض', variant: 'outline' },
+  [ROLES.CONTRACTOR]: { label: 'متعاقد خارجي', variant: 'secondary' },
   [ROLES.RECEPTIONIST]: { label: 'استقبال', variant: 'outline' },
   [ROLES.PATIENT]: { label: 'مريض', variant: 'outline' },
 }
