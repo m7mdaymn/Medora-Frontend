@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
+using EliteClinic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
@@ -10,10 +11,12 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 public class ReportsService : IReportsService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public ReportsService(EliteClinicDbContext context)
+    public ReportsService(EliteClinicDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<ApiResponse<ClinicOverviewReportDto>> GetClinicOverviewAsync(
@@ -29,12 +32,16 @@ public class ReportsService : IReportsService
 
         var start = fromDate.Date;
         var endExclusive = toDate.Date.AddDays(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
         var visitsQuery = _context.Visits
             .Include(v => v.Doctor)
             .Include(v => v.Invoice)
                 .ThenInclude(i => i!.Payments.Where(p => !p.IsDeleted))
             .Where(v => v.TenantId == tenantId && !v.IsDeleted && v.StartedAt >= start && v.StartedAt < endExclusive);
+
+        if (selectedBranchId.HasValue)
+            visitsQuery = visitsQuery.Where(v => v.BranchId == selectedBranchId.Value);
 
         if (doctorId.HasValue)
             visitsQuery = visitsQuery.Where(v => v.DoctorId == doctorId.Value);
@@ -56,6 +63,7 @@ public class ReportsService : IReportsService
 
         var expenses = await _context.Expenses
             .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= start && e.ExpenseDate < endExclusive)
+            .Where(e => !selectedBranchId.HasValue || e.BranchId == selectedBranchId.Value)
             .ToListAsync();
 
         var doctorIds = visits.Select(v => v.DoctorId).Distinct().ToList();
@@ -170,6 +178,7 @@ public class ReportsService : IReportsService
 
         var start = fromDate.Date;
         var endExclusive = toDate.Date.AddDays(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
         var query = _context.InvoiceLineItems
             .Include(li => li.Invoice)
@@ -181,6 +190,9 @@ public class ReportsService : IReportsService
                 && !li.Invoice.IsDeleted
                 && li.Invoice.CreatedAt >= start
                 && li.Invoice.CreatedAt < endExclusive);
+
+        if (selectedBranchId.HasValue)
+            query = query.Where(li => li.Invoice.BranchId == selectedBranchId.Value);
 
         if (doctorId.HasValue)
             query = query.Where(li => li.Invoice.DoctorId == doctorId.Value);
@@ -259,5 +271,16 @@ public class ReportsService : IReportsService
     {
         public decimal PaidAmount { get; set; }
         public decimal RefundedAmount { get; set; }
+    }
+
+    private Guid? GetSelectedBranchId(Guid tenantId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return null;
+
+        if (_tenantContext.TenantId != tenantId)
+            return null;
+
+        return _tenantContext.SelectedBranchId;
     }
 }

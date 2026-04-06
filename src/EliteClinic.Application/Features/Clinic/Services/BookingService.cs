@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
+using EliteClinic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
@@ -11,11 +12,13 @@ public class BookingService : IBookingService
 {
     private readonly EliteClinicDbContext _context;
     private readonly IMessageService _messageService;
+    private readonly ITenantContext _tenantContext;
 
-    public BookingService(EliteClinicDbContext context, IMessageService messageService)
+    public BookingService(EliteClinicDbContext context, IMessageService messageService, ITenantContext tenantContext)
     {
         _context = context;
         _messageService = messageService;
+        _tenantContext = tenantContext;
     }
 
     public async Task<ApiResponse<BookingDto>> CreateAsync(Guid tenantId, Guid patientUserId, CreateBookingRequest request)
@@ -95,12 +98,24 @@ public class BookingService : IBookingService
         if (existingBooking)
             return ApiResponse<BookingDto>.Error("A booking already exists for this date and time");
 
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+        var effectiveBranchId = request.BranchId ?? selectedBranchId;
+
+        if (effectiveBranchId.HasValue)
+        {
+            var branchExists = await _context.Branches
+                .AnyAsync(b => b.TenantId == tenantId && !b.IsDeleted && b.IsActive && b.Id == effectiveBranchId.Value);
+
+            if (!branchExists)
+                return ApiResponse<BookingDto>.Error("Selected branch is invalid or inactive");
+        }
+
         var booking = new Booking
         {
             TenantId = tenantId,
             PatientId = patient.Id,
             DoctorId = request.DoctorId,
-            BranchId = request.BranchId,
+            BranchId = effectiveBranchId,
             // Keep FK compatibility: only assign legacy DoctorServiceId when legacy service exists.
             DoctorServiceId = service?.Id,
             VisitType = request.VisitType,
@@ -242,6 +257,10 @@ public class BookingService : IBookingService
             .Include(b => b.DoctorService)
             .Where(b => b.TenantId == tenantId && !b.IsDeleted);
 
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+        if (selectedBranchId.HasValue)
+            query = query.Where(b => b.BranchId == selectedBranchId.Value);
+
         if (patientId.HasValue)
             query = query.Where(b => b.PatientId == patientId.Value);
         if (doctorId.HasValue)
@@ -288,11 +307,14 @@ public class BookingService : IBookingService
         if (patient.UserId != patientUserId)
             return ApiResponse<List<BookingDto>>.Error("Access denied to requested patient profile");
 
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+
         var bookings = await _context.Bookings
             .Include(b => b.Patient)
             .Include(b => b.Doctor)
             .Include(b => b.DoctorService)
             .Where(b => b.TenantId == tenantId && b.PatientId == patientId && !b.IsDeleted)
+            .Where(b => !selectedBranchId.HasValue || b.BranchId == selectedBranchId.Value)
             .OrderByDescending(b => b.BookingDate)
             .ThenByDescending(b => b.BookingTime)
             .ToListAsync();
@@ -304,11 +326,16 @@ public class BookingService : IBookingService
 
     private async Task<Booking?> GetBookingWithIncludes(Guid tenantId, Guid id)
     {
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+
         return await _context.Bookings
             .Include(b => b.Patient)
             .Include(b => b.Doctor)
             .Include(b => b.DoctorService)
-            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == tenantId && !b.IsDeleted);
+            .FirstOrDefaultAsync(b => b.Id == id
+                && b.TenantId == tenantId
+                && !b.IsDeleted
+                && (!selectedBranchId.HasValue || b.BranchId == selectedBranchId.Value));
     }
 
     private static BookingDto MapToDto(Booking b) => new()
@@ -354,7 +381,11 @@ public class BookingService : IBookingService
             return;
 
         var activeSession = await _context.QueueSessions
-            .FirstOrDefaultAsync(s => s.TenantId == tenantId && !s.IsDeleted && s.IsActive && s.DoctorId == doctorId);
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId
+                && !s.IsDeleted
+                && s.IsActive
+                && s.DoctorId == doctorId
+                && (!booking.BranchId.HasValue || s.BranchId == booking.BranchId));
         if (activeSession == null)
             return;
 
@@ -386,6 +417,17 @@ public class BookingService : IBookingService
         _context.QueueTickets.Add(ticket);
         booking.QueueTicketId = ticket.Id;
         await _context.SaveChangesAsync();
+    }
+
+    private Guid? GetSelectedBranchId(Guid tenantId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return null;
+
+        if (_tenantContext.TenantId != tenantId)
+            return null;
+
+        return _tenantContext.SelectedBranchId;
     }
 
     private async Task<bool> IsUserInRoleAsync(Guid userId, string roleName)

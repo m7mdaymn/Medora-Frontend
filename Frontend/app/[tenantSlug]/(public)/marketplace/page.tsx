@@ -2,12 +2,14 @@
 
 import {
   createPublicMarketplaceOrderAction,
+  getPublicLandingAction,
   getPublicMarketplaceItemsAction,
 } from '@/actions/public/landing'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IPublicMarketplaceItem } from '@/types/public'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -22,11 +24,22 @@ export default function PublicMarketplacePage() {
   const [customerName, setCustomerName] = useState('')
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('')
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { data: itemsRes, isLoading } = useSWR(['public-marketplace', tenantSlug], () =>
+  const { data: landingRes } = useSWR(['public-landing', tenantSlug], () =>
+    getPublicLandingAction(tenantSlug),
+  )
+
+  const branches = useMemo(() => landingRes?.data?.branches ?? [], [landingRes?.data?.branches])
+  const supportWhatsApp = landingRes?.data?.clinic?.supportWhatsAppNumber || ''
+
+  const effectiveBranchId = selectedBranchId || branches[0]?.id || ''
+
+  const { data: itemsRes, isLoading } = useSWR(['public-marketplace', tenantSlug, effectiveBranchId], () =>
     getPublicMarketplaceItemsAction(tenantSlug, {
+      branchId: effectiveBranchId || undefined,
       pageNumber: 1,
       pageSize: 100,
     }),
@@ -69,7 +82,10 @@ export default function PublicMarketplacePage() {
       return
     }
 
-    const branchId = selectedItems[0].branchId
+    if (!effectiveBranchId) {
+      toast.error('اختر الفرع أولاً')
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -77,7 +93,7 @@ export default function PublicMarketplacePage() {
         customerName: customerName.trim(),
         phone: phone.trim(),
         notes: notes.trim() || undefined,
-        branchId,
+        branchId: effectiveBranchId,
         items: selectedItems.map((item) => ({
           inventoryItemId: item.id,
           quantity: quantities[item.id] || 0,
@@ -89,7 +105,34 @@ export default function PublicMarketplacePage() {
         return
       }
 
-      toast.success('تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً')
+      const orderId = response.data?.id || ''
+      const branchName = branches.find((branch) => branch.id === effectiveBranchId)?.name || 'الفرع'
+      const waNumber = supportWhatsApp.replace(/[^\d]/g, '')
+
+      if (waNumber) {
+        const summaryLines = selectedItems.map((item) => {
+          const qty = quantities[item.id] || 0
+          return `- ${item.name} x ${qty}`
+        })
+
+        const message = [
+          `طلب متجر جديد من ${customerName.trim()}`,
+          `الفرع: ${branchName}`,
+          `الهاتف: ${phone.trim()}`,
+          `رقم الطلب: ${orderId}`,
+          `الإجمالي: ${total.toLocaleString('ar-EG')} ج.م`,
+          'الأصناف:',
+          ...summaryLines,
+          notes.trim() ? `ملاحظات: ${notes.trim()}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n')
+
+        const whatsappUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+      }
+
+      toast.success('تم إرسال الطلب بنجاح')
       setCustomerName('')
       setPhone('')
       setNotes('')
@@ -104,7 +147,7 @@ export default function PublicMarketplacePage() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold'>متجر المنتجات</h1>
-          <p className='text-sm text-muted-foreground'>اطلب مستلزماتك مباشرة من العيادة</p>
+          <p className='text-sm text-muted-foreground'>اطلب مستلزماتك مباشرة من الفرع المناسب</p>
         </div>
         <Link
           href={`/${tenantSlug}`}
@@ -113,6 +156,32 @@ export default function PublicMarketplacePage() {
           الرجوع للرئيسية
         </Link>
       </div>
+
+      {branches.length > 0 && (
+        <Card className='rounded-2xl border-border/50 p-4'>
+          <div className='space-y-2 max-w-sm'>
+            <Label>اختر الفرع</Label>
+            <Select
+              value={effectiveBranchId}
+              onValueChange={(value) => {
+                setSelectedBranchId(value)
+                setQuantities({})
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='اختر الفرع' />
+              </SelectTrigger>
+              <SelectContent>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
+      )}
 
       {isLoading ? (
         <Card className='rounded-2xl p-8 text-center text-muted-foreground'>جاري تحميل المنتجات...</Card>

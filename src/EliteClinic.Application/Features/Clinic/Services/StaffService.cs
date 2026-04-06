@@ -47,7 +47,7 @@ public class StaffService : IStaffService
         }
 
         // Determine role (default to ClinicManager)
-        var validRoles = new[] { "ClinicManager", "Receptionist", "Nurse" };
+        var validRoles = new[] { "ClinicManager", "BranchManager", "Receptionist", "Nurse", "Worker" };
         var role = !string.IsNullOrWhiteSpace(request.Role) && validRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase)
             ? request.Role
             : "ClinicManager";
@@ -72,7 +72,16 @@ public class StaffService : IStaffService
         _context.Employees.Add(employee);
         await _context.SaveChangesAsync();
 
-        return ApiResponse<StaffDto>.Created(MapToDto(employee, user), "Staff member created successfully");
+        var branchIds = await ResolveBranchIdsWithFallbackAsync(tenantId, request.BranchIds);
+        await ReplaceBranchAssignmentsAsync(tenantId, employee.Id, branchIds);
+
+        var createdEmployee = await _context.Employees
+            .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
+            .FirstAsync(e => e.Id == employee.Id);
+
+        return ApiResponse<StaffDto>.Created(MapToDto(createdEmployee, user), "Staff member created successfully");
     }
 
     public async Task<ApiResponse<StaffDto>> CreatePayrollOnlyWorkerAsync(Guid tenantId, CreatePayrollOnlyWorkerRequest request)
@@ -98,6 +107,14 @@ public class StaffService : IStaffService
         _context.Employees.Add(employee);
         await _context.SaveChangesAsync();
 
+        var branchIds = await ResolveBranchIdsWithFallbackAsync(tenantId, request.BranchIds);
+        await ReplaceBranchAssignmentsAsync(tenantId, employee.Id, branchIds);
+
+        var createdEmployee = await _context.Employees
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
+            .FirstAsync(e => e.Id == employee.Id);
+
         var syntheticUser = new ApplicationUser
         {
             Id = Guid.Empty,
@@ -105,13 +122,15 @@ public class StaffService : IStaffService
             DisplayName = employee.Name
         };
 
-        return ApiResponse<StaffDto>.Created(MapToDto(employee, syntheticUser), "Payroll-only worker created successfully");
+        return ApiResponse<StaffDto>.Created(MapToDto(createdEmployee, syntheticUser), "Payroll-only worker created successfully");
     }
 
     public async Task<ApiResponse<PagedResult<StaffDto>>> GetAllStaffAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)
     {
         var query = _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .Where(e => e.TenantId == tenantId)
             .AsQueryable();
 
@@ -139,6 +158,8 @@ public class StaffService : IStaffService
     {
         var employee = await _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
 
         if (employee == null)
@@ -151,6 +172,8 @@ public class StaffService : IStaffService
     {
         var employee = await _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
 
         if (employee == null)
@@ -162,6 +185,12 @@ public class StaffService : IStaffService
         employee.Salary = request.Salary;
         employee.HireDate = request.HireDate;
         employee.Notes = request.Notes;
+
+        if (request.BranchIds != null)
+        {
+            var branchIds = await ResolveBranchIdsWithFallbackAsync(tenantId, request.BranchIds);
+            await ReplaceBranchAssignmentsAsync(tenantId, employee.Id, branchIds);
+        }
 
         // Update ApplicationUser display name
         if (employee.User != null)
@@ -179,6 +208,8 @@ public class StaffService : IStaffService
     {
         var employee = await _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
 
         if (employee == null)
@@ -196,6 +227,12 @@ public class StaffService : IStaffService
         if (request.HireDate.HasValue) employee.HireDate = request.HireDate;
         if (request.Notes != null) employee.Notes = request.Notes;
 
+        if (request.BranchIds != null)
+        {
+            var branchIds = await ResolveBranchIdsWithFallbackAsync(tenantId, request.BranchIds);
+            await ReplaceBranchAssignmentsAsync(tenantId, employee.Id, branchIds);
+        }
+
         if (request.Name != null && employee.User != null)
             await _userManager.UpdateAsync(employee.User);
 
@@ -208,6 +245,8 @@ public class StaffService : IStaffService
     {
         var employee = await _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
 
         if (employee == null)
@@ -228,6 +267,8 @@ public class StaffService : IStaffService
     {
         var employee = await _context.Employees
             .Include(e => e.User)
+            .Include(e => e.BranchAssignments)
+                .ThenInclude(a => a.Branch)
             .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId);
 
         if (employee == null)
@@ -252,6 +293,59 @@ public class StaffService : IStaffService
         return ApiResponse<StaffDto>.Ok(MapToDto(employee, employee.User), "Staff member disabled successfully");
     }
 
+    private async Task<List<Guid>> ResolveBranchIdsWithFallbackAsync(Guid tenantId, List<Guid>? requestedBranchIds)
+    {
+        var requested = (requestedBranchIds ?? new List<Guid>())
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (requested.Count == 0)
+        {
+            return await _context.Branches
+                .Where(b => b.TenantId == tenantId && !b.IsDeleted && b.IsActive)
+                .OrderBy(b => b.Name)
+                .Select(b => b.Id)
+                .ToListAsync();
+        }
+
+        var validIds = await _context.Branches
+            .Where(b => b.TenantId == tenantId && !b.IsDeleted && b.IsActive && requested.Contains(b.Id))
+            .Select(b => b.Id)
+            .ToListAsync();
+
+        return validIds;
+    }
+
+    private async Task ReplaceBranchAssignmentsAsync(Guid tenantId, Guid employeeId, List<Guid> branchIds)
+    {
+        var existing = await _context.EmployeeBranchAssignments
+            .Where(a => a.TenantId == tenantId && !a.IsDeleted && a.EmployeeId == employeeId)
+            .ToListAsync();
+
+        foreach (var item in existing)
+        {
+            item.IsDeleted = true;
+            item.DeletedAt = DateTime.UtcNow;
+        }
+
+        var assignments = branchIds
+            .Distinct()
+            .Select((branchId, index) => new EmployeeBranchAssignment
+            {
+                TenantId = tenantId,
+                EmployeeId = employeeId,
+                BranchId = branchId,
+                IsPrimary = index == 0
+            })
+            .ToList();
+
+        if (assignments.Count > 0)
+            _context.EmployeeBranchAssignments.AddRange(assignments);
+
+        await _context.SaveChangesAsync();
+    }
+
     private static StaffDto MapToDto(Employee employee, ApplicationUser? user)
     {
         return new StaffDto
@@ -267,6 +361,23 @@ public class StaffService : IStaffService
             HireDate = employee.HireDate,
             Notes = employee.Notes,
             IsEnabled = employee.IsEnabled,
+            AssignedBranchIds = employee.BranchAssignments
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.IsPrimary)
+                .ThenBy(a => a.Branch.Name)
+                .Select(a => a.BranchId)
+                .ToList(),
+            AssignedBranches = employee.BranchAssignments
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.IsPrimary)
+                .ThenBy(a => a.Branch.Name)
+                .Select(a => new StaffBranchDto
+                {
+                    Id = a.BranchId,
+                    Name = a.Branch.Name,
+                    IsPrimary = a.IsPrimary
+                })
+                .ToList(),
             CreatedAt = employee.CreatedAt
         };
     }

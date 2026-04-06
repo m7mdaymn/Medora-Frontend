@@ -90,6 +90,106 @@ public class MediaService : IMediaService
         return ApiResponse<MediaFileDto>.Created(Map(media), "Clinic image uploaded successfully");
     }
 
+    public async Task<ApiResponse<MediaFileDto>> UploadClinicGalleryImageAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default)
+    {
+        var settings = await _context.ClinicSettings.FirstOrDefaultAsync(cancellationToken);
+        if (settings == null)
+            return ApiResponse<MediaFileDto>.Error("Clinic settings not found");
+
+        var validationError = Validate(file);
+        if (validationError != null)
+            return ApiResponse<MediaFileDto>.Error(validationError);
+
+        var saved = await _fileStorage.SaveImageAsync(tenantId, "clinic-gallery", file, cancellationToken);
+
+        var media = new MediaFile
+        {
+            TenantId = tenantId,
+            Category = "ClinicGallery",
+            EntityType = "ClinicSettings",
+            EntityId = settings.Id,
+            OriginalFileName = Path.GetFileName(file.FileName),
+            StoredFileName = saved.StoredFileName,
+            RelativePath = saved.RelativePath,
+            PublicUrl = saved.PublicUrl,
+            ContentType = file.ContentType,
+            FileSizeBytes = file.Length,
+            IsActive = true
+        };
+
+        _context.MediaFiles.Add(media);
+
+        if (string.IsNullOrWhiteSpace(settings.ImgUrl))
+            settings.ImgUrl = saved.PublicUrl;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return ApiResponse<MediaFileDto>.Created(Map(media), "Clinic gallery image uploaded successfully");
+    }
+
+    public async Task<ApiResponse<List<MediaFileDto>>> GetClinicGalleryAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var settings = await _context.ClinicSettings.FirstOrDefaultAsync(cancellationToken);
+        if (settings == null)
+            return ApiResponse<List<MediaFileDto>>.Error("Clinic settings not found");
+
+        var files = await _context.MediaFiles
+            .Where(m => m.TenantId == tenantId
+                && !m.IsDeleted
+                && m.IsActive
+                && m.Category == "ClinicGallery"
+                && m.EntityType == "ClinicSettings"
+                && m.EntityId == settings.Id)
+            .OrderByDescending(m => m.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return ApiResponse<List<MediaFileDto>>.Ok(files.Select(Map).ToList(), "Clinic gallery retrieved successfully");
+    }
+
+    public async Task<ApiResponse> DeleteClinicGalleryImageAsync(Guid tenantId, Guid mediaId, CancellationToken cancellationToken = default)
+    {
+        var settings = await _context.ClinicSettings.FirstOrDefaultAsync(cancellationToken);
+        if (settings == null)
+            return ApiResponse.Error("Clinic settings not found");
+
+        var media = await _context.MediaFiles
+            .FirstOrDefaultAsync(m => m.TenantId == tenantId
+                && !m.IsDeleted
+                && m.Category == "ClinicGallery"
+                && m.EntityType == "ClinicSettings"
+                && m.Id == mediaId,
+                cancellationToken);
+
+        if (media == null)
+            return ApiResponse.Error("Gallery image not found");
+
+        media.IsDeleted = true;
+        media.DeletedAt = DateTime.UtcNow;
+        media.IsActive = false;
+
+        await _fileStorage.DeleteAsync(media.RelativePath, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(settings.ImgUrl) && string.Equals(settings.ImgUrl, media.PublicUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            var replacement = await _context.MediaFiles
+                .Where(m => m.TenantId == tenantId
+                    && !m.IsDeleted
+                    && m.IsActive
+                    && m.Id != mediaId
+                    && m.Category == "ClinicGallery"
+                    && m.EntityType == "ClinicSettings"
+                    && m.EntityId == settings.Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => m.PublicUrl)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            settings.ImgUrl = replacement;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return ApiResponse.Ok("Gallery image deleted successfully");
+    }
+
     public async Task<ApiResponse<MediaFileDto>> UploadDoctorPhotoAsync(Guid tenantId, Guid doctorId, IFormFile file, CancellationToken cancellationToken = default)
     {
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == doctorId, cancellationToken);

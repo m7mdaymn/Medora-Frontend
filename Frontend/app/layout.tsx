@@ -3,19 +3,19 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { DirectionProvider } from '@/components/ui/direction'
 import { Toaster } from '@/components/ui/sonner'
 import type { Metadata, Viewport } from 'next'
-import { Cairo, Tajawal } from 'next/font/google'
+import { Tajawal, Vazirmatn } from 'next/font/google'
 import './globals.css'
 
-const cairo = Cairo({
+const cairo = Vazirmatn({
   subsets: ['arabic'],
-  variable: '--font-alex',
+  variable: '--font-sans',
   display: 'swap',
-  weight: ['200', '300', '400', '700', '800', '900', '600'],
+  weight: ['200', '300', '400', '700', '600'],
 })
 
 const tajawal = Tajawal({
   subsets: ['arabic'],
-  variable: '--font-zain',
+  variable: '--font-serif',
   display: 'swap',
   weight: ['200', '300', '400', '700', '800', '900'],
 })

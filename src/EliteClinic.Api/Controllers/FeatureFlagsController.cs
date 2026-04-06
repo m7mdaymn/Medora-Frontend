@@ -7,7 +7,7 @@ namespace EliteClinic.Api.Controllers;
 
 [ApiController]
 [Route("api/platform/feature-flags")]
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,Worker")]
 public class FeatureFlagsController : ControllerBase
 {
     private readonly IFeatureFlagService _featureFlagService;

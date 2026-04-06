@@ -19,7 +19,7 @@ async function getClinicData(tenantSlug: string): Promise<IPublicClinic | null> 
 
   if (!response.ok) {
     if (response.status === 404) return null
-    throw new Error('Failed to fetch clinic data') // الـ Error Boundary هيمسكه لو موجود
+    throw new Error('Failed to fetch clinic data') // ╪º┘ä┘Ç Error Boundary ┘ç┘è┘à╪│┘â┘ç ┘ä┘ê ┘à┘ê╪¼┘ê╪»
   }
 
   const result = (await response.json()) as BaseApiResponse<IPublicClinic>

@@ -95,12 +95,14 @@ public class ClinicSettingsController : ControllerBase
     [HttpGet("payment-options")]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ClinicPaymentOptionsDto>), 200)]
-    public async Task<ActionResult<ApiResponse<ClinicPaymentOptionsDto>>> GetPaymentOptions([FromQuery] bool activeOnly = false)
+    public async Task<ActionResult<ApiResponse<ClinicPaymentOptionsDto>>> GetPaymentOptions(
+        [FromQuery] bool activeOnly = false,
+        [FromQuery] Guid? branchId = null)
     {
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<ClinicPaymentOptionsDto>.Error("Tenant context not resolved"));
 
-        var result = await _settingsService.GetPaymentOptionsAsync(_tenantContext.TenantId, activeOnly);
+        var result = await _settingsService.GetPaymentOptionsAsync(_tenantContext.TenantId, activeOnly, branchId);
         if (!result.Success)
             return BadRequest(result);
 

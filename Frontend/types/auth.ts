@@ -8,7 +8,7 @@ export interface UserProfile {
   tenantId: string | null
   tenantSlug: string | null
   permissions: string[]
-  profiles: Array<{ id: string; name: string; isDefault: boolean }> // للمرضى فقط
+  profiles: Array<{ id: string; name: string; isDefault: boolean }> 
 }
 
 export interface ILogin {

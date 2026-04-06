@@ -52,6 +52,22 @@ public class PartnerOrdersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("visits/{visitId:guid}")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerOrderDto>>> CreateVisitOrder(Guid visitId, [FromBody] CreateVisitPartnerOrderRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerOrderDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.CreateVisitOrderAsync(_tenantContext.TenantId, visitId, GetCurrentUserId(), request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return StatusCode(201, result);
+    }
+
     [HttpPost("{orderId:guid}/status")]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 200)]
@@ -62,6 +78,22 @@ public class PartnerOrdersController : ControllerBase
             return BadRequest(ApiResponse<PartnerOrderDto>.Error("Tenant context not resolved"));
 
         var result = await _partnerService.UpdateOrderStatusAsync(_tenantContext.TenantId, GetCurrentUserId(), orderId, request);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{orderId:guid}/comment")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,Nurse,Contractor,SuperAdmin")]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<PartnerOrderDto>), 400)]
+    public async Task<ActionResult<ApiResponse<PartnerOrderDto>>> AddComment(Guid orderId, [FromBody] AddPartnerOrderCommentRequest request)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return BadRequest(ApiResponse<PartnerOrderDto>.Error("Tenant context not resolved"));
+
+        var result = await _partnerService.AddOrderCommentAsync(_tenantContext.TenantId, GetCurrentUserId(), orderId, request);
         if (!result.Success)
             return BadRequest(result);
 

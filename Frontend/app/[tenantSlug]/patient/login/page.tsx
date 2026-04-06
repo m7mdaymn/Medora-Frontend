@@ -1,133 +1,87 @@
-'use client'
+import { fetchApi } from '@/lib/fetchApi'
+import { ClinicImage } from '@/components/shared/clinic-image'
+import { IPublicClinic } from '../../../../types/public'
+import { PatientLoginForm } from './patient-login-form'
 
-import { valibotResolver } from '@hookform/resolvers/valibot'
-import { ArrowRight, KeyRound, Loader2, UserRound } from 'lucide-react'
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
+export default async function PatientLoginPage({
+  params,
+}: {
+  params: Promise<{ tenantSlug: string }>
+}) {
+  const { tenantSlug } = await params
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { usePatientAuthStore } from '@/store/usePatientAuthStore'
-import { LoginInput, LoginSchema } from '@/validation/login'
-import { patientLoginAction } from '../../../../actions/auth/patientLogin'
-
-export default function PatientLoginPage() {
-  const { tenantSlug } = useParams()
-  const [isLoading, setIsLoading] = useState(false)
-
-  const form = useForm<LoginInput>({
-    resolver: valibotResolver(LoginSchema),
-    defaultValues: { username: '', password: '' },
-  })
-
-  const onSubmit = async (values: LoginInput) => {
-    setIsLoading(true)
-    try {
-      const result = await patientLoginAction(values, tenantSlug as string)
-      if (!result.success || !result.data) throw new Error(result.message)
-
-      usePatientAuthStore.getState().setPatientAuth(tenantSlug as string, result.data)
-
-      toast.success('تم تسجيل الدخول بنجاح')
-      window.location.href = `/${tenantSlug}/patient`
-    } catch (error) {
-      if (error instanceof Error) toast.error(error.message || 'خطأ في الدخول')
-      setIsLoading(false)
-    }
-  }
+  let clinic: IPublicClinic | null = null
+  try {
+    const response = await fetchApi<IPublicClinic>(`/api/public/${tenantSlug}/clinic`, {
+      cache: 'no-store',
+    })
+    clinic = response?.data || null
+  } catch {}
 
   return (
-    <div className='min-h-screen flex items-center justify-center p-4 relative' dir='rtl'>
-      {/* زرار الرجوع الطاير - تم التأكد من وجود Link فقط كإبن مباشر */}
-      <Button
-        variant='ghost'
-        className='absolute top-4 right-4 md:top-8 md:right-8 text-muted-foreground hover:text-foreground'
-        asChild
-      >
-        <Link href={`/${tenantSlug}`}>
-          <ArrowRight className='ml-2 h-4 w-4' />
-          العودة للرئيسية
-        </Link>
-      </Button>
+    <div className='min-h-screen w-full grid grid-cols-1 lg:grid-cols-2' dir='rtl'>
+      {/* 1. الجانب الأيمن (الفورم) */}
+      <div className='flex flex-col justify-center p-6 sm:p-12 bg-background relative'>
+        <div className='w-full max-w-100 mx-auto'>
+          <PatientLoginForm
+            tenantSlug={tenantSlug}
+            clinicName={clinic?.clinicName}
+            logoUrl={clinic?.logoUrl as string}
+          />
+        </div>
+      </div>
 
-      <Card className='w-full max-w-md shadow-xl'>
-        <CardHeader className='space-y-1 text-center pb-8'>
-          <CardTitle className='text-2xl font-bold tracking-tight'>بوابة المرضى</CardTitle>
-          <CardDescription className='uppercase tracking-widest text-xs font-semibold text-primary'>
-            {tenantSlug} CLINIC
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-              <FormField
-                control={form.control}
-                name='username'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>اسم المستخدم</FormLabel>
-                    <FormControl>
-                      <div className='relative'>
-                        <UserRound className='absolute right-3 top-2.5 h-4 w-4 text-muted-foreground' />
-                        <Input
-                          placeholder='رقم الهاتف أو اسم المستخدم'
-                          className='pr-9 text-left'
-                          dir='ltr'
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>كلمة المرور</FormLabel>
-                    <FormControl>
-                      <div className='relative'>
-                        <KeyRound className='absolute right-3 top-2.5 h-4 w-4 text-muted-foreground' />
-                        <Input
-                          type='password'
-                          placeholder='••••••••'
-                          className='pr-9 text-left'
-                          dir='ltr'
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* زرار الدخول (لا نستخدم فيه asChild لأنه يحتوي على أيقونة التحميل والنص معاً) */}
-              <Button
-                type='submit'
-                className='w-full mt-4 h-12 text-md font-bold'
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader2 className='ml-2 h-4 w-4 animate-spin' /> : null}
-                دخول
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      {/* 2. الجانب الأيسر (صورة العيادة والبراندينج) */}
+      <div className='hidden lg:flex flex-col justify-between p-12 bg-muted/30 border-r border-border/50 relative overflow-hidden'>
+        <div className='absolute inset-0 opacity-40'>
+          {clinic?.imgUrl ? (
+            <ClinicImage
+              src={clinic.imgUrl}
+              alt='Cover'
+              fill
+              className='object-cover'
+              fallbackType='general'
+            />
+          ) : (
+            <div
+              className='w-full h-full'
+              style={{
+                background:
+                  'radial-gradient(circle at top left, var(--primary) 0%, transparent 40%)',
+              }}
+            />
+          )}
+        </div>
+
+        <div className='relative z-10 flex items-center gap-3'>
+          {clinic?.logoUrl ? (
+            <ClinicImage
+              src={clinic.logoUrl}
+              alt='Clinic Logo'
+              width={40}
+              height={40}
+              className='rounded-md object-contain bg-white p-1 shadow-sm'
+              fallbackType='logo'
+            />
+          ) : (
+            <div className='w-10 h-10 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl'>
+              {clinic?.clinicName?.charAt(0) || tenantSlug.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className='font-bold text-xl tracking-tight'>
+            {clinic?.clinicName || 'العيادة'}
+          </span>
+        </div>
+
+        <div className='relative z-10 space-y-4 max-w-sm'>
+          <h1 className='text-4xl font-black tracking-tight text-foreground'>
+            بوابة المرضى الإلكترونية.
+          </h1>
+          <p className='text-lg font-medium text-muted-foreground'>
+            سجل دخولك لحجز المواعيد، متابعة سجلاتك الطبية، والاطلاع على نتائج الفحوصات والروشتات.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

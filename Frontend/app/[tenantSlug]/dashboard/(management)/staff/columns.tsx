@@ -1,5 +1,7 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
+import { ROLE_CONFIG } from '@/config/roles'
 import { IStaff } from '@/types/staff'
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
 import { Phone, User } from 'lucide-react'
@@ -35,12 +37,18 @@ export const columns = [
   // الوظيفة
   columnHelper.accessor('role', {
     header: 'الوظيفة',
-    cell: (info) =>
-      info.getValue() === 'ClinicManager'
-        ? 'مدير عيادة'
-        : info.getValue() === 'Receptionist'
-          ? 'إستقبال'
-          : 'أخرى',
+    cell: (info) => {
+      const role = info.getValue()
+      const roleConfig = ROLE_CONFIG[role]
+
+      return <Badge variant={roleConfig?.variant || 'outline'}>{roleConfig?.label || role}</Badge>
+    },
+  }),
+
+  // نوع العامل
+  columnHelper.accessor('workerMode', {
+    header: 'نوع العامل',
+    cell: (info) => (info.getValue() === 'PayrollOnly' ? 'بدون حساب' : 'بحساب دخول'),
   }),
 
   // الهاتف
@@ -52,6 +60,29 @@ export const columns = [
         {info.getValue() ? <span>{info.getValue()}</span> : <span>لا يوجد رقم</span>}
       </div>
     ),
+  }),
+
+  // الفروع
+  columnHelper.display({
+    id: 'assignedBranches',
+    header: 'الفروع',
+    cell: ({ row }) => {
+      const branches = row.original.assignedBranches || []
+
+      if (!branches.length) {
+        return <span className='text-sm text-muted-foreground'>غير محدد</span>
+      }
+
+      const primaryBranch = branches.find((branch) => branch.isPrimary) || branches[0]
+      const extraCount = Math.max(branches.length - 1, 0)
+
+      return (
+        <div className='flex items-center gap-2'>
+          <Badge variant='outline'>{primaryBranch.name}</Badge>
+          {extraCount > 0 ? <span className='text-xs text-muted-foreground'>+{extraCount}</span> : null}
+        </div>
+      )
+    },
   }),
 
   // الحالة

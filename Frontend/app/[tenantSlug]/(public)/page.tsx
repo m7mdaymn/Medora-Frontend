@@ -52,6 +52,7 @@ export default async function Page({ params }: PageProps) {
   const paymentMethodsCount =
     paymentOptionsRes.data?.methods.length || landingRes.data?.paymentMethods.length || 0
   const productsCount = landingRes.data?.featuredProducts.length || 0
+  const branches = landingRes.data?.branches || []
 
   const doctorsResponseLike = {
     data: mergedDoctors,
@@ -71,8 +72,16 @@ export default async function Page({ params }: PageProps) {
     return notFound()
   }
 
+  const galleryImages =
+    clinic.galleryImageUrls && clinic.galleryImageUrls.length > 0
+      ? clinic.galleryImageUrls
+      : clinic.imgUrl
+        ? [clinic.imgUrl]
+        : []
+
   return (
-    <main className='relative flex min-h-screen w-full flex-col '>
+    <main className='relative flex min-h-screen w-full flex-col bg-background'>
+      <div className='pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,hsl(var(--primary)/0.12),transparent_36%),radial-gradient(circle_at_85%_20%,hsl(var(--primary)/0.08),transparent_28%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--muted)/0.25)_40%,hsl(var(--background))_100%)]' />
       <Navbar clinic={clinic} tenantSlug={tenantSlug} />
       <Hero clinic={clinic} tenantSlug={tenantSlug} />
 
@@ -80,7 +89,8 @@ export default async function Page({ params }: PageProps) {
         <div className='rounded-2xl border border-border/40 bg-background/60 p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3'>
           <div className='text-sm text-muted-foreground'>
             الخدمات المنشورة: <span className='font-bold text-foreground'>{servicesCount}</span> •
-            المنتجات: <span className='font-bold text-foreground'>{productsCount}</span> • وسائل الدفع:{' '}
+            المنتجات: <span className='font-bold text-foreground'>{productsCount}</span> • الفروع:{' '}
+            <span className='font-bold text-foreground'>{branches.length}</span> • وسائل الدفع:{' '}
             <span className='font-bold text-foreground'>{paymentMethodsCount}</span>
           </div>
           <div className='flex flex-wrap gap-2'>
@@ -96,6 +106,50 @@ export default async function Page({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      {galleryImages.length > 0 && (
+        <section className='container mx-auto px-4 md:px-6 py-3'>
+          <div className='rounded-2xl border border-border/40 bg-background/60 p-4'>
+            <p className='text-sm font-semibold mb-3'>صور العيادة</p>
+            <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+              {galleryImages.slice(0, 8).map((imageUrl, index) => (
+                <div
+                  key={`${imageUrl}-${index}`}
+                  className='relative h-28 overflow-hidden rounded-xl border border-border/50 bg-muted/20'
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageUrl} alt={`clinic-gallery-${index + 1}`} className='h-full w-full object-cover' />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {branches.length > 0 && (
+        <section className='container mx-auto px-4 md:px-6 py-3'>
+          <div className='rounded-2xl border border-border/40 bg-background/60 p-4 md:p-5 space-y-3'>
+            <h2 className='text-lg font-bold'>فروع العيادة</h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
+              {branches.map((branch) => (
+                <div key={branch.id} className='rounded-xl border border-border/50 p-4 bg-muted/10 space-y-2'>
+                  <p className='font-semibold'>{branch.name}</p>
+                  {branch.address && <p className='text-sm text-muted-foreground'>{branch.address}</p>}
+                  {branch.phone && <p className='text-sm text-muted-foreground'>{branch.phone}</p>}
+                  <div className='pt-1'>
+                    <Link
+                      href={`/${tenantSlug}/payment-options?branchId=${branch.id}`}
+                      className='text-sm font-medium text-primary underline-offset-4 hover:underline'
+                    >
+                      عرض وسائل الدفع لهذا الفرع
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* قسم عن العيادة */}
       <AboutClinicSection clinic={clinic} />

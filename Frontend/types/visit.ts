@@ -163,6 +163,15 @@ export interface IVisit {
   createdAt: string
 }
 
+export interface IStaleVisit {
+  visitId: string
+  patientName: string
+  doctorName: string
+  startedAt: string
+  ageHours: number
+  queueTicketId?: string | null
+}
+
 export interface DoctorVisitFieldConfig {
   bloodPressure?: boolean
   heartRate?: boolean

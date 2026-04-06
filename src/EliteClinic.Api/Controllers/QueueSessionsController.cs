@@ -77,7 +77,7 @@ public class QueueSessionsController : ControllerBase
             return BadRequest(ApiResponse<int>.Error("Tenant context not resolved"));
 
         var targetDate = date ?? DateTime.UtcNow.Date;
-        var result = await _queueService.CloseAllSessionsForDateAsync(_tenantContext.TenantId, targetDate);
+        var result = await _queueService.CloseAllSessionsForDateAsync(_tenantContext.TenantId, targetDate, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -96,7 +96,7 @@ public class QueueSessionsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<PagedResult<QueueSessionDto>>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.GetSessionsAsync(_tenantContext.TenantId, pageNumber, pageSize);
+        var result = await _queueService.GetSessionsAsync(_tenantContext.TenantId, GetCurrentUserId(), pageNumber, pageSize);
         return Ok(result);
     }
 

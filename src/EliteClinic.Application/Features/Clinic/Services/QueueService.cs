@@ -12,15 +12,18 @@ public class QueueService : IQueueService
     private readonly EliteClinicDbContext _context;
     private readonly IMessageService _messageService;
     private readonly IInvoiceNumberService _invoiceNumberService;
+    private readonly IBranchAccessService _branchAccessService;
 
     public QueueService(
         EliteClinicDbContext context,
         IMessageService messageService,
-        IInvoiceNumberService invoiceNumberService)
+        IInvoiceNumberService invoiceNumberService,
+        IBranchAccessService branchAccessService)
     {
         _context = context;
         _messageService = messageService;
         _invoiceNumberService = invoiceNumberService;
+        _branchAccessService = branchAccessService;
     }
 
     // ── Sessions ───────────────────────────────────────────────────
@@ -35,6 +38,10 @@ public class QueueService : IQueueService
 
             request.DoctorId = callerDoctor.Id;
         }
+
+        var openSessionBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, request.BranchId);
+        if (!openSessionBranchAccess.Success)
+            return ApiResponse<QueueSessionDto>.Error("Access denied for requested branch");
 
         // Validate doctor exists if provided
         if (request.DoctorId.HasValue)
@@ -136,6 +143,10 @@ public class QueueService : IQueueService
         if (session == null)
             return ApiResponse<QueueSessionDto>.Error("Session not found");
 
+        var closeSessionBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, session.BranchId);
+        if (!closeSessionBranchAccess.Success)
+            return ApiResponse<QueueSessionDto>.Error("Session not found");
+
         if (!session.IsActive)
             return ApiResponse<QueueSessionDto>.Error("Session is already closed");
 
@@ -173,13 +184,22 @@ public class QueueService : IQueueService
             : "Session closed. Remaining tickets marked as no-show and auto-refunded where applicable.");
     }
 
-    public async Task<ApiResponse<int>> CloseAllSessionsForDateAsync(Guid tenantId, DateTime date)
+    public async Task<ApiResponse<int>> CloseAllSessionsForDateAsync(Guid tenantId, DateTime date, Guid callerUserId)
     {
         var targetDate = date.Date;
-        var sessions = await _context.QueueSessions
+        var scopedBranchIds = await _branchAccessService.GetScopedBranchIdsAsync(tenantId, callerUserId);
+        var sessionsQuery = _context.QueueSessions
             .Include(s => s.Tickets.Where(t => !t.IsDeleted))
             .Where(s => s.TenantId == tenantId && s.IsActive && !s.IsDeleted && s.StartedAt.Date <= targetDate)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (scopedBranchIds != null)
+        {
+            var branchIds = scopedBranchIds.ToList();
+            sessionsQuery = sessionsQuery.Where(s => !s.BranchId.HasValue || branchIds.Contains(s.BranchId.Value));
+        }
+
+        var sessions = await sessionsQuery.ToListAsync();
 
         if (!sessions.Any())
             return ApiResponse<int>.Ok(0, "No active sessions found for the given date");
@@ -199,13 +219,23 @@ public class QueueService : IQueueService
         return ApiResponse<int>.Ok(sessions.Count, $"Closed {sessions.Count} session(s). Remaining tickets marked as no-show and auto-refunded where applicable.");
     }
 
-    public async Task<ApiResponse<PagedResult<QueueSessionDto>>> GetSessionsAsync(Guid tenantId, int pageNumber = 1, int pageSize = 10)
+    public async Task<ApiResponse<PagedResult<QueueSessionDto>>> GetSessionsAsync(Guid tenantId, Guid callerUserId, int pageNumber = 1, int pageSize = 10)
     {
+        var scopedBranchIds = await _branchAccessService.GetScopedBranchIdsAsync(tenantId, callerUserId);
+
         var query = _context.QueueSessions
             .Include(s => s.Doctor)
             .Include(s => s.Tickets.Where(t => !t.IsDeleted))
             .Where(s => s.TenantId == tenantId)
-            .OrderByDescending(s => s.StartedAt);
+            .AsQueryable();
+
+        if (scopedBranchIds != null)
+        {
+            var branchIds = scopedBranchIds.ToList();
+            query = query.Where(s => !s.BranchId.HasValue || branchIds.Contains(s.BranchId.Value));
+        }
+
+        query = query.OrderByDescending(s => s.StartedAt);
 
         var totalCount = await query.CountAsync();
         var sessions = await query
@@ -230,6 +260,10 @@ public class QueueService : IQueueService
         if (session == null)
             return ApiResponse<QueueSessionDto>.Error("Session not found");
 
+        var sessionBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, session.BranchId);
+        if (!sessionBranchAccess.Success)
+            return ApiResponse<QueueSessionDto>.Error("Session not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && session.DoctorId != callerDoctor.Id)
             return ApiResponse<QueueSessionDto>.Error("Doctors can only access their own sessions");
@@ -239,7 +273,7 @@ public class QueueService : IQueueService
 
     // ── Tickets ────────────────────────────────────────────────────
 
-    public async Task<ApiResponse<QueueTicketDto>> IssueTicketAsync(Guid tenantId, CreateQueueTicketRequest request)
+    public async Task<ApiResponse<QueueTicketDto>> IssueTicketAsync(Guid tenantId, CreateQueueTicketRequest request, Guid callerUserId)
     {
         var session = await _context.QueueSessions
             .FirstOrDefaultAsync(s => s.Id == request.SessionId && s.TenantId == tenantId && !s.IsDeleted);
@@ -249,6 +283,11 @@ public class QueueService : IQueueService
 
         if (!session.IsActive)
             return ApiResponse<QueueTicketDto>.Error("Session is closed");
+
+        var effectiveBranchId = request.BranchId ?? session.BranchId;
+        var issueTicketBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, effectiveBranchId);
+        if (!issueTicketBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Session not found");
 
         if (session.DoctorId.HasValue && session.DoctorId.Value != request.DoctorId)
             return ApiResponse<QueueTicketDto>.Error("Selected doctor does not match this active shift session");
@@ -318,7 +357,7 @@ public class QueueService : IQueueService
         return ApiResponse<QueueTicketDto>.Created(MapTicketToDto(saved!), "Ticket issued successfully");
     }
 
-    public async Task<ApiResponse<QueueTicketDto>> IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request)
+    public async Task<ApiResponse<QueueTicketDto>> IssueTicketWithPaymentAsync(Guid tenantId, CreateQueueTicketWithPaymentRequest request, Guid callerUserId)
     {
         // Validate session
         var session = await _context.QueueSessions
@@ -327,6 +366,11 @@ public class QueueService : IQueueService
             return ApiResponse<QueueTicketDto>.Error("Session not found");
         if (!session.IsActive)
             return ApiResponse<QueueTicketDto>.Error("Session is closed");
+
+        var effectiveBranchId = request.BranchId ?? session.BranchId;
+        var issueWithPaymentBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, effectiveBranchId);
+        if (!issueWithPaymentBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Session not found");
 
         if (session.DoctorId.HasValue && session.DoctorId.Value != request.DoctorId)
             return ApiResponse<QueueTicketDto>.Error("Selected doctor does not match this active shift session");
@@ -549,6 +593,10 @@ public class QueueService : IQueueService
         if (ticket == null)
             return ApiResponse<QueueTicketDto>.Error("Ticket not found");
 
+        var callBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!callBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && ticket.DoctorId != callerDoctor.Id)
             return ApiResponse<QueueTicketDto>.Error("Doctors can only manage their own queue tickets");
@@ -579,6 +627,10 @@ public class QueueService : IQueueService
     {
         var ticket = await GetTicketWithIncludes(tenantId, ticketId);
         if (ticket == null)
+            return ApiResponse<StartVisitResultDto>.Error("Ticket not found");
+
+        var startVisitBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!startVisitBranchAccess.Success)
             return ApiResponse<StartVisitResultDto>.Error("Ticket not found");
 
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
@@ -651,6 +703,10 @@ public class QueueService : IQueueService
         if (ticket == null)
             return ApiResponse<QueueTicketDto>.Error("Ticket not found");
 
+        var finishBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!finishBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && ticket.DoctorId != callerDoctor.Id)
             return ApiResponse<QueueTicketDto>.Error("Doctors can only finish their own queue tickets");
@@ -696,6 +752,10 @@ public class QueueService : IQueueService
         if (ticket == null)
             return ApiResponse<QueueTicketDto>.Error("Ticket not found");
 
+        var skipBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!skipBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && ticket.DoctorId != callerDoctor.Id)
             return ApiResponse<QueueTicketDto>.Error("Doctors can only manage their own queue tickets");
@@ -724,6 +784,10 @@ public class QueueService : IQueueService
     {
         var ticket = await GetTicketWithIncludes(tenantId, ticketId);
         if (ticket == null)
+            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+
+        var cancelBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!cancelBranchAccess.Success)
             return ApiResponse<QueueTicketDto>.Error("Ticket not found");
 
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
@@ -783,6 +847,10 @@ public class QueueService : IQueueService
         if (ticket == null)
             return ApiResponse<QueueTicketDto>.Error("Ticket not found");
 
+        var urgentBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, ticket.BranchId);
+        if (!urgentBranchAccess.Success)
+            return ApiResponse<QueueTicketDto>.Error("Ticket not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && ticket.DoctorId != callerDoctor.Id)
             return ApiResponse<QueueTicketDto>.Error("Doctors can only manage their own queue tickets");
@@ -811,6 +879,10 @@ public class QueueService : IQueueService
         if (session == null)
             return ApiResponse<List<QueueTicketDto>>.Error("Session not found");
 
+        var sessionBranchAccess = await EnsureBranchAccessAsync(tenantId, callerUserId, session.BranchId);
+        if (!sessionBranchAccess.Success)
+            return ApiResponse<List<QueueTicketDto>>.Error("Session not found");
+
         var callerDoctor = await ResolveCallerDoctorAsync(tenantId, callerUserId);
         if (callerDoctor != null && session.DoctorId != callerDoctor.Id)
             return ApiResponse<List<QueueTicketDto>>.Error("Doctors can only access their own sessions");
@@ -834,10 +906,12 @@ public class QueueService : IQueueService
 
     // ── Views ──────────────────────────────────────────────────────
 
-    public async Task<ApiResponse<QueueBoardDto>> GetBoardAsync(Guid tenantId)
+    public async Task<ApiResponse<QueueBoardDto>> GetBoardAsync(Guid tenantId, Guid callerUserId)
     {
         var today = DateTime.UtcNow.Date;
-        var sessions = await _context.QueueSessions
+        var scopedBranchIds = await _branchAccessService.GetScopedBranchIdsAsync(tenantId, callerUserId);
+
+        var sessionsQuery = _context.QueueSessions
             .Include(s => s.Doctor)
             .Include(s => s.Tickets.Where(t => !t.IsDeleted))
                 .ThenInclude(t => t.Patient)
@@ -846,6 +920,15 @@ public class QueueService : IQueueService
             .Include(s => s.Tickets.Where(t => !t.IsDeleted))
                 .ThenInclude(t => t.DoctorService)
             .Where(s => s.TenantId == tenantId && !s.IsDeleted && s.StartedAt.Date == today)
+            .AsQueryable();
+
+        if (scopedBranchIds != null)
+        {
+            var branchIds = scopedBranchIds.ToList();
+            sessionsQuery = sessionsQuery.Where(s => !s.BranchId.HasValue || branchIds.Contains(s.BranchId.Value));
+        }
+
+        var sessions = await sessionsQuery
             .OrderByDescending(s => s.IsActive)
             .ThenByDescending(s => s.StartedAt)
             .ToListAsync();
@@ -979,6 +1062,14 @@ public class QueueService : IQueueService
     }
 
     // ── Helpers ────────────────────────────────────────────────────
+
+    private async Task<ApiResponse> EnsureBranchAccessAsync(Guid tenantId, Guid callerUserId, Guid? branchId)
+    {
+        if (!branchId.HasValue)
+            return ApiResponse.Ok();
+
+        return await _branchAccessService.EnsureCanAccessBranchAsync(tenantId, callerUserId, branchId.Value);
+    }
 
     private async Task<QueueSession?> GetSessionWithIncludes(Guid tenantId, Guid id)
     {

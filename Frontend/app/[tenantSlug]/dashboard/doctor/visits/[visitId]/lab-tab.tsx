@@ -1,13 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ILabRequest, IVisit } from '@/types/visit'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import useSWR from 'swr'
 
 import { createLabRequestAction } from '@/actions/labs/create-lab-request'
 import { createLabPartnerOrderAction } from '@/actions/labs/create-lab-partner-order'
+import {
+  listPartnerContractsAction,
+  listPartnersAction,
+  listPartnerServicesAction,
+} from '@/actions/partner/workflow'
 import { deleteLabRequestAction } from '../../../../../../actions/labs/delete-lab-request'
 import {
   AlertDialog,
@@ -21,8 +27,17 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -30,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { LabRequestFormInput, labRequestSchema } from '@/validation/labs'
@@ -54,9 +70,105 @@ const quickLabs = {
   ],
 }
 
+type LabPartnerOrderContext = {
+  labRequestId: string
+  partnerType: 'Laboratory' | 'Radiology'
+}
+
 export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
   // تحديد الحقل النشط للاقتراحات
   const [activeField, setActiveField] = useState<keyof typeof quickLabs | null>(null)
+  const [partnerOrderContext, setPartnerOrderContext] = useState<LabPartnerOrderContext | null>(null)
+  const [selectedPartnerId, setSelectedPartnerId] = useState('')
+  const [selectedContractId, setSelectedContractId] = useState('')
+  const [selectedServiceId, setSelectedServiceId] = useState('')
+  const [estimatedCostInput, setEstimatedCostInput] = useState('')
+  const [partnerNotes, setPartnerNotes] = useState('')
+  const [isSubmittingPartnerOrder, setIsSubmittingPartnerOrder] = useState(false)
+
+  const selectedLabRequest = partnerOrderContext
+    ? visit.labRequests?.find((lab) => lab.id === partnerOrderContext.labRequestId) ?? null
+    : null
+
+  const partnerOrderLabRequestId = partnerOrderContext?.labRequestId ?? null
+  const partnerOrderType = partnerOrderContext?.partnerType ?? null
+
+  const partnerTypeLabel =
+    partnerOrderContext?.partnerType === 'Laboratory'
+      ? 'معمل'
+      : partnerOrderContext?.partnerType === 'Radiology'
+        ? 'أشعة'
+        : 'شريك'
+
+  const { data: partnersRes, isLoading: partnersLoading } = useSWR(
+    partnerOrderContext
+      ? ['visit-lab-partner-options', tenantSlug, partnerOrderContext.partnerType]
+      : null,
+    () =>
+      listPartnersAction(tenantSlug, {
+        type: partnerOrderContext!.partnerType,
+        activeOnly: true,
+        pageNumber: 1,
+        pageSize: 200,
+      }),
+  )
+
+  const { data: contractsRes, isLoading: contractsLoading } = useSWR(
+    partnerOrderContext && selectedPartnerId
+      ? ['visit-lab-partner-contracts', tenantSlug, selectedPartnerId]
+      : null,
+    () =>
+      listPartnerContractsAction(tenantSlug, {
+        partnerId: selectedPartnerId,
+        activeOnly: true,
+      }),
+  )
+
+  const { data: servicesRes, isLoading: servicesLoading } = useSWR(
+    partnerOrderContext && selectedPartnerId
+      ? ['visit-lab-partner-services', tenantSlug, selectedPartnerId]
+      : null,
+    () =>
+      listPartnerServicesAction(tenantSlug, {
+        partnerId: selectedPartnerId,
+        activeOnly: true,
+      }),
+  )
+
+  const partners = useMemo(() => partnersRes?.data?.items ?? [], [partnersRes?.data?.items])
+  const contracts = useMemo(() => contractsRes?.data ?? [], [contractsRes?.data])
+  const services = useMemo(() => servicesRes?.data ?? [], [servicesRes?.data])
+
+  useEffect(() => {
+    if (!partnerOrderLabRequestId || !partnerOrderType) return
+
+    setSelectedPartnerId('')
+    setSelectedContractId('')
+    setSelectedServiceId('')
+    setEstimatedCostInput('')
+    setPartnerNotes('')
+  }, [partnerOrderLabRequestId, partnerOrderType])
+
+  useEffect(() => {
+    if (partners.length === 1 && !selectedPartnerId) {
+      setSelectedPartnerId(partners[0].id)
+    }
+  }, [partners, selectedPartnerId])
+
+  useEffect(() => {
+    setSelectedContractId('')
+    setSelectedServiceId('')
+    setEstimatedCostInput('')
+  }, [selectedPartnerId])
+
+  useEffect(() => {
+    if (!selectedServiceId) return
+
+    const selectedService = services.find((item) => item.id === selectedServiceId)
+    if (!selectedService) return
+
+    setEstimatedCostInput(selectedService.price.toString())
+  }, [selectedServiceId, services])
 
   const form = useForm<LabRequestFormInput>({
     resolver: valibotResolver(labRequestSchema),
@@ -87,34 +199,65 @@ export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
     else toast.error(res.message)
   }
 
-  const handleCreatePartnerOrder = async (labRequestId: string) => {
-    const partnerId = window.prompt('أدخل Partner ID لإرسال الطلب:')?.trim()
-    if (!partnerId) return
+  const openPartnerOrderDialog = (lab: ILabRequest) => {
+    const partnerType: LabPartnerOrderContext['partnerType'] =
+      lab.type === 'Lab' ? 'Laboratory' : 'Radiology'
 
-    const partnerContractId = window.prompt('Partner Contract ID (اختياري):')?.trim() || undefined
-    const partnerServiceCatalogItemId =
-      window.prompt('Partner Service Catalog Item ID (اختياري):')?.trim() || undefined
-    const estimatedCostInput = window.prompt('التكلفة التقديرية (اختياري):')?.trim() || ''
-    const notes = window.prompt('ملاحظات (اختياري):')?.trim() || undefined
+    setPartnerOrderContext({
+      labRequestId: lab.id,
+      partnerType,
+    })
+  }
 
-    const estimatedCost = estimatedCostInput ? Number(estimatedCostInput) : undefined
-    if (estimatedCostInput && Number.isNaN(estimatedCost)) {
-      toast.error('قيمة التكلفة التقديرية غير صحيحة')
+  const closePartnerOrderDialog = () => {
+    if (isSubmittingPartnerOrder) return
+    setPartnerOrderContext(null)
+  }
+
+  const handleCreatePartnerOrder = async () => {
+    if (!partnerOrderContext) return
+
+    if (!selectedPartnerId) {
+      toast.error('اختر الشريك أولاً')
       return
     }
 
-    const res = await createLabPartnerOrderAction(tenantSlug, visit.id, labRequestId, {
-      partnerId,
-      partnerContractId,
-      partnerServiceCatalogItemId,
-      estimatedCost,
-      notes,
-    })
+    const normalizedCost = estimatedCostInput.trim()
+    let estimatedCost: number | undefined
 
-    if (res.success) {
-      toast.success('تم إرسال الطلب للشريك بنجاح')
-    } else {
-      toast.error(res.message || 'فشل إرسال الطلب للشريك')
+    if (normalizedCost.length > 0) {
+      const parsedCost = Number(normalizedCost)
+      if (Number.isNaN(parsedCost) || parsedCost < 0) {
+        toast.error('قيمة التكلفة التقديرية غير صحيحة')
+        return
+      }
+
+      estimatedCost = parsedCost
+    }
+
+    setIsSubmittingPartnerOrder(true)
+    try {
+      const res = await createLabPartnerOrderAction(
+        tenantSlug,
+        visit.id,
+        partnerOrderContext.labRequestId,
+        {
+          partnerId: selectedPartnerId,
+          partnerContractId: selectedContractId || undefined,
+          partnerServiceCatalogItemId: selectedServiceId || undefined,
+          estimatedCost,
+          notes: partnerNotes.trim() || undefined,
+        },
+      )
+
+      if (res.success) {
+        toast.success('تم إرسال الطلب للشريك بنجاح')
+        setPartnerOrderContext(null)
+      } else {
+        toast.error(res.message || 'فشل إرسال الطلب للشريك')
+      }
+    } finally {
+      setIsSubmittingPartnerOrder(false)
     }
   }
 
@@ -325,7 +468,7 @@ export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
                     variant='ghost'
                     size='icon'
                     className='h-6 w-6'
-                    onClick={() => void handleCreatePartnerOrder(lab.id)}
+                    onClick={() => openPartnerOrderDialog(lab)}
                     title='إرسال لشريك'
                   >
                     <ExternalLink className='h-3.5 w-3.5 text-muted-foreground/60 hover:text-primary' />
@@ -358,6 +501,136 @@ export function LabsTab({ visit, tenantSlug, isClosed }: LabsTabProps) {
           ))
         )}
       </div>
+
+      <Dialog open={Boolean(partnerOrderContext)} onOpenChange={(open) => !open && closePartnerOrderDialog()}>
+        <DialogContent className='sm:max-w-xl' showCloseButton={!isSubmittingPartnerOrder}>
+          <DialogHeader>
+            <DialogTitle className='text-base font-bold'>إرسال طلب إلى {partnerTypeLabel}</DialogTitle>
+            <DialogDescription>
+              {selectedLabRequest
+                ? `الفحص: ${selectedLabRequest.testName}`
+                : 'اختر بيانات الشريك قبل الإرسال'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <Label>الشريك</Label>
+              <Select
+                value={selectedPartnerId || undefined}
+                onValueChange={(value) => setSelectedPartnerId(value)}
+                disabled={partnersLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={partnersLoading ? 'جاري تحميل الشركاء...' : 'اختر الشريك'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {partners.map((partner) => (
+                    <SelectItem key={partner.id} value={partner.id}>
+                      {partner.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!partnersLoading && partners.length === 0 && (
+                <p className='text-xs text-muted-foreground'>لا يوجد شركاء نشطون لهذا النوع حالياً.</p>
+              )}
+            </div>
+
+            <div className='space-y-2'>
+              <Label>العقد (اختياري)</Label>
+              <Select
+                value={selectedContractId || 'none'}
+                onValueChange={(value) => setSelectedContractId(value === 'none' ? '' : value)}
+                disabled={!selectedPartnerId || contractsLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='بدون عقد محدد' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='none'>بدون عقد</SelectItem>
+                  {contracts.map((contract) => (
+                    <SelectItem key={contract.id} value={contract.id}>
+                      {contract.serviceScope || 'عقد شريك'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-2'>
+              <Label>الخدمة (اختياري)</Label>
+              <Select
+                value={selectedServiceId || 'none'}
+                onValueChange={(value) => setSelectedServiceId(value === 'none' ? '' : value)}
+                disabled={!selectedPartnerId || servicesLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='اختر خدمة من كتالوج الشريك' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='none'>بدون خدمة محددة</SelectItem>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.serviceName} - {service.price.toLocaleString('ar-EG')} ج.م
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-2'>
+              <Label>التكلفة التقديرية (اختياري)</Label>
+              <Input
+                type='number'
+                min='0'
+                step='0.01'
+                value={estimatedCostInput}
+                onChange={(event) => setEstimatedCostInput(event.target.value)}
+                placeholder='مثال: 250'
+                disabled={isSubmittingPartnerOrder}
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label>ملاحظات (اختياري)</Label>
+              <Textarea
+                value={partnerNotes}
+                onChange={(event) => setPartnerNotes(event.target.value)}
+                placeholder='أي تفاصيل إضافية للشريك...'
+                disabled={isSubmittingPartnerOrder}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={closePartnerOrderDialog}
+              disabled={isSubmittingPartnerOrder}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type='button'
+              onClick={() => void handleCreatePartnerOrder()}
+              disabled={isSubmittingPartnerOrder || !selectedPartnerId}
+            >
+              {isSubmittingPartnerOrder ? (
+                <>
+                  <Loader2 className='ml-2 h-4 w-4 animate-spin' />
+                  جاري الإرسال...
+                </>
+              ) : (
+                'إرسال الطلب'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -18,7 +18,16 @@ public class StaffDto
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
     public bool IsEnabled { get; set; }
+    public List<Guid> AssignedBranchIds { get; set; } = new();
+    public List<StaffBranchDto> AssignedBranches { get; set; } = new();
     public DateTime CreatedAt { get; set; }
+}
+
+public class StaffBranchDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public bool IsPrimary { get; set; }
 }
 
 public class CreateStaffRequest
@@ -48,6 +57,7 @@ public class CreateStaffRequest
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
+    public List<Guid>? BranchIds { get; set; }
 }
 
 public class UpdateStaffRequest
@@ -64,6 +74,7 @@ public class UpdateStaffRequest
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
+    public List<Guid>? BranchIds { get; set; }
 }
 
 public class PatchStaffRequest
@@ -74,6 +85,7 @@ public class PatchStaffRequest
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
+    public List<Guid>? BranchIds { get; set; }
 }
 
 public class CreatePayrollOnlyWorkerRequest
@@ -91,4 +103,5 @@ public class CreatePayrollOnlyWorkerRequest
     public decimal? Salary { get; set; }
     public DateTime? HireDate { get; set; }
     public string? Notes { get; set; }
+    public List<Guid>? BranchIds { get; set; }
 }

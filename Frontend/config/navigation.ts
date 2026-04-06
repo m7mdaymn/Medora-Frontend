@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Banknote,
   Bell,
+  Building2,
   Briefcase,
   CalendarDays,
   ClipboardList,
@@ -196,6 +197,12 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         href: '/staff',
         icon: ClipboardList,
         roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
+      },
+      {
+        title: 'إدارة الفروع',
+        href: '/branches',
+        icon: Building2,
+        roles: ['ClinicOwner', 'BranchManager', 'SuperAdmin'],
       },
       {
         title: 'إدارة القوى العاملة',

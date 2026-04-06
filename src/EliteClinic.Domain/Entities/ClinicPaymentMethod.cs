@@ -2,6 +2,7 @@ namespace EliteClinic.Domain.Entities;
 
 public class ClinicPaymentMethod : TenantBaseEntity
 {
+    public Guid? BranchId { get; set; }
     public string MethodName { get; set; } = string.Empty;
     public string? ProviderName { get; set; }
     public string? AccountName { get; set; }
@@ -11,4 +12,6 @@ public class ClinicPaymentMethod : TenantBaseEntity
     public string? Instructions { get; set; }
     public bool IsActive { get; set; } = true;
     public int DisplayOrder { get; set; }
+
+    public Branch? Branch { get; set; }
 }

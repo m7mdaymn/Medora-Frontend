@@ -20,12 +20,11 @@ export default async function FinanceReportsPage({
       <DashboardHeader
         heading='التقارير المالية'
         text='نظرة شاملة على أرباح العيادة وحسابات الأطباء'
-      />
+      >
+        <FinanceTabsNavigation />
+      </DashboardHeader>
 
-      {/* الـ Prop اتمسح من هنا زي ما اتفقنا */}
-      <FinanceTabsNavigation />
-
-      <div className='mt-6'>
+      <div >
         {tab === 'overview' && <OverviewTab tenantSlug={tenantSlug} from={from} to={to} />}
 
         {tab === 'doctors' && <DoctorsFinanceTab tenantSlug={tenantSlug} date={date} />}

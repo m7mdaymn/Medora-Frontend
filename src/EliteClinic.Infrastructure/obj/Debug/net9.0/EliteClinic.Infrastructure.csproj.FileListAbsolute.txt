@@ -28,3 +28,27 @@ C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastr
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.runtimeconfig.json
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.dll
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-app\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\bin\validation-api\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Infrastructure.pdb
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Infrastructure.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Infrastructure.runtimeconfig.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Infrastructure.dll
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Infrastructure.pdb

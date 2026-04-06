@@ -16,6 +16,7 @@ public class Employee : TenantBaseEntity
 
     // Navigation
     public ApplicationUser? User { get; set; }
+    public ICollection<EmployeeBranchAssignment> BranchAssignments { get; set; } = new List<EmployeeBranchAssignment>();
 
     public Employee()
     {

@@ -25,7 +25,7 @@ export function ClinicServicesView({ paginatedData, tenantSlug }: Props) {
 
   return (
     <div className='space-y-6' dir='rtl'>
-      <div className='rounded-xl border bg-card overflow-hidden'>
+      <div className='rounded-xl border  overflow-hidden'>
         <Table>
           <TableHeader className='bg-muted/50'>
             <TableRow>

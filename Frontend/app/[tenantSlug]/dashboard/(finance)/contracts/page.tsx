@@ -49,6 +49,8 @@ export default function ContractsPage() {
   const [settlementTarget, setSettlementTarget] = useState<'Doctor' | 'Clinic'>('Clinic')
   const [settlementPercentage, setSettlementPercentage] = useState('')
   const [clinicDoctorShare, setClinicDoctorShare] = useState('')
+  const [patientDiscount, setPatientDiscount] = useState('')
+  const [doctorFixedPayout, setDoctorFixedPayout] = useState('')
   const [serviceSaving, setServiceSaving] = useState(false)
 
   const [userPartnerId, setUserPartnerId] = useState('')
@@ -67,6 +69,8 @@ export default function ContractsPage() {
     const parsedPrice = Number(price)
     const parsedSettlementPercentage = Number(settlementPercentage)
     const parsedDoctorShare = clinicDoctorShare.trim() ? Number(clinicDoctorShare) : undefined
+    const parsedPatientDiscount = patientDiscount.trim() ? Number(patientDiscount) : undefined
+    const parsedDoctorFixedPayout = doctorFixedPayout.trim() ? Number(doctorFixedPayout) : undefined
 
     if (!targetPartnerForService) {
       toast.error('لا يوجد شريك متاح للاختيار')
@@ -88,6 +92,19 @@ export default function ContractsPage() {
       return
     }
 
+    if (
+      parsedPatientDiscount !== undefined &&
+      (Number.isNaN(parsedPatientDiscount) || parsedPatientDiscount < 0 || parsedPatientDiscount > 100)
+    ) {
+      toast.error('نسبة خصم المريض يجب أن تكون بين 0 و100')
+      return
+    }
+
+    if (parsedDoctorFixedPayout !== undefined && (Number.isNaN(parsedDoctorFixedPayout) || parsedDoctorFixedPayout < 0)) {
+      toast.error('قيمة المبلغ الثابت للطبيب غير صحيحة')
+      return
+    }
+
     setServiceSaving(true)
     try {
       const partnerIdForRequest =
@@ -100,6 +117,8 @@ export default function ContractsPage() {
         settlementTarget,
         settlementPercentage: parsedSettlementPercentage,
         clinicDoctorSharePercentage: settlementTarget === 'Clinic' ? parsedDoctorShare : undefined,
+        patientDiscountPercentage: parsedPatientDiscount,
+        doctorFixedPayoutAmount: parsedDoctorFixedPayout,
       })
 
       if (!response.success) {
@@ -112,6 +131,8 @@ export default function ContractsPage() {
       setPrice('')
       setSettlementPercentage('')
       setClinicDoctorShare('')
+      setPatientDiscount('')
+      setDoctorFixedPayout('')
       await mutateServices()
     } finally {
       setServiceSaving(false)
@@ -229,6 +250,26 @@ export default function ContractsPage() {
               </div>
             )}
 
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              <div className='space-y-2'>
+                <Label>خصم المريض (%)</Label>
+                <Input
+                  value={patientDiscount}
+                  onChange={(e) => setPatientDiscount(e.target.value)}
+                  placeholder='مثال: 10'
+                />
+              </div>
+
+              <div className='space-y-2'>
+                <Label>مبلغ ثابت للطبيب (اختياري)</Label>
+                <Input
+                  value={doctorFixedPayout}
+                  onChange={(e) => setDoctorFixedPayout(e.target.value)}
+                  placeholder='مثال: 50'
+                />
+              </div>
+            </div>
+
             <Button type='submit' disabled={serviceSaving} className='gap-2'>
               <Plus className='w-4 h-4' />
               إضافة خدمة
@@ -324,6 +365,12 @@ export default function ContractsPage() {
                     التوزيع: {service.settlementTarget === 'Doctor' ? 'إلى الطبيب' : 'إلى العيادة'} ({' '}
                     {service.settlementPercentage}% )
                   </p>
+                  {service.patientDiscountPercentage !== null && (
+                    <p>خصم المريض: {service.patientDiscountPercentage}%</p>
+                  )}
+                  {service.doctorFixedPayoutAmount !== null && (
+                    <p>مبلغ ثابت للطبيب: {service.doctorFixedPayoutAmount} ج.م</p>
+                  )}
                 </div>
               </Card>
             ))}

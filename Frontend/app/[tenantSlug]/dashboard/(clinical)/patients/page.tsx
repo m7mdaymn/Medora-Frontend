@@ -33,9 +33,14 @@ export default async function PatientsPage({ params, searchParams }: PageProps) 
     <DashboardShell>
       <DashboardHeader heading='سجل المرضى' text='إدارة بيانات المرضى والبحث المتقدم داخل العيادة'>
         <PermissionGate
-          allowedRoles={[ROLES.CLINIC_OWNER, ROLES.CLINIC_MANAGER, ROLES.SUPER_ADMIN,'Receptionist']}
+          allowedRoles={[
+            ROLES.CLINIC_OWNER,
+            ROLES.CLINIC_MANAGER,
+            ROLES.SUPER_ADMIN,
+            ROLES.RECEPTIONIST,
+          ]}
         >
-          <AddPatientModal tenantSlug={tenantSlug}/>
+          <AddPatientModal tenantSlug={tenantSlug} />
         </PermissionGate>
       </DashboardHeader>
 
@@ -45,7 +50,13 @@ export default async function PatientsPage({ params, searchParams }: PageProps) 
         </div>
 
         <PermissionGate
-          allowedRoles={[ROLES.CLINIC_OWNER, ROLES.CLINIC_MANAGER, ROLES.SUPER_ADMIN, ROLES.DOCTOR,'Receptionist']}
+          allowedRoles={[
+            ROLES.CLINIC_OWNER,
+            ROLES.CLINIC_MANAGER,
+            ROLES.SUPER_ADMIN,
+            ROLES.DOCTOR,
+            'Receptionist',
+          ]}
           fallback={
             <div className='flex h-100 shrink-0 items-center justify-center rounded-md border border-dashed bg-muted/20'>
               <Typography variant='muted'>عذراً، لا تملك صلاحية عرض السجلات.</Typography>

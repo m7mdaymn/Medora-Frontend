@@ -21,12 +21,16 @@ public interface IPartnerService
 
     Task<ApiResponse<PartnerOrderDto>> CreateLabOrderAsync(Guid tenantId, Guid visitId, Guid labRequestId, Guid callerUserId, CreateLabPartnerOrderRequest request);
     Task<ApiResponse<PartnerOrderDto>> CreatePrescriptionOrderAsync(Guid tenantId, Guid visitId, Guid prescriptionId, Guid callerUserId, CreatePrescriptionPartnerOrderRequest request);
+    Task<ApiResponse<PartnerOrderDto>> CreateVisitOrderAsync(Guid tenantId, Guid visitId, Guid callerUserId, CreateVisitPartnerOrderRequest request);
     Task<ApiResponse<PagedResult<PartnerOrderDto>>> ListOrdersAsync(Guid tenantId, Guid callerUserId, PartnerOrdersQuery query);
     Task<ApiResponse<PartnerOrderDto>> GetOrderByIdAsync(Guid tenantId, Guid callerUserId, Guid orderId);
     Task<ApiResponse<PartnerOrderDto>> UpdateOrderStatusAsync(Guid tenantId, Guid callerUserId, Guid orderId, UpdatePartnerOrderStatusRequest request);
+    Task<ApiResponse<PartnerOrderDto>> AddOrderCommentAsync(Guid tenantId, Guid callerUserId, Guid orderId, AddPartnerOrderCommentRequest request);
     Task<ApiResponse<PartnerOrderDto>> AcceptOrderAsync(Guid tenantId, Guid callerUserId, Guid orderId, string? notes);
     Task<ApiResponse<PartnerOrderDto>> ScheduleOrderAsync(Guid tenantId, Guid callerUserId, Guid orderId, SchedulePartnerOrderRequest request);
     Task<ApiResponse<PartnerOrderDto>> MarkPatientArrivedAsync(Guid tenantId, Guid callerUserId, Guid orderId, MarkPartnerOrderArrivedRequest request);
+    Task<ApiResponse<PartnerOrderDto>> MarkPatientArrivedFromPatientAppAsync(Guid tenantId, Guid patientUserId, Guid patientId, Guid orderId, MarkPartnerOrderArrivedRequest request);
+    Task<ApiResponse<PartnerOrderDto>> AddOrderCommentFromPatientAppAsync(Guid tenantId, Guid patientUserId, Guid patientId, Guid orderId, AddPartnerOrderCommentRequest request);
     Task<ApiResponse<PartnerOrderDto>> UploadResultAndCompleteAsync(Guid tenantId, Guid callerUserId, Guid orderId, UploadPartnerOrderResultRequest request);
     Task<ApiResponse<List<PatientPartnerOrderTimelineDto>>> GetPatientTimelineAsync(Guid tenantId, Guid patientUserId, Guid patientId);
 }

@@ -38,13 +38,10 @@ export function SubProfilesList({ subProfiles }: SubProfilesListProps) {
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
       {subProfiles.map((profile) => (
-        <Card key={profile.id}>
+        <Card key={profile.id} className='p-0'>
           <CardContent className='p-4'>
             <div className='flex items-start justify-between mb-3'>
               <div className='flex items-center gap-2'>
-                <div className='h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center'>
-                  <User className='h-4 w-4 text-primary' />
-                </div>
                 <div>
                   <p className='font-semibold'>{profile.name}</p>
                   {profile.isDefault && (

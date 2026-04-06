@@ -127,6 +127,7 @@ builder.Services.AddScoped<EliteClinic.Application.Features.Platform.FeatureFlag
 
 // Phase 2 Clinic Services
 builder.Services.AddScoped<IClinicSettingsService, ClinicSettingsService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IDoctorService, DoctorServiceImpl>();
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -240,10 +241,26 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<EliteClinicDbContext>();
-    dbContext.Database.Migrate();
-    
-    // Seed initial data
-    await SeedDataAsync(dbContext, scope.ServiceProvider);
+    var canSeed = true;
+    try
+    {
+        dbContext.Database.Migrate();
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("PendingModelChangesWarning"))
+    {
+        canSeed = false;
+        app.Logger.LogWarning(ex, "Skipping automatic migration because the model has pending changes.");
+    }
+
+    // Only seed after successful migration to avoid schema mismatch crashes.
+    if (canSeed)
+    {
+        await SeedDataAsync(dbContext, scope.ServiceProvider);
+    }
+    else
+    {
+        app.Logger.LogWarning("Skipping startup seeding because automatic migration was skipped.");
+    }
 }
 
 // Configure HTTP pipeline
@@ -295,7 +312,7 @@ async Task SeedDataAsync(EliteClinicDbContext dbContext, IServiceProvider servic
     var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
     // Seed roles
-    var roles = new[] { "SuperAdmin", "ClinicOwner", "ClinicManager", "Receptionist", "Doctor", "Patient", "Nurse", "Contractor" };
+    var roles = new[] { "SuperAdmin", "Worker", "ClinicOwner", "ClinicManager", "BranchManager", "Receptionist", "Doctor", "Patient", "Nurse", "Contractor" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

@@ -593,8 +593,10 @@ public class Phase3InventoryMarketplaceTests
 
     private static InventoryService BuildInventoryService(EliteClinicDbContext ctx)
     {
-        var invoiceService = new InvoiceService(ctx, new SequentialInvoiceNumberService());
-        var branchAccessService = new BranchAccessService(ctx);
+        var tenantId = ctx.Tenants.IgnoreQueryFilters().Select(t => t.Id).First();
+        var tenantContext = DbContextFactory.CreateTenantContext(tenantId);
+        var invoiceService = new InvoiceService(ctx, new SequentialInvoiceNumberService(), tenantContext);
+        var branchAccessService = new BranchAccessService(ctx, tenantContext);
         return new InventoryService(ctx, invoiceService, branchAccessService);
     }
 

@@ -14,7 +14,7 @@ export default function AboutDoctorSection({ doctor }: { doctor: IPublicDoctor }
   return (
     <section
       id='about-doctor'
-      className='relative py-24 md:py-32 overflow-hidden bg-background w-full'
+      className='relative py-24 md:py-32 overflow-hidden bg-muted/30  w-full'
       dir='rtl'
     >
       <motion.div

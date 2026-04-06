@@ -5,10 +5,21 @@ import {
   getPatientSummaryAppAction,
 } from '@/actions/patient-app/profile'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePatientAuthStore } from '@/store/usePatientAuthStore'
-import { Activity, AlertCircle, CalendarDays, Clock, FileText, Ticket, Users } from 'lucide-react'
+import {
+  Activity,
+  AlertCircle,
+  CalendarDays,
+  Clock,
+  FileText,
+  Ticket,
+  Users,
+  WalletCards,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import useSWR from 'swr'
 import { ProfileSwitcher } from '../../../../components/patient/profile-switcher'
@@ -60,6 +71,24 @@ export default function PatientHomePage() {
           <ProfileSwitcher tenantSlug={tenantSlug} />
         </div>
       </div>
+
+      <Card className='border-primary/20 bg-primary/5 rounded-2xl shadow-none'>
+        <CardContent className='p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+          <div>
+            <p className='text-sm font-bold text-foreground flex items-center gap-2'>
+              <WalletCards className='w-4 h-4 text-primary' />
+              حجز/تذكرة بالدفع الذاتي
+            </p>
+            <p className='text-[11px] text-muted-foreground mt-1'>
+              ارفع إثبات الدفع وابدأ طلب تذكرة اليوم أو حجز مستقبلي.
+            </p>
+          </div>
+
+          <Button asChild size='sm' className='rounded-full'>
+            <Link href={`/${tenantSlug}/patient/request`}>ابدأ الطلب الآن</Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* التذكرة النشطة أو الـ Placeholder */}
       <div className='space-y-3'>

@@ -38,7 +38,7 @@ public class QueueWithPaymentCompatibilityTests
             VisitType = VisitType.Consultation,
             PaidAmount = 200,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(result.Success);
         Assert.Equal("Legacy Service", result.Data!.ServiceName);
@@ -101,7 +101,7 @@ public class QueueWithPaymentCompatibilityTests
             DoctorServiceId = clinicService.Id,
             PaidAmount = 100,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(result.Success);
         Assert.Equal(clinicService.Id, result.Data!.DoctorServiceId);
@@ -120,14 +120,14 @@ public class QueueWithPaymentCompatibilityTests
         Assert.Equal(100m, savedInvoice.PaidAmount);
         Assert.Equal(320m, savedInvoice.RemainingAmount);
 
-        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService());
+        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService(), DbContextFactory.CreateTenantContext(tenantId));
         var invoiceDto = await invoiceService.GetInvoiceByIdAsync(tenantId, savedInvoice.Id);
         Assert.True(invoiceDto.Success);
         Assert.Equal(100m, invoiceDto.Data!.PaidAmount);
         Assert.Equal(320m, invoiceDto.Data.RemainingAmount);
         Assert.Equal(InvoiceStatus.PartiallyPaid, invoiceDto.Data.Status);
 
-        var board = await service.GetBoardAsync(tenantId);
+        var board = await service.GetBoardAsync(tenantId, Guid.NewGuid());
         Assert.True(board.Success);
         var boardTicket = board.Data!.Sessions
             .SelectMany(s => s.WaitingTickets)
@@ -180,7 +180,7 @@ public class QueueWithPaymentCompatibilityTests
             DoctorServiceId = link.Id,
             PaidAmount = 150,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(result.Success);
         Assert.Equal(link.Id, result.Data!.DoctorServiceId);
@@ -195,7 +195,7 @@ public class QueueWithPaymentCompatibilityTests
         Assert.Equal(150m, savedInvoice.PaidAmount);
         Assert.Equal(400m, savedInvoice.RemainingAmount);
 
-        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService());
+        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService(), DbContextFactory.CreateTenantContext(tenantId));
         var invoiceDto = await invoiceService.GetInvoiceByIdAsync(tenantId, savedInvoice.Id);
         Assert.True(invoiceDto.Success);
         Assert.Equal(150m, invoiceDto.Data!.PaidAmount);
@@ -222,7 +222,7 @@ public class QueueWithPaymentCompatibilityTests
             DoctorId = seeded.Doctor.Id,
             DoctorServiceId = Guid.NewGuid(),
             PaidAmount = 100
-        });
+        }, Guid.NewGuid());
 
         Assert.False(result.Success);
         Assert.Contains("doctorServiceId", result.Message, StringComparison.OrdinalIgnoreCase);
@@ -247,7 +247,7 @@ public class QueueWithPaymentCompatibilityTests
             PatientId = seeded.Patient.Id,
             DoctorId = seeded.Doctor.Id,
             IsUrgent = false
-        });
+        }, Guid.NewGuid());
 
         Assert.True(issued.Success);
 
@@ -289,7 +289,7 @@ public class QueueWithPaymentCompatibilityTests
             DoctorServiceId = legacyService.Id,
             PaidAmount = 300,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(issued.Success);
 
@@ -343,7 +343,7 @@ public class QueueWithPaymentCompatibilityTests
             VisitType = VisitType.Consultation,
             PaidAmount = 800,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(withPayment.Success);
 
@@ -368,7 +368,7 @@ public class QueueWithPaymentCompatibilityTests
         Assert.Equal(200m, savedInvoice.RemainingAmount);
         Assert.Equal(InvoiceStatus.PartiallyPaid, savedInvoice.Status);
 
-        var financeService = new FinanceService(ctx);
+        var financeService = new FinanceService(ctx, DbContextFactory.CreateTenantContext(tenantId));
         var daily = await financeService.GetDailyRevenueAsync(tenantId, DateTime.UtcNow.Date);
         Assert.True(daily.Success);
         Assert.Equal(800m, daily.Data!.TotalPaid);
@@ -405,7 +405,7 @@ public class QueueWithPaymentCompatibilityTests
             DoctorServiceId = legacyService.Id,
             PaidAmount = 900,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(withPayment.Success);
 
@@ -413,7 +413,7 @@ public class QueueWithPaymentCompatibilityTests
         var savedInvoice = await ctx.Invoices.FirstAsync(i => i.VisitId == createdVisit.Id);
         Assert.Equal(InvoiceStatus.Paid, savedInvoice.Status);
 
-        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService());
+        var invoiceService = new InvoiceService(ctx, new FakeInvoiceNumberService(), DbContextFactory.CreateTenantContext(tenantId));
         var refund = await invoiceService.RefundPaymentAsync(tenantId, savedInvoice.Id, new RefundInvoiceRequest
         {
             Amount = 900,
@@ -573,7 +573,7 @@ public class QueueWithPaymentCompatibilityTests
             PatientId = seeded.Patient.Id,
             DoctorId = otherDoctor.Id,
             IsUrgent = false
-        });
+        }, Guid.NewGuid());
 
         Assert.False(issued.Success);
         Assert.Contains("shift is not open", issued.Message, StringComparison.OrdinalIgnoreCase);
@@ -609,14 +609,14 @@ public class QueueWithPaymentCompatibilityTests
             DoctorServiceId = legacyService.Id,
             PaidAmount = 300,
             PaymentMethod = "Cash"
-        });
+        }, Guid.NewGuid());
 
         Assert.True(issued.Success);
 
         var visit = await ctx.Visits.FirstAsync(v => v.QueueTicketId == issued.Data!.Id);
         var invoice = await ctx.Invoices.FirstAsync(i => i.VisitId == visit.Id);
 
-        var board = await queueService.GetBoardAsync(tenantId);
+        var board = await queueService.GetBoardAsync(tenantId, Guid.NewGuid());
         Assert.True(board.Success);
 
         var boardTicket = board.Data!.Sessions
@@ -718,7 +718,7 @@ public class QueueWithPaymentCompatibilityTests
         await ctx.SaveChangesAsync();
 
         var queueService = BuildQueueService(ctx);
-        var board = await queueService.GetBoardAsync(tenantId);
+        var board = await queueService.GetBoardAsync(tenantId, Guid.NewGuid());
 
         Assert.True(board.Success);
         var waitingTickets = board.Data!.Sessions
@@ -735,7 +735,11 @@ public class QueueWithPaymentCompatibilityTests
 
     private static QueueService BuildQueueService(EliteClinic.Infrastructure.Data.EliteClinicDbContext ctx)
     {
-        return new QueueService(ctx, new FakeMessageService(), new FakeInvoiceNumberService());
+        return new QueueService(
+            ctx,
+            new FakeMessageService(),
+            new FakeInvoiceNumberService(),
+            new AllowAllBranchAccessService());
     }
 
     private static async Task<(Doctor Doctor, Patient Patient, QueueSession Session)> SeedCoreAsync(EliteClinic.Infrastructure.Data.EliteClinicDbContext ctx, Guid tenantId)

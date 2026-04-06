@@ -160,6 +160,7 @@ public class MyVisitsFilterRequest
     public VisitType? VisitType { get; set; }
     public VisitStatus? Status { get; set; }
     public bool? IsBooking { get; set; }
+    public bool? IsSelfService { get; set; }
     public bool? IsExam { get; set; }
     public bool? IsConsultation { get; set; }
     public int PageNumber { get; set; } = 1;

@@ -87,14 +87,21 @@ public class VisitService : IVisitService
         if (visit == null)
             return ApiResponse<VisitDto>.Error("Visit not found");
 
-        if (visit.Status != VisitStatus.Open)
-            return ApiResponse<VisitDto>.Error("Cannot update a completed visit");
-
         // Same-day edit check for doctors
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == callerUserId && d.TenantId == tenantId && !d.IsDeleted);
         if (doctor != null && visit.DoctorId != doctor.Id)
             return ApiResponse<VisitDto>.Error("You can only edit your own visits");
-        if (doctor != null && visit.StartedAt.Date != DateTime.UtcNow.Date)
+
+        var hasCompletedPartnerResult = await HasCompletedPartnerResultForVisitAsync(tenantId, visit.Id);
+        var canDoctorApplyPostResultFollowUp =
+            doctor != null &&
+            visit.Status == VisitStatus.Completed &&
+            hasCompletedPartnerResult;
+
+        if (visit.Status != VisitStatus.Open && !canDoctorApplyPostResultFollowUp)
+            return ApiResponse<VisitDto>.Error("Cannot update a completed visit unless a partner result has been uploaded");
+
+        if (doctor != null && !canDoctorApplyPostResultFollowUp && visit.StartedAt.Date != DateTime.UtcNow.Date)
             return ApiResponse<VisitDto>.Error("You can only edit visits from today");
 
         visit.Complaint = request.Complaint;
@@ -318,7 +325,7 @@ public class VisitService : IVisitService
             return ApiResponse<PagedResult<VisitDto>>.Error("Doctor profile not found");
 
         var pageNumber = request.PageNumber <= 0 ? 1 : request.PageNumber;
-        var pageSize = request.PageSize <= 0 ? 20 : Math.Min(request.PageSize, 200);
+        var pageSize = request.PageSize <= 0 ? 20 : Math.Min(request.PageSize, 1000);
 
         var query = _context.Visits
             .Include(v => v.Doctor)
@@ -358,6 +365,15 @@ public class VisitService : IVisitService
                     || v.Source == VisitSource.PatientSelfServiceBooking)
                 : query.Where(v => v.Source != VisitSource.Booking
                     && v.Source != VisitSource.ConsultationBooking
+                    && v.Source != VisitSource.PatientSelfServiceBooking);
+        }
+
+        if (request.IsSelfService.HasValue)
+        {
+            query = request.IsSelfService.Value
+                ? query.Where(v => v.Source == VisitSource.PatientSelfServiceTicket
+                    || v.Source == VisitSource.PatientSelfServiceBooking)
+                : query.Where(v => v.Source != VisitSource.PatientSelfServiceTicket
                     && v.Source != VisitSource.PatientSelfServiceBooking);
         }
 
@@ -606,6 +622,16 @@ public class VisitService : IVisitService
     {
         return await _context.PatientChronicProfiles
             .FirstOrDefaultAsync(c => c.TenantId == tenantId && !c.IsDeleted && c.PatientId == patientId);
+    }
+
+    private async Task<bool> HasCompletedPartnerResultForVisitAsync(Guid tenantId, Guid visitId)
+    {
+        return await _context.PartnerOrders.AnyAsync(o =>
+            o.TenantId == tenantId &&
+            !o.IsDeleted &&
+            o.VisitId == visitId &&
+            o.Status == PartnerOrderStatus.Completed &&
+            o.ResultUploadedAt.HasValue);
     }
 
     private static PatientChronicProfileDto? MapChronicProfile(PatientChronicProfile? profile)

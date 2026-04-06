@@ -23,11 +23,11 @@ export async function superAdminLoginAction(data: LoginInput): Promise<BaseApiRe
     // Next.js Server Actions شغالة في بيئة Node.js، فاستخدام Buffer متاح وسريع
     const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString())
 
-    // تأكد من اسم الـ claim عندك لو مختلف
+    // تأكد من اسم الـ claim عندك لو مختلف 
     const role =
       payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role
 
-    if (role !== 'SuperAdmin') {
+    if (role !== 'SuperAdmin' && role !== 'Worker') {
       return {
         success: false,
         message: 'غير مصرح لك بالدخول كمدير نظام',

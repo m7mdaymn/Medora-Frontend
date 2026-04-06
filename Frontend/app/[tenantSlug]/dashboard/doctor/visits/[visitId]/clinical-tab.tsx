@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { Form, FormControl, FormField } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
-import { CalendarIcon, FileText, Activity } from 'lucide-react'
+import { Activity, CalendarIcon, FileText } from 'lucide-react'
 import { updateVisit } from '../../../../../../actions/visit/update-visit'
 import { vitalsFields } from '../../../../../../constants/vitals-fields'
 import { IDoctor, IDoctorVisitConfig } from '../../../../../../types/doctor'
@@ -74,7 +74,9 @@ export function ClinicalTab({ tenantSlug, visit, doctor, isClosed }: ClinicalTab
   }
 
   const visibleVitals = vitalsFields.filter(
-    (fieldConfig) => !doctor?.visitFieldConfig || doctor?.visitFieldConfig[fieldConfig.configKey as keyof IDoctorVisitConfig],
+    (fieldConfig) =>
+      !doctor?.visitFieldConfig ||
+      doctor?.visitFieldConfig[fieldConfig.configKey as keyof IDoctorVisitConfig],
   )
 
   const visitDate = visit.startedAt ? startOfDay(new Date(visit.startedAt)) : startOfDay(new Date())
@@ -84,23 +86,22 @@ export function ClinicalTab({ tenantSlug, visit, doctor, isClosed }: ClinicalTab
       <form id='clinical-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
         {/* 1. العلامات الحيوية */}
         {visibleVitals.length > 0 && (
-          <div className='flex flex-wrap gap-x-4 gap-y-3 px-1 py-1 text-muted-foreground'>
+          <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 p-3 bg-muted/30 rounded-xl border border-dashed'>
             {visibleVitals.map((fieldConfig) => (
               <FormField
                 key={fieldConfig.name}
                 control={form.control}
                 name={fieldConfig.name}
                 render={({ field }) => (
-                  <div className='flex items-center gap-1.5 min-w-fit'>
-                    <span className='text-[10px] font-bold opacity-60 uppercase tracking-tighter shrink-0'>
-                      {fieldConfig.label}:
+                  <div className='flex flex-col gap-1 bg-background p-2 rounded-lg border shadow-sm'>
+                    <span className='text-[10px] font-bold text-muted-foreground uppercase'>
+                      {fieldConfig.label}
                     </span>
                     <FormControl>
                       <input
                         type='number'
-                        placeholder='-'
                         disabled={isClosed}
-                        className='w-10 bg-transparent border-0 border-b border-transparent hover:border-primary/30 focus:border-primary focus:outline-none text-[11px] font-medium text-foreground transition-all p-0 h-4 text-center appearance-none'
+                        className='w-full bg-transparent focus:outline-none text-sm font-black text-primary'
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) =>
@@ -133,7 +134,7 @@ export function ClinicalTab({ tenantSlug, visit, doctor, isClosed }: ClinicalTab
               <FormControl className='flex-1'>
                 <Textarea
                   placeholder='الشكوى...'
-                  className='min-h-[45px] md:min-h-[40px] max-h-60 border-0 border-b md:border-b-0 focus-visible:ring-0 text-sm bg-transparent resize-none py-3 px-4 leading-relaxed scrollbar-hide'
+                  className='min-h-11.25 md:min-h-10 max-h-60 border-0 border-b md:border-b-0 focus-visible:ring-0 text-sm bg-transparent resize-none py-3 px-4 leading-relaxed scrollbar-hide'
                   disabled={isClosed}
                   rows={1}
                   onInput={autoGrow}
@@ -153,7 +154,7 @@ export function ClinicalTab({ tenantSlug, visit, doctor, isClosed }: ClinicalTab
               <FormControl className='flex-1'>
                 <Textarea
                   placeholder='التشخيص...'
-                  className='min-h-[45px] md:min-h-[40px] max-h-60 border-0 border-b md:border-b-0 focus-visible:ring-0 text-sm font-bold text-primary bg-transparent resize-none py-3 px-4 leading-relaxed scrollbar-hide'
+                  className='min-h-11.25 md:min-h-10 max-h-60 border-0 border-b md:border-b-0 focus-visible:ring-0 text-sm font-bold text-primary bg-transparent resize-none py-3 px-4 leading-relaxed scrollbar-hide'
                   disabled={isClosed}
                   rows={1}
                   onInput={autoGrow}

@@ -290,7 +290,7 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='flex items-center gap-2'>
-                      <AlertCircle className='w-4 h-4 text-destructive' /> نظام إدراج الطوارئ
+                      <AlertCircle className='w-4 h-4 text-destructive' /> نظام إدراج الكشف المستعجل
                     </FormLabel>
                     <Select
                       onValueChange={(val) => field.onChange(Number(val))}

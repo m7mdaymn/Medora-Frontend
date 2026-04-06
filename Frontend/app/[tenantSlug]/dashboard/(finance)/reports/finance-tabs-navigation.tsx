@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 const tabs = [
   { id: 'overview', label: 'نظرة عامة' },
   { id: 'doctors', label: 'حسابات ونسب الأطباء' },
-  { id: 'monthly', label: 'التقارير الشهرية' },
+  { id: 'monthly', label: 'التقارير السنوية' }, // عدلت الاسم عشان يتوافق مع Yearly
 ]
 
 export function FinanceTabsNavigation() {
@@ -15,17 +15,15 @@ export function FinanceTabsNavigation() {
   const searchParams = useSearchParams()
   const currentTab = searchParams.get('tab') || 'overview'
 
-  // الدالة دي بتحافظ على التواريخ (from, to) وبتبدل بس قيمة الـ tab
   const createQueryString = (tabId: string) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', tabId)
-    // تصفير الباجينيشن لو موجود عشان التاب الجديدة تبدأ من صفحة 1
-    params.delete('page')
+    params.delete('page') // تصفير الباجينيشن
     return params.toString()
   }
 
   return (
-    <div className='flex items-center gap-2 border-b pb-4 mb-6 overflow-x-auto'>
+    <div className='flex gap-6 border-b border-border/50 pb-0 overflow-x-auto no-scrollbar'>
       {tabs.map((tab) => {
         const isActive = currentTab === tab.id
         return (
@@ -33,10 +31,10 @@ export function FinanceTabsNavigation() {
             key={tab.id}
             href={`${pathname}?${createQueryString(tab.id)}`}
             className={cn(
-              'px-4 py-2 rounded-md text-sm font-bold transition-all whitespace-nowrap',
+              'pb-3 text-sm transition-all whitespace-nowrap border-b-2 -mb-px', // الـ -mb-[1px] دي صياعة عشان الخط يركب على خط الـ border-b الأساسي
               isActive
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border/80',
             )}
           >
             {tab.label}

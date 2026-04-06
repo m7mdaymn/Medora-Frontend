@@ -1,9 +1,22 @@
 'use server'
 
 import { fetchApi } from '@/lib/fetchApi'
-import { IClinicSettings } from '@/types/settings'
+import { IClinicPaymentMethod, IClinicSettings } from '@/types/settings'
 import { UpdateSettingsInput } from '@/validation/settings'
 import { revalidatePath } from 'next/cache'
+
+export interface ReplaceClinicPaymentMethodInput {
+  branchId?: string
+  methodName: string
+  providerName?: string
+  accountName?: string
+  accountNumber?: string
+  iban?: string
+  walletNumber?: string
+  instructions?: string
+  isActive: boolean
+  displayOrder: number
+}
 
 export async function updateClinicSettings(tenantSlug: string, data: UpdateSettingsInput) {
   const response = await fetchApi<IClinicSettings>(`/api/clinic/settings`, {
@@ -38,9 +51,9 @@ export async function patchClinicSettings(
 
 export async function replaceClinicPaymentMethodsAction(
   tenantSlug: string,
-  methods: Array<Record<string, unknown>>,
+  methods: ReplaceClinicPaymentMethodInput[],
 ) {
-  const response = await fetchApi<IClinicSettings>(`/api/clinic/settings/payment-methods`, {
+  const response = await fetchApi<IClinicPaymentMethod[]>(`/api/clinic/settings/payment-methods`, {
     method: 'PUT',
     tenantSlug,
     body: JSON.stringify({ methods }),
@@ -48,6 +61,8 @@ export async function replaceClinicPaymentMethodsAction(
 
   if (response.success) {
     revalidatePath(`/${tenantSlug}/dashboard/settings`)
+    revalidatePath(`/${tenantSlug}/patient/request`)
+    revalidatePath(`/${tenantSlug}/payment-options`)
   }
 
   return response

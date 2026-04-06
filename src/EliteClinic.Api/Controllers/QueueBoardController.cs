@@ -35,7 +35,7 @@ public class QueueBoardController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueBoardDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.GetBoardAsync(_tenantContext.TenantId);
+        var result = await _queueService.GetBoardAsync(_tenantContext.TenantId, GetCurrentUserId());
         return Ok(result);
     }
 

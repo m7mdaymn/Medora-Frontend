@@ -52,8 +52,11 @@ public class AuthService : IAuthService
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "Unknown";
 
-        // Tenant-scoped validation for non-SuperAdmin users
-        if (role != "SuperAdmin")
+        var isPlatformRole = string.Equals(role, "SuperAdmin", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(role, "Worker", StringComparison.OrdinalIgnoreCase);
+
+        // Tenant-scoped validation for non-platform users
+        if (!isPlatformRole)
         {
             if (string.IsNullOrWhiteSpace(tenantSlug))
                 return null;
@@ -210,8 +213,10 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
 
+        var isPlatformUser = roles.Contains("SuperAdmin") || roles.Contains("Worker");
+
         // Tenant users must always resolve to the same tenant in X-Tenant.
-        if (!roles.Contains("SuperAdmin"))
+        if (!isPlatformUser)
         {
             if (string.IsNullOrWhiteSpace(tenantSlug))
                 return null;
@@ -307,10 +312,19 @@ public class AuthService : IAuthService
                 "platform.view", "tenant.create", "tenant.manage", "subscription.manage",
                 "feature_flags.manage", "audit.view", "analytics.view"
             },
+            "Worker" => new List<string>
+            {
+                "platform.view", "tenant.manage", "subscription.manage",
+                "feature_flags.manage", "analytics.view"
+            },
             "ClinicOwner" => new List<string>
             {
                 "clinic.manage", "doctor.manage", "staff.manage", "patient.view", "patient.manage",
-                "queue.manage", "visit.view", "finance.view", "report.export", "service.manage"
+                "queue.manage", "visit.view", "finance.view", "report.export", "service.manage", "branch.manage"
+            },
+            "BranchManager" => new List<string>
+            {
+                "branch.manage", "branch.view", "staff.view"
             },
             "ClinicManager" => new List<string>
             {

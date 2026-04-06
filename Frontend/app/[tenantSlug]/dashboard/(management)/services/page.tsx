@@ -15,16 +15,21 @@ export default async function ServicesPage({ params, searchParams }: Props) {
   const resolvedSearchParams = await searchParams
 
   const page = Number(resolvedSearchParams.page) || 1
-  const doctorId = resolvedSearchParams.doctorId
+  const urlDoctorId = resolvedSearchParams.doctorId 
 
-  // جلب الداتا الأساسية بالتوازي (أداء أسرع)
   const [doctorsResponse, catalogResponse] = await Promise.all([
     getDoctorsAction(tenantSlug),
     getClinicServicesAction(tenantSlug, page, 20),
   ])
 
-  // لو فيه دكتور مختار في الـ URL، هات خدماته المربوطة
-  const currentLinks = doctorId ? await getDoctorLinksAction(tenantSlug, doctorId) : []
+  const doctors = doctorsResponse.doctors || []
+
+  const effectiveDoctorId = urlDoctorId || (doctors.length > 0 ? doctors[0].id : undefined)
+
+
+  const currentLinks = effectiveDoctorId
+    ? await getDoctorLinksAction(tenantSlug, effectiveDoctorId)
+    : []
 
   return (
     <DashboardShell>
@@ -32,16 +37,15 @@ export default async function ServicesPage({ params, searchParams }: Props) {
         heading='إدارة الخدمات'
         text='تحكم في الكتالوج المركزي للعيادة، وقم بتخصيص أسعار الأطباء من مكان واحد.'
       >
-        <AddServiceModal tenantSlug={tenantSlug}/>
+        <AddServiceModal tenantSlug={tenantSlug} />
       </DashboardHeader>
 
-      {/* 🔴 ده الكومبوننت اللي هيلم الليلة كلها */}
       <ServicesMasterView
         tenantSlug={tenantSlug}
         paginatedCatalog={catalogResponse}
-        doctors={doctorsResponse.doctors}
+        doctors={doctors}
         currentLinks={currentLinks}
-        selectedDoctorId={doctorId}
+        selectedDoctorId={effectiveDoctorId}
         defaultTab={resolvedSearchParams.tab || 'catalog'}
       />
     </DashboardShell>

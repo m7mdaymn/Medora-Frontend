@@ -24,7 +24,15 @@ public class ClinicSettingsDto
     public int CancellationWindowHours { get; set; }
     public PatientSelfServicePaymentPolicy SelfServicePaymentPolicy { get; set; }
     public int SelfServiceRequestExpiryHours { get; set; }
+    public List<ClinicGalleryImageDto> GalleryImages { get; set; } = new();
     public List<WorkingHourDto> WorkingHours { get; set; } = new();
+}
+
+public class ClinicGalleryImageDto
+{
+    public Guid Id { get; set; }
+    public string PublicUrl { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
 
 public class UpdateClinicSettingsRequest
@@ -87,6 +95,8 @@ public class PatchClinicSettingsRequest
 public class ClinicPaymentMethodDto
 {
     public Guid Id { get; set; }
+    public Guid? BranchId { get; set; }
+    public string? BranchName { get; set; }
     public string MethodName { get; set; } = string.Empty;
     public string? ProviderName { get; set; }
     public string? AccountName { get; set; }
@@ -100,6 +110,8 @@ public class ClinicPaymentMethodDto
 
 public class UpsertClinicPaymentMethodRequest
 {
+    public Guid? BranchId { get; set; }
+
     [Required]
     [StringLength(100)]
     public string MethodName { get; set; } = string.Empty;

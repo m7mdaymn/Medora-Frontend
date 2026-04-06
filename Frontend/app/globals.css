@@ -36,9 +36,7 @@
   --sidebar-accent-foreground: #0284c7;
   --sidebar-border: #e2e8f0;
   --sidebar-ring: #0ea5e9;
-  --font-sans: 'Cairo', sans-serif;
-  --font-serif: Tajawal, ui-sans-serif, system-ui, sans-serif;
-  --font-mono: JetBrains Mono, monospace;
+
   --radius: 1rem;
   --shadow-x: 0;
   --shadow-y: 1px;
@@ -109,6 +107,9 @@
 }
 
 @theme inline {
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: JetBrains Mono, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

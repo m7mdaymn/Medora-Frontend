@@ -8,6 +8,6 @@ public interface IClinicSettingsService
     Task<ApiResponse<ClinicSettingsDto>> GetSettingsAsync(Guid tenantId);
     Task<ApiResponse<ClinicSettingsDto>> UpdateSettingsAsync(Guid tenantId, UpdateClinicSettingsRequest request);
     Task<ApiResponse<ClinicSettingsDto>> PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request);
-    Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false);
+    Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false, Guid? branchId = null);
     Task<ApiResponse<List<ClinicPaymentMethodDto>>> ReplacePaymentMethodsAsync(Guid tenantId, UpdateClinicPaymentMethodsRequest request);
 }

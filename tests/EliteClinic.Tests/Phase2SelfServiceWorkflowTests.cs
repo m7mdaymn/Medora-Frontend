@@ -304,8 +304,13 @@ public class Phase2SelfServiceWorkflowTests
     private static PatientSelfServiceRequestService BuildService(EliteClinicDbContext ctx, IFileStorageService fileStorage)
     {
         var messageService = new FakeMessageService();
-        var queueService = new QueueService(ctx, messageService, new FakeInvoiceNumberService());
-        var bookingService = new BookingService(ctx, messageService);
+        var queueService = new QueueService(
+            ctx,
+            messageService,
+            new FakeInvoiceNumberService(),
+            new AllowAllBranchAccessService());
+        var tenantId = ctx.Tenants.IgnoreQueryFilters().Select(t => t.Id).First();
+        var bookingService = new BookingService(ctx, messageService, DbContextFactory.CreateTenantContext(tenantId));
         return new PatientSelfServiceRequestService(ctx, fileStorage, queueService, bookingService);
     }
 

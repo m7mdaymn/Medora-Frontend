@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -16,16 +17,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Calendar, MoreHorizontalIcon, Phone, User, Eye, Copy } from 'lucide-react'
+import { Copy, Eye, MoreHorizontalIcon, User } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
-import { DeletePatientDialog } from './delete-patient-dialog'
-import { EditPatientModal } from './edit-patient-modal'
-import { IPatient } from '../../../../../types/patient'
 import { PermissionGate } from '../../../../../components/auth/permission-gate'
 import { ROLES } from '../../../../../config/roles'
+import { calculateAge } from '../../../../../lib/patient-utils'
+import { IPatient } from '../../../../../types/patient'
 import AddSubProfileModal from './AddSubProfileModal'
+import { DeletePatientDialog } from './delete-patient-dialog'
+import { EditPatientModal } from './edit-patient-modal'
 
 interface PatientsListProps {
   data: IPatient[]
@@ -51,25 +53,16 @@ export function PatientsList({ data }: PatientsListProps) {
               <TableRow key={patient.id}>
                 <TableCell className='font-medium'>
                   <div className='flex items-center gap-3'>
-                    <div className='flex h-9 w-9 items-center justify-center rounded-full border bg-muted'>
-                      <User className='h-4 w-4' />
-                    </div>
                     <span className='font-semibold'>{patient.name}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className='flex items-center gap-2'>
-                    <Phone className='h-4 w-4 text-primary' />
-                    {patient.phone}
-                  </div>
+                  <div className='flex items-center gap-2'>{patient.phone}</div>
                 </TableCell>
                 <TableCell>
                   {patient.dateOfBirth ? (
                     <div className='flex items-center gap-1.5'>
-                      <Calendar className='h-4 w-4 text-primary' />
-                      <span>
-                        {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()} سنة
-                      </span>
+                      <span>{calculateAge(patient.dateOfBirth)} سنة</span>
                     </div>
                   ) : (
                     <span>-</span>
@@ -84,6 +77,8 @@ export function PatientsList({ data }: PatientsListProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
+                      <DropdownMenuLabel className='text-xs'>خيارات المريض</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
                       {/* زر عرض البروفايل - متاح للجميع */}
                       <Link href={`/${tenantSlug}/dashboard/patients/${patient.id}`}>
                         <DropdownMenuItem>
@@ -92,7 +87,11 @@ export function PatientsList({ data }: PatientsListProps) {
                         </DropdownMenuItem>
                       </Link>
 
-                      <AddSubProfileModal parentId={patient.id} parentName={patient.name} tenantSlug={tenantSlug as string}/>
+                      <AddSubProfileModal
+                        parentId={patient.id}
+                        parentName={patient.name}
+                        tenantSlug={tenantSlug as string}
+                      />
 
                       <PermissionGate
                         allowedRoles={[ROLES.CLINIC_OWNER, ROLES.CLINIC_MANAGER, ROLES.SUPER_ADMIN]}
@@ -103,7 +102,7 @@ export function PatientsList({ data }: PatientsListProps) {
                       <DropdownMenuItem
                         onClick={() => navigator.clipboard.writeText(patient.phone)}
                       >
-                        <Copy className='w-4 h-4'/>
+                        <Copy className='w-4 h-4' />
                         نسخ الرقم
                       </DropdownMenuItem>
 

@@ -29,6 +29,7 @@ public class TenantMiddleware
         }
 
         var tenantHeader = context.Request.Headers["X-Tenant"].ToString();
+        var selectedBranchHeader = context.Request.Headers["X-Branch"].ToString();
 
         if (RequiresTenant(path))
         {
@@ -151,6 +152,46 @@ public class TenantMiddleware
             tc.TenantSlug = tenant.Slug;
             tc.TenantStatus = tenant.Status;
             tc.IsTenantResolved = true;
+            tc.SelectedBranchId = null;
+
+            if (!string.IsNullOrWhiteSpace(selectedBranchHeader))
+            {
+                if (!Guid.TryParse(selectedBranchHeader, out var selectedBranchId))
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    context.Response.ContentType = "application/json";
+                    var errorResponse = JsonSerializer.Serialize(new
+                    {
+                        success = false,
+                        message = "X-Branch header is invalid",
+                        errors = new[] { new { field = "X-Branch", message = "Value must be a valid GUID" } }
+                    });
+                    await context.Response.WriteAsync(errorResponse);
+                    return;
+                }
+
+                var branchExists = await dbContext.Branches.AsNoTracking().AnyAsync(b =>
+                    b.TenantId == tenant.Id &&
+                    !b.IsDeleted &&
+                    b.IsActive &&
+                    b.Id == selectedBranchId);
+
+                if (!branchExists)
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    context.Response.ContentType = "application/json";
+                    var errorResponse = JsonSerializer.Serialize(new
+                    {
+                        success = false,
+                        message = "Selected branch was not found or inactive",
+                        errors = new object[] { }
+                    });
+                    await context.Response.WriteAsync(errorResponse);
+                    return;
+                }
+
+                tc.SelectedBranchId = selectedBranchId;
+            }
         }
 
         await _next(context);

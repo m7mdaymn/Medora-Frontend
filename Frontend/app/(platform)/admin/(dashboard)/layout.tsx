@@ -9,7 +9,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   // بنضرب على API الـ profile والسيرفر بيجيب التوكن من الكوكيز أوتوماتيك من fetchApi بتاعتك
   const res = await fetchApi<UserProfile>('/api/Auth/me', { method: 'GET' })
   // لو مفيش توكن، أو التوكن منتهي، أو مش سوبر أدمن -> طرد فوراً
-  if (!res.success || res.data?.role !== 'SuperAdmin') {
+  if (!res.success || (res.data?.role !== 'SuperAdmin' && res.data?.role !== 'Worker')) {
     redirect('/admin/login')
   }
 

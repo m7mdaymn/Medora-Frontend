@@ -1,3 +1,4 @@
+using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Application.Features.Clinic.Services;
 using EliteClinic.Domain.Entities;
@@ -39,7 +40,11 @@ public class Phase7BusinessTests
         await ctx.SaveChangesAsync();
 
         var fakeMessageService = new FakeMessageService();
-        var queueService = new QueueService(ctx, fakeMessageService, new InvoiceNumberService(ctx));
+        var queueService = new QueueService(
+            ctx,
+            fakeMessageService,
+            new InvoiceNumberService(ctx),
+            new AllowAllBranchAccessService());
         var result = await queueService.SkipTicketAsync(tenantId, t1.Id, Guid.NewGuid());
 
         Assert.True(result.Success);
@@ -110,7 +115,7 @@ public class Phase7BusinessTests
         });
         await ctx.SaveChangesAsync();
 
-        var invoiceService = new InvoiceService(ctx, new InvoiceNumberService(ctx));
+        var invoiceService = new InvoiceService(ctx, new InvoiceNumberService(ctx), DbContextFactory.CreateTenantContext(tenantId));
         var refund = await invoiceService.RefundPaymentAsync(
             tenantId,
             invoice.Id,
@@ -267,4 +272,13 @@ public class Phase7BusinessTests
         await ctx.DisposeAsync();
     }
 
+}
+
+internal sealed class AllowAllBranchAccessService : IBranchAccessService
+{
+    public Task<HashSet<Guid>?> GetScopedBranchIdsAsync(Guid tenantId, Guid callerUserId, CancellationToken cancellationToken = default)
+        => Task.FromResult<HashSet<Guid>?>(null);
+
+    public Task<ApiResponse> EnsureCanAccessBranchAsync(Guid tenantId, Guid callerUserId, Guid branchId, CancellationToken cancellationToken = default)
+        => Task.FromResult(ApiResponse.Ok());
 }

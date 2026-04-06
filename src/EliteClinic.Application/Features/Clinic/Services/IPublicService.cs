@@ -11,5 +11,5 @@ public interface IPublicService
     Task<ApiResponse<List<PublicDoctorDto>>> GetAvailableDoctorsNowAsync(string tenantSlug);
     Task<ApiResponse<List<PublicDoctorServiceDto>>> GetServicesAsync(string tenantSlug);
     Task<ApiResponse<List<PublicWorkingHourDto>>> GetWorkingHoursAsync(string tenantSlug);
-    Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(string tenantSlug);
+    Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(string tenantSlug, Guid? branchId = null);
 }

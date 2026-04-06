@@ -6,5 +6,5 @@ interface Props {
 
 export default async function DoctorContractsFallbackPage({ params }: Props) {
   const { tenantSlug } = await params
-  redirect(`/${tenantSlug}/dashboard/doctor/queue`)
+  redirect(`/${tenantSlug}/dashboard/contracts`)
 }

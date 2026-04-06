@@ -38,7 +38,7 @@ public class QueueTicketsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.IssueTicketAsync(_tenantContext.TenantId, request);
+        var result = await _queueService.IssueTicketAsync(_tenantContext.TenantId, request, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 
@@ -57,7 +57,7 @@ public class QueueTicketsController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<QueueTicketDto>.Error("Tenant context not resolved"));
 
-        var result = await _queueService.IssueTicketWithPaymentAsync(_tenantContext.TenantId, request);
+        var result = await _queueService.IssueTicketWithPaymentAsync(_tenantContext.TenantId, request, GetCurrentUserId());
         if (!result.Success)
             return BadRequest(result);
 

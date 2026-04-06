@@ -29,8 +29,14 @@ public class PrescriptionService : IPrescriptionService
         if (doctorActor != null && visit.DoctorId != doctorActor.Id)
             return ApiResponse<PrescriptionDto>.Error("Doctors can only manage prescriptions for their own visits");
 
-        if (visit.Status != VisitStatus.Open)
-            return ApiResponse<PrescriptionDto>.Error("Cannot add prescriptions to a completed visit");
+        var hasCompletedPartnerResult = await HasCompletedPartnerResultForVisitAsync(tenantId, visit.Id);
+        var canDoctorAddPostResultPrescription =
+            doctorActor != null &&
+            visit.Status == VisitStatus.Completed &&
+            hasCompletedPartnerResult;
+
+        if (visit.Status != VisitStatus.Open && !canDoctorAddPostResultPrescription)
+            return ApiResponse<PrescriptionDto>.Error("Cannot add prescriptions to a completed visit unless a partner result has been uploaded");
 
         var prescription = new Prescription
         {
@@ -78,7 +84,14 @@ public class PrescriptionService : IPrescriptionService
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == callerUserId && d.TenantId == tenantId && !d.IsDeleted);
         if (doctor != null && visit.DoctorId != doctor.Id)
             return ApiResponse<PrescriptionDto>.Error("Doctors can only manage prescriptions for their own visits");
-        if (doctor != null && visit.StartedAt.Date != DateTime.UtcNow.Date)
+
+        var hasCompletedPartnerResult = await HasCompletedPartnerResultForVisitAsync(tenantId, visit.Id);
+        var canDoctorApplyPostResultRevision =
+            doctor != null &&
+            visit.Status == VisitStatus.Completed &&
+            hasCompletedPartnerResult;
+
+        if (doctor != null && !canDoctorApplyPostResultRevision && visit.StartedAt.Date != DateTime.UtcNow.Date)
             return ApiResponse<PrescriptionDto>.Error("Can only edit prescriptions from today's visits");
 
         var prescription = await _context.Prescriptions
@@ -108,7 +121,14 @@ public class PrescriptionService : IPrescriptionService
         var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == callerUserId && d.TenantId == tenantId && !d.IsDeleted);
         if (doctor != null && visit.DoctorId != doctor.Id)
             return ApiResponse.Error("Doctors can only manage prescriptions for their own visits");
-        if (doctor != null && visit.StartedAt.Date != DateTime.UtcNow.Date)
+
+        var hasCompletedPartnerResult = await HasCompletedPartnerResultForVisitAsync(tenantId, visit.Id);
+        var canDoctorApplyPostResultRevision =
+            doctor != null &&
+            visit.Status == VisitStatus.Completed &&
+            hasCompletedPartnerResult;
+
+        if (doctor != null && !canDoctorApplyPostResultRevision && visit.StartedAt.Date != DateTime.UtcNow.Date)
             return ApiResponse.Error("Can only delete prescriptions from today's visits");
 
         var prescription = await _context.Prescriptions
@@ -161,6 +181,16 @@ public class PrescriptionService : IPrescriptionService
         return ApiResponse<List<PrescriptionRevisionDto>>.Ok(
             revisions.Select(MapRevisionToDto).ToList(),
             $"Retrieved {revisions.Count} revision(s)");
+    }
+
+    private async Task<bool> HasCompletedPartnerResultForVisitAsync(Guid tenantId, Guid visitId)
+    {
+        return await _context.PartnerOrders.AnyAsync(o =>
+            o.TenantId == tenantId &&
+            !o.IsDeleted &&
+            o.VisitId == visitId &&
+            o.Status == PartnerOrderStatus.Completed &&
+            o.ResultUploadedAt.HasValue);
     }
 
     private async Task AddRevisionAsync(Guid tenantId, Prescription prescription, string action, Guid callerUserId, string? reason)

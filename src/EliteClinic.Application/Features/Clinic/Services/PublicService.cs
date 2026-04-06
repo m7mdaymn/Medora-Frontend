@@ -28,6 +28,19 @@ public class PublicService : IPublicService
         var settings = await _context.ClinicSettings.IgnoreQueryFilters()
             .FirstOrDefaultAsync(cs => cs.TenantId == tenant.Id && !cs.IsDeleted);
 
+        var galleryImageUrls = settings == null
+            ? new List<string>()
+            : await _context.MediaFiles.IgnoreQueryFilters()
+                .Where(m => m.TenantId == tenant.Id
+                    && !m.IsDeleted
+                    && m.IsActive
+                    && m.Category == "ClinicGallery"
+                    && m.EntityType == "ClinicSettings"
+                    && m.EntityId == settings.Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => m.PublicUrl)
+                .ToListAsync();
+
         var clinic = new PublicClinicDto
         {
             ClinicName = settings?.ClinicName ?? tenant.Name,
@@ -38,6 +51,7 @@ public class PublicService : IPublicService
             City = settings?.City,
             LogoUrl = settings?.LogoUrl ?? tenant.LogoUrl,
             ImgUrl = settings?.ImgUrl,
+            GalleryImageUrls = galleryImageUrls,
             Description = settings?.Description,
             SocialLinks = ParseSocialLinks(settings?.SocialLinksJson),
             BookingEnabled = settings?.BookingEnabled ?? false,
@@ -103,12 +117,15 @@ public class PublicService : IPublicService
             .ToListAsync();
 
         var paymentMethods = await _context.ClinicPaymentMethods.IgnoreQueryFilters()
+            .Include(m => m.Branch)
             .Where(m => m.TenantId == tenant.Id && !m.IsDeleted && m.IsActive)
             .OrderBy(m => m.DisplayOrder)
             .ThenBy(m => m.CreatedAt)
             .Select(m => new ClinicPaymentMethodDto
             {
                 Id = m.Id,
+                BranchId = m.BranchId,
+                BranchName = m.Branch != null ? m.Branch.Name : null,
                 MethodName = m.MethodName,
                 ProviderName = m.ProviderName,
                 AccountName = m.AccountName,
@@ -149,6 +166,19 @@ public class PublicService : IPublicService
         var settings = await _context.ClinicSettings.IgnoreQueryFilters()
             .FirstOrDefaultAsync(cs => cs.TenantId == tenant.Id && !cs.IsDeleted);
 
+        var galleryImageUrls = settings == null
+            ? new List<string>()
+            : await _context.MediaFiles.IgnoreQueryFilters()
+                .Where(m => m.TenantId == tenant.Id
+                    && !m.IsDeleted
+                    && m.IsActive
+                    && m.Category == "ClinicGallery"
+                    && m.EntityType == "ClinicSettings"
+                    && m.EntityId == settings.Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => m.PublicUrl)
+                .ToListAsync();
+
         var dto = new PublicClinicDto
         {
             ClinicName = settings?.ClinicName ?? tenant.Name,
@@ -159,6 +189,7 @@ public class PublicService : IPublicService
             City = settings?.City,
             LogoUrl = settings?.LogoUrl ?? tenant.LogoUrl,
             ImgUrl = settings?.ImgUrl,
+            GalleryImageUrls = galleryImageUrls,
             Description = settings?.Description,
             SocialLinks = ParseSocialLinks(settings?.SocialLinksJson),
             BookingEnabled = settings?.BookingEnabled ?? false,
@@ -267,7 +298,7 @@ public class PublicService : IPublicService
         return ApiResponse<List<PublicWorkingHourDto>>.Ok(dtos, $"Retrieved {dtos.Count} working hour(s)");
     }
 
-    public async Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(string tenantSlug)
+    public async Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(string tenantSlug, Guid? branchId = null)
     {
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(t => t.Slug == tenantSlug && !t.IsDeleted);
@@ -278,13 +309,22 @@ public class PublicService : IPublicService
         var settings = await _context.ClinicSettings.IgnoreQueryFilters()
             .FirstOrDefaultAsync(cs => cs.TenantId == tenant.Id && !cs.IsDeleted);
 
-        var methods = await _context.ClinicPaymentMethods.IgnoreQueryFilters()
+        var methodsQuery = _context.ClinicPaymentMethods.IgnoreQueryFilters()
+            .Include(m => m.Branch)
             .Where(m => m.TenantId == tenant.Id && !m.IsDeleted && m.IsActive)
+            .AsQueryable();
+
+        if (branchId.HasValue)
+            methodsQuery = methodsQuery.Where(m => m.BranchId == null || m.BranchId == branchId.Value);
+
+        var methods = await methodsQuery
             .OrderBy(m => m.DisplayOrder)
             .ThenBy(m => m.CreatedAt)
             .Select(m => new ClinicPaymentMethodDto
             {
                 Id = m.Id,
+                BranchId = m.BranchId,
+                BranchName = m.Branch != null ? m.Branch.Name : null,
                 MethodName = m.MethodName,
                 ProviderName = m.ProviderName,
                 AccountName = m.AccountName,

@@ -8,7 +8,7 @@ namespace EliteClinic.Api.Controllers;
 
 [ApiController]
 [Route("api/platform/tenants")]
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,Worker")]
 public class TenantsController : ControllerBase
 {
     private readonly ITenantService _tenantService;

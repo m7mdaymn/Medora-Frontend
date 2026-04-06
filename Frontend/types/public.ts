@@ -28,6 +28,7 @@ export interface IPublicClinic {
   city: string | null
   logoUrl: string | null
   imgUrl?: string | null
+  galleryImageUrls?: string[]
   description?: string | null
   socialLinks?: Record<string, string>
   bookingEnabled: boolean
@@ -62,6 +63,8 @@ export interface IPublicWorkingHour {
 
 export interface IPublicPaymentMethod {
   id: string
+  branchId?: string | null
+  branchName?: string | null
   methodName: string
   providerName: string | null
   accountName: string | null

@@ -8,5 +8,8 @@ public interface IMediaService
 {
     Task<ApiResponse<MediaFileDto>> UploadClinicLogoAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default);
     Task<ApiResponse<MediaFileDto>> UploadClinicImageAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default);
+    Task<ApiResponse<MediaFileDto>> UploadClinicGalleryImageAsync(Guid tenantId, IFormFile file, CancellationToken cancellationToken = default);
+    Task<ApiResponse<List<MediaFileDto>>> GetClinicGalleryAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task<ApiResponse> DeleteClinicGalleryImageAsync(Guid tenantId, Guid mediaId, CancellationToken cancellationToken = default);
     Task<ApiResponse<MediaFileDto>> UploadDoctorPhotoAsync(Guid tenantId, Guid doctorId, IFormFile file, CancellationToken cancellationToken = default);
 }

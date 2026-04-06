@@ -101,9 +101,9 @@ public class PublicController : ControllerBase
     [HttpGet("{slug}/payment-options")]
     [ProducesResponseType(typeof(ApiResponse<ClinicPaymentOptionsDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse<ClinicPaymentOptionsDto>), 404)]
-    public async Task<ActionResult<ApiResponse<ClinicPaymentOptionsDto>>> GetPaymentOptions(string slug)
+    public async Task<ActionResult<ApiResponse<ClinicPaymentOptionsDto>>> GetPaymentOptions(string slug, [FromQuery] Guid? branchId = null)
     {
-        var result = await _publicService.GetPaymentOptionsAsync(slug);
+        var result = await _publicService.GetPaymentOptionsAsync(slug, branchId);
         if (!result.Success)
             return NotFound(result);
         return Ok(result);

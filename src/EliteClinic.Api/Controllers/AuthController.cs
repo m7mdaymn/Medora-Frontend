@@ -148,7 +148,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<UserInfoDto>>> GetMe(
         [FromHeader(Name = "X-Tenant")] string? tenantSlug = null)
     {
-        if (!User.IsInRole("SuperAdmin") && string.IsNullOrWhiteSpace(tenantSlug))
+        if (!User.IsInRole("SuperAdmin") && !User.IsInRole("Worker") && string.IsNullOrWhiteSpace(tenantSlug))
         {
             return BadRequest(ApiResponse<UserInfoDto>.Error("X-Tenant header is required for tenant users"));
         }

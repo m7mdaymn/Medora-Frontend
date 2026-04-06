@@ -1,6 +1,7 @@
 'use client'
 
 import { getDoctorsAction } from '@/actions/doctor/get-doctors'
+import { getAllStaffAction } from '@/actions/staff/get-staff'
 import {
   createAbsenceAction,
   createAttendanceAction,
@@ -20,14 +21,33 @@ import { FormEvent, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
 
+type WorkforceWorkerOption = {
+  key: string
+  type: 'doctor' | 'employee'
+  id: string
+  label: string
+  roleLabel: string
+}
+
+function parseWorkerSelection(value: string): { doctorId?: string; employeeId?: string } | null {
+  if (!value) return null
+
+  const [type, id] = value.split(':')
+  if (!type || !id) return null
+
+  if (type === 'doctor') return { doctorId: id }
+  if (type === 'employee') return { employeeId: id }
+  return null
+}
+
 export default function WorkforcePage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
 
-  const [attendanceDoctorId, setAttendanceDoctorId] = useState('')
+  const [attendanceWorkerKey, setAttendanceWorkerKey] = useState('')
   const [attendanceBranchId, setAttendanceBranchId] = useState('')
 
-  const [absenceDoctorId, setAbsenceDoctorId] = useState('')
+  const [absenceWorkerKey, setAbsenceWorkerKey] = useState('')
   const [absenceFrom, setAbsenceFrom] = useState(new Date().toISOString().slice(0, 10))
   const [absenceTo, setAbsenceTo] = useState(new Date().toISOString().slice(0, 10))
   const [absenceReason, setAbsenceReason] = useState('')
@@ -36,6 +56,10 @@ export default function WorkforcePage() {
 
   const { data: doctorsRes } = useSWR(['doctors-for-workforce', tenantSlug], () =>
     getDoctorsAction(tenantSlug),
+  )
+
+  const { data: staffRes } = useSWR(['staff-for-workforce', tenantSlug], () =>
+    getAllStaffAction(tenantSlug),
   )
 
   const { data: attendanceRes, isLoading: loadingAttendance, mutate: mutateAttendance } = useSWR(
@@ -54,25 +78,52 @@ export default function WorkforcePage() {
   )
 
   const doctors = useMemo(() => doctorsRes?.doctors ?? [], [doctorsRes?.doctors])
+  const staffMembers = useMemo(
+    () => (staffRes ?? []).filter((member) => member.isEnabled),
+    [staffRes],
+  )
+
+  const workerOptions = useMemo<WorkforceWorkerOption[]>(
+    () => [
+      ...doctors.map((doctor) => ({
+        key: `doctor:${doctor.id}`,
+        type: 'doctor' as const,
+        id: doctor.id,
+        label: `د. ${doctor.name}`,
+        roleLabel: 'طبيب',
+      })),
+      ...staffMembers.map((member) => ({
+        key: `employee:${member.id}`,
+        type: 'employee' as const,
+        id: member.id,
+        label: member.name,
+        roleLabel: member.role || 'موظف',
+      })),
+    ],
+    [doctors, staffMembers],
+  )
+
   const attendance = attendanceRes?.data || []
   const absences = absenceRes?.data || []
   const closings = closingRes?.data || []
 
-  const defaultDoctorId = useMemo(() => doctors[0]?.id || '', [doctors])
+  const defaultWorkerKey = useMemo(() => workerOptions[0]?.key || '', [workerOptions])
 
   const submitAttendance = async (event: FormEvent) => {
     event.preventDefault()
 
-    const selectedDoctorId = attendanceDoctorId || defaultDoctorId
-    if (!selectedDoctorId) {
-      toast.error('اختر طبيباً لتسجيل الحضور')
+    const selectedWorkerKey = attendanceWorkerKey || defaultWorkerKey
+    const selectedWorker = parseWorkerSelection(selectedWorkerKey)
+
+    if (!selectedWorker) {
+      toast.error('اختر عاملاً لتسجيل الحضور')
       return
     }
 
     setIsSubmitting(true)
     try {
       const response = await createAttendanceAction(tenantSlug, {
-        doctorId: selectedDoctorId,
+        ...selectedWorker,
         branchId: attendanceBranchId || undefined,
       })
 
@@ -91,16 +142,18 @@ export default function WorkforcePage() {
   const submitAbsence = async (event: FormEvent) => {
     event.preventDefault()
 
-    const selectedDoctorId = absenceDoctorId || defaultDoctorId
-    if (!selectedDoctorId || !absenceReason.trim()) {
-      toast.error('اختر الطبيب وأدخل سبب الغياب')
+    const selectedWorkerKey = absenceWorkerKey || defaultWorkerKey
+    const selectedWorker = parseWorkerSelection(selectedWorkerKey)
+
+    if (!selectedWorker || !absenceReason.trim()) {
+      toast.error('اختر العامل وأدخل سبب الغياب')
       return
     }
 
     setIsSubmitting(true)
     try {
       const response = await createAbsenceAction(tenantSlug, {
-        doctorId: selectedDoctorId,
+        ...selectedWorker,
         fromDate: absenceFrom,
         toDate: absenceTo,
         reason: absenceReason.trim(),
@@ -146,16 +199,16 @@ export default function WorkforcePage() {
           <h3 className='text-sm font-bold mb-3'>تسجيل حضور</h3>
           <form onSubmit={submitAttendance} className='space-y-3'>
             <div className='space-y-2'>
-              <Label>الطبيب</Label>
+              <Label>العامل</Label>
               <select
                 className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={attendanceDoctorId}
-                onChange={(event) => setAttendanceDoctorId(event.target.value)}
+                value={attendanceWorkerKey}
+                onChange={(event) => setAttendanceWorkerKey(event.target.value)}
               >
-                <option value=''>اختر الطبيب</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
+                <option value=''>اختر العامل</option>
+                {workerOptions.map((worker) => (
+                  <option key={worker.key} value={worker.key}>
+                    {worker.label} ({worker.roleLabel})
                   </option>
                 ))}
               </select>
@@ -179,16 +232,16 @@ export default function WorkforcePage() {
           <h3 className='text-sm font-bold mb-3'>تسجيل غياب</h3>
           <form onSubmit={submitAbsence} className='space-y-3'>
             <div className='space-y-2'>
-              <Label>الطبيب</Label>
+              <Label>العامل</Label>
               <select
                 className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={absenceDoctorId}
-                onChange={(event) => setAbsenceDoctorId(event.target.value)}
+                value={absenceWorkerKey}
+                onChange={(event) => setAbsenceWorkerKey(event.target.value)}
               >
-                <option value=''>اختر الطبيب</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
+                <option value=''>اختر العامل</option>
+                {workerOptions.map((worker) => (
+                  <option key={worker.key} value={worker.key}>
+                    {worker.label} ({worker.roleLabel})
                   </option>
                 ))}
               </select>

@@ -20,3 +20,18 @@ C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Domain.pdb
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.deps.json
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.dll
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-app\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-app\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-app\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-api\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-api\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Domain\bin\validation-api\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Domain.pdb
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Domain.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Domain.dll
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Domain.pdb

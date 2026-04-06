@@ -7,7 +7,7 @@ namespace EliteClinic.Api.Controllers;
 
 [ApiController]
 [Route("api/platform/subscriptions")]
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,Worker")]
 public class SubscriptionsController : ControllerBase
 {
     private readonly ISubscriptionService _subscriptionService;

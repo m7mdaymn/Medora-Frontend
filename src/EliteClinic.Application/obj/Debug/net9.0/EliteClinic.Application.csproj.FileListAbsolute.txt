@@ -25,3 +25,26 @@ C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Application.pdb
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.deps.json
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.dll
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-app\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Application\bin\validation-api\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp_build_app\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Application.pdb
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Application.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Application.dll
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Application.pdb

@@ -98,11 +98,11 @@ export function ExpenseRowActions({ exp, tenantSlug }: { exp: IExpense; tenantSl
           <AlertDialogFooter>
             <AlertDialogCancel>تراجع</AlertDialogCancel>
             <AlertDialogAction
+            variant={'destructive'}
               onClick={(e) => {
                 e.preventDefault()
                 onDelete()
               }}
-              className='bg-destructive hover:bg-destructive/90'
               disabled={isPending}
             >
               {isPending ? <Loader2 className='h-4 w-4 animate-spin' /> : 'نعم، احذف'}

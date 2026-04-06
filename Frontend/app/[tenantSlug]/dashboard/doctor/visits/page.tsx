@@ -27,14 +27,6 @@ interface Props {
   }>
 }
 
-function isBookingSource(source: string): boolean {
-  return source === 'Booking' || source === 'ConsultationBooking' || source === 'PatientSelfServiceBooking'
-}
-
-function isSelfServiceSource(source: string): boolean {
-  return source === 'PatientSelfServiceTicket' || source === 'PatientSelfServiceBooking'
-}
-
 function getVisitTypeLabel(type: string): string {
   if (type === 'Exam') return 'كشف'
   if (type === 'Consultation') return 'استشارة'
@@ -68,38 +60,6 @@ function getDefaultDateRange(period: 'all' | 'today' | 'week' | 'month'): { from
   return {}
 }
 
-function applyFrontendFilters(
-  visits: IVisit[],
-  filters: {
-    period: 'all' | 'today' | 'week' | 'month'
-    fromDate?: string
-    toDate?: string
-    visitType: 'all' | 'Exam' | 'Consultation'
-    source: 'all' | 'booking' | 'ticket' | 'self'
-  },
-): IVisit[] {
-  const range = getDefaultDateRange(filters.period)
-  const fromDate = filters.fromDate || range.from
-  const toDate = filters.toDate || range.to
-
-  return visits.filter((visit) => {
-    const startedDate = visit.startedAt.slice(0, 10)
-
-    if (fromDate && startedDate < fromDate) return false
-    if (toDate && startedDate > toDate) return false
-
-    if (filters.visitType !== 'all' && visit.visitType !== filters.visitType) return false
-
-    if (filters.source !== 'all') {
-      if (filters.source === 'booking' && !isBookingSource(visit.source)) return false
-      if (filters.source === 'ticket' && visit.source !== 'WalkInTicket') return false
-      if (filters.source === 'self' && !isSelfServiceSource(visit.source)) return false
-    }
-
-    return true
-  })
-}
-
 export default async function DoctorVisitsPage({ params, searchParams }: Props) {
   const { tenantSlug } = await params
   const qs = await searchParams
@@ -110,19 +70,21 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
   const fromDate = qs.fromDate
   const toDate = qs.toDate
 
-  const res = await getMyVisitsAction(tenantSlug, { pageNumber: 1, pageSize: 300 })
-  const allVisits = res.success && res.data ? res.data : []
-  const visits = applyFrontendFilters(allVisits, {
-    period,
-    fromDate,
-    toDate,
-    visitType,
-    source,
-  })
-
   const defaultRange = getDefaultDateRange(period)
   const effectiveFrom = fromDate || defaultRange.from || ''
   const effectiveTo = toDate || defaultRange.to || ''
+
+  const res = await getMyVisitsAction(tenantSlug, {
+    pageNumber: 1,
+    pageSize: 1000,
+    fromDate: effectiveFrom || undefined,
+    toDate: effectiveTo || undefined,
+    visitType: visitType !== 'all' ? visitType : undefined,
+    isBooking: source === 'booking' ? true : undefined,
+    source: source === 'ticket' ? 'WalkInTicket' : undefined,
+    isSelfService: source === 'self' ? true : undefined,
+  })
+  const visits: IVisit[] = res.success && res.data ? res.data : []
 
   return (
     <DashboardShell>
@@ -223,7 +185,6 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
           <Table>
             <TableHeader className='bg-muted/50'>
               <TableRow>
-                <TableHead className='text-right w-30'>رقم الزيارة</TableHead>
                 <TableHead className='text-right'>المريض</TableHead>
                   <TableHead className='text-right'>النوع</TableHead>
                   <TableHead className='text-right'>المصدر</TableHead>
@@ -238,9 +199,6 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
             <TableBody>
               {visits.map((visit) => (
                 <TableRow key={visit.id} className='hover:bg-muted/30 transition-colors'>
-                  <TableCell className='font-mono text-xs text-muted-foreground'>
-                    #{visit.id.slice(0, 8).toUpperCase()}
-                  </TableCell>
                   <TableCell className='font-bold text-foreground'>{visit.patientName}</TableCell>
                   <TableCell>
                     <Badge variant='outline'>{getVisitTypeLabel(visit.visitType)}</Badge>
@@ -271,7 +229,6 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
                     ) : visit.status === 'Completed' || visit.completedAt ? (
                       <Badge
                         variant='outline'
-                        className='bg-emerald-50 text-emerald-600 border-emerald-200 gap-1 px-2 py-0.5'
                       >
                         <CheckCircle2 className='w-3.5 h-3.5' />
                         مكتملة

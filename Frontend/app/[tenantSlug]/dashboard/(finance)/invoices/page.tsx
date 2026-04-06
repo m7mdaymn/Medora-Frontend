@@ -8,14 +8,12 @@ export default async function InvoicesPage({
   searchParams,
 }: {
   params: Promise<{ tenantSlug: string }>
-  // ضفنا invoiceNumber هنا
   searchParams: Promise<{ page?: string; from?: string; to?: string; invoiceNumber?: string }>
 }) {
   const { tenantSlug } = await params
   const { page, from, to, invoiceNumber } = await searchParams
   const currentPage = Number(page) || 1
 
-  // لازم تتأكد إن الأكشن ده في فولدر الـ actions متعدل إنه يستقبل invoiceNumber ويبعته للباك إند
   const response = await getInvoicesAction(tenantSlug, currentPage, 10, from, to, invoiceNumber)
   const invoices = response?.data?.items || []
 

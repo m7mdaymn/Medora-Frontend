@@ -10,14 +10,15 @@ export async function updateStaffAction(
   data: UpdateStaffInput,
   tenantSlug: string,
 ): Promise<BaseApiResponse<IStaff>> {
-  // الـ Payload اللي هيتبعت للباك إند بدون الـ id وبدون الداتا اللي مش هتتعدل
   const payload = {
     name: data.name,
-    phone: data.phone,
+    phone: data.phone.trim() || undefined,
     salary: data.salary,
+    hireDate: data.hireDate?.trim() || undefined,
+    notes: data.notes?.trim() || undefined,
+    branchIds: data.branchIds,
   }
 
-  // الـ id بيتبعت في الـ URL هنا
   const res = await fetchApi<IStaff>(`/api/clinic/staff/${data.id}`, {
     method: 'PUT',
     body: JSON.stringify(payload),

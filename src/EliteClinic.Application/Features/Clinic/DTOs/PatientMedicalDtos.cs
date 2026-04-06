@@ -29,6 +29,10 @@ public class UploadPatientMedicalDocumentRequest
     [Required]
     public DocumentCategory Category { get; set; }
 
+    public Guid? VisitId { get; set; }
+
+    public Guid? PartnerOrderId { get; set; }
+
     [StringLength(500)]
     public string? Notes { get; set; }
 }

@@ -142,8 +142,11 @@ public class PartnerOrderDto
     public Guid VisitId { get; set; }
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
+    public string? PatientPhone { get; set; }
     public Guid DoctorId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
+    public string? VisitComplaint { get; set; }
+    public string? VisitDiagnosis { get; set; }
     public Guid? LabRequestId { get; set; }
     public Guid? PrescriptionId { get; set; }
     public Guid? PartnerServiceCatalogItemId { get; set; }
@@ -163,6 +166,8 @@ public class PartnerOrderDto
     public PartnerSettlementTarget? SettlementTarget { get; set; }
     public decimal? SettlementPercentage { get; set; }
     public decimal? ClinicDoctorSharePercentage { get; set; }
+    public decimal? PatientDiscountPercentage { get; set; }
+    public decimal? DoctorFixedPayoutAmount { get; set; }
     public decimal? DoctorPayoutAmount { get; set; }
     public decimal? ClinicRevenueAmount { get; set; }
     public string? ResultSummary { get; set; }
@@ -222,6 +227,40 @@ public class CreatePrescriptionPartnerOrderRequest
     public string? Notes { get; set; }
 }
 
+public class CreateVisitPartnerOrderRequest
+{
+    [Required]
+    public Guid PartnerId { get; set; }
+
+    public Guid? PartnerContractId { get; set; }
+
+    public Guid? PartnerServiceCatalogItemId { get; set; }
+
+    [StringLength(200)]
+    public string? RequestedServiceName { get; set; }
+
+    [StringLength(4000)]
+    public string? ClinicalNotes { get; set; }
+
+    [Range(0, 1000000000)]
+    public decimal? EstimatedCost { get; set; }
+
+    [StringLength(120)]
+    public string? ExternalReference { get; set; }
+
+    [StringLength(2000)]
+    public string? Notes { get; set; }
+}
+
+public class AddPartnerOrderCommentRequest
+{
+    [Required]
+    [StringLength(2000)]
+    public string Comment { get; set; } = string.Empty;
+
+    public bool NotifyPatient { get; set; } = true;
+}
+
 public class UpdatePartnerOrderStatusRequest
 {
     [Required]
@@ -248,6 +287,8 @@ public class PartnerServiceCatalogItemDto
     public PartnerSettlementTarget SettlementTarget { get; set; }
     public decimal SettlementPercentage { get; set; }
     public decimal? ClinicDoctorSharePercentage { get; set; }
+    public decimal? PatientDiscountPercentage { get; set; }
+    public decimal? DoctorFixedPayoutAmount { get; set; }
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -275,6 +316,12 @@ public class CreatePartnerServiceCatalogItemRequest
     [Range(0, 1000)]
     public decimal? ClinicDoctorSharePercentage { get; set; }
 
+    [Range(0, 100)]
+    public decimal? PatientDiscountPercentage { get; set; }
+
+    [Range(0, 1000000000)]
+    public decimal? DoctorFixedPayoutAmount { get; set; }
+
     [StringLength(2000)]
     public string? Notes { get; set; }
 }
@@ -297,6 +344,12 @@ public class UpdatePartnerServiceCatalogItemRequest
 
     [Range(0, 1000)]
     public decimal? ClinicDoctorSharePercentage { get; set; }
+
+    [Range(0, 100)]
+    public decimal? PatientDiscountPercentage { get; set; }
+
+    [Range(0, 1000000000)]
+    public decimal? DoctorFixedPayoutAmount { get; set; }
 
     public bool IsActive { get; set; } = true;
 
@@ -391,7 +444,13 @@ public class PatientPartnerOrderTimelineDto
     public Guid VisitId { get; set; }
     public Guid PartnerId { get; set; }
     public string PartnerName { get; set; } = string.Empty;
+    public string? PartnerContactName { get; set; }
+    public string? PartnerContactPhone { get; set; }
+    public string? PartnerAddress { get; set; }
     public PartnerType PartnerType { get; set; }
+    public string DoctorName { get; set; } = string.Empty;
+    public string? VisitComplaint { get; set; }
+    public string? VisitDiagnosis { get; set; }
     public string? ServiceName { get; set; }
     public PartnerOrderStatus Status { get; set; }
     public DateTime OrderedAt { get; set; }
@@ -402,9 +461,12 @@ public class PatientPartnerOrderTimelineDto
     public DateTime? CompletedAt { get; set; }
     public decimal? Price { get; set; }
     public decimal? FinalCost { get; set; }
+    public decimal? PatientDiscountPercentage { get; set; }
+    public decimal? DoctorFixedPayoutAmount { get; set; }
     public decimal? DoctorPayoutAmount { get; set; }
     public decimal? ClinicRevenueAmount { get; set; }
     public string? ResultSummary { get; set; }
+    public string? ExternalReference { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -412,6 +474,7 @@ public class PartnerOrdersQuery
 {
     public Guid? BranchId { get; set; }
     public Guid? PartnerId { get; set; }
+    public Guid? VisitId { get; set; }
     public PartnerType? PartnerType { get; set; }
     public PartnerOrderStatus? Status { get; set; }
     public DateTime? FromDate { get; set; }

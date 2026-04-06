@@ -118,7 +118,7 @@ public class PartnersController : ControllerBase
     }
 
     [HttpPost("contracts")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PartnerContractDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse<PartnerContractDto>), 400)]
     public async Task<ActionResult<ApiResponse<PartnerContractDto>>> CreateContract([FromBody] CreatePartnerContractRequest request)
@@ -134,7 +134,7 @@ public class PartnersController : ControllerBase
     }
 
     [HttpPut("contracts/{contractId:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PartnerContractDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse<PartnerContractDto>), 400)]
     public async Task<ActionResult<ApiResponse<PartnerContractDto>>> UpdateContract(Guid contractId, [FromBody] UpdatePartnerContractRequest request)
@@ -162,7 +162,7 @@ public class PartnersController : ControllerBase
     }
 
     [HttpPost("services")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Contractor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Contractor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 400)]
     public async Task<ActionResult<ApiResponse<PartnerServiceCatalogItemDto>>> CreateService([FromBody] CreatePartnerServiceCatalogItemRequest request)
@@ -178,7 +178,7 @@ public class PartnersController : ControllerBase
     }
 
     [HttpPut("services/{itemId:guid}")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Contractor,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Doctor,Contractor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse<PartnerServiceCatalogItemDto>), 400)]
     public async Task<ActionResult<ApiResponse<PartnerServiceCatalogItemDto>>> UpdateService(Guid itemId, [FromBody] UpdatePartnerServiceCatalogItemRequest request)

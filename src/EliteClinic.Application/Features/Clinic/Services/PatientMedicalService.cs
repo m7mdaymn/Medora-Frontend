@@ -52,6 +52,59 @@ public class PatientMedicalService : IPatientMedicalService
         if (!access.Allowed)
             return ApiResponse<PatientMedicalDocumentDto>.Error(access.Message);
 
+        Guid? targetDoctorUserId = null;
+        var contextualNoteParts = new List<string>();
+
+        if (request.VisitId.HasValue)
+        {
+            var visit = await _context.Visits
+                .FirstOrDefaultAsync(v =>
+                    v.TenantId == tenantId &&
+                    !v.IsDeleted &&
+                    v.Id == request.VisitId.Value &&
+                    v.PatientId == patientId,
+                    cancellationToken);
+
+            if (visit == null)
+                return ApiResponse<PatientMedicalDocumentDto>.Error("Visit context is invalid for this patient");
+
+            targetDoctorUserId = await _context.Doctors
+                .Where(d => d.TenantId == tenantId && !d.IsDeleted && d.Id == visit.DoctorId)
+                .Select(d => (Guid?)d.UserId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            contextualNoteParts.Add($"Visit:{visit.Id}");
+        }
+
+        if (request.PartnerOrderId.HasValue)
+        {
+            var partnerOrder = await _context.PartnerOrders
+                .Include(o => o.Visit)
+                .FirstOrDefaultAsync(o =>
+                    o.TenantId == tenantId &&
+                    !o.IsDeleted &&
+                    o.Id == request.PartnerOrderId.Value,
+                    cancellationToken);
+
+            if (partnerOrder == null || partnerOrder.Visit.PatientId != patientId)
+                return ApiResponse<PatientMedicalDocumentDto>.Error("Partner order context is invalid for this patient");
+
+            if (request.VisitId.HasValue && partnerOrder.VisitId != request.VisitId.Value)
+                return ApiResponse<PatientMedicalDocumentDto>.Error("Partner order does not belong to the selected visit");
+
+            if (!request.VisitId.HasValue)
+            {
+                targetDoctorUserId = await _context.Doctors
+                    .Where(d => d.TenantId == tenantId && !d.IsDeleted && d.Id == partnerOrder.Visit.DoctorId)
+                    .Select(d => (Guid?)d.UserId)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                contextualNoteParts.Add($"Visit:{partnerOrder.VisitId}");
+            }
+
+            contextualNoteParts.Add($"PartnerOrder:{partnerOrder.Id}");
+        }
+
         if (file == null || file.Length <= 0)
             return ApiResponse<PatientMedicalDocumentDto>.Error("File is required");
 
@@ -63,6 +116,15 @@ public class PatientMedicalService : IPatientMedicalService
             return ApiResponse<PatientMedicalDocumentDto>.Error("File size exceeds 10 MB limit");
 
         var saved = await _fileStorageService.SaveFileAsync(tenantId, "patient-medical-documents", file, cancellationToken);
+
+        var userNotes = request.Notes?.Trim();
+        if (contextualNoteParts.Count > 0)
+        {
+            var contextBlock = string.Join(" | ", contextualNoteParts);
+            userNotes = string.IsNullOrWhiteSpace(userNotes)
+                ? contextBlock
+                : $"{userNotes} | {contextBlock}";
+        }
 
         var document = new PatientMedicalDocument
         {
@@ -76,10 +138,25 @@ public class PatientMedicalService : IPatientMedicalService
             PublicUrl = saved.PublicUrl,
             ContentType = file.ContentType,
             FileSizeBytes = file.Length,
-            Notes = request.Notes
+            Notes = userNotes
         };
 
         _context.PatientMedicalDocuments.Add(document);
+
+        if (targetDoctorUserId.HasValue && targetDoctorUserId.Value != callerUserId)
+        {
+            _context.InAppNotifications.Add(new InAppNotification
+            {
+                TenantId = tenantId,
+                UserId = targetDoctorUserId.Value,
+                Type = InAppNotificationType.MedicalDocumentThreadUpdated,
+                Title = "Patient uploaded external result",
+                Body = "A patient uploaded a document linked to an external partner workflow",
+                EntityType = nameof(PatientMedicalDocument),
+                EntityId = document.Id
+            });
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return ApiResponse<PatientMedicalDocumentDto>.Created(MapDocument(document), "Medical document uploaded successfully");

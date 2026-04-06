@@ -196,3 +196,185 @@ C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Api.deps
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Api.runtimeconfig.json
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Api.dll
 C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Api.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\appsettings.Development.json
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\appsettings.json
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.staticwebassets.endpoints.json
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.exe
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.deps.json
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.runtimeconfig.json
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Api.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Azure.Core.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Azure.Identity.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Humanizer.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.AspNetCore.OpenApi.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Bcl.AsyncInterfaces.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Build.Locator.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.CSharp.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.Workspaces.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Data.SqlClient.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.EntityFrameworkCore.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.EntityFrameworkCore.Design.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.EntityFrameworkCore.Relational.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.EntityFrameworkCore.SqlServer.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Extensions.DependencyModel.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Identity.Client.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.Abstractions.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.Logging.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.Protocols.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.IdentityModel.Tokens.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.OpenApi.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.SqlServer.Server.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Microsoft.Win32.SystemEvents.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Mono.TextTemplating.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.AspNetCore.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Extensions.Hosting.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Extensions.Logging.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Formatting.Compact.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Settings.Configuration.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Sinks.Console.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Sinks.Debug.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Serilog.Sinks.File.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Swashbuckle.AspNetCore.Swagger.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.ClientModel.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.CodeDom.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Composition.AttributedModel.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Composition.Convention.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Composition.Hosting.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Composition.Runtime.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Composition.TypedParts.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Configuration.ConfigurationManager.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Drawing.Common.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.IdentityModel.Tokens.Jwt.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Memory.Data.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Runtime.Caching.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Security.Cryptography.ProtectedData.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Security.Permissions.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\System.Windows.Extensions.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\cs\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\de\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\es\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\fr\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\it\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ja\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ko\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pl\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pt-BR\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ru\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\tr\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\cs\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\de\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\es\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\fr\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\it\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ja\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ko\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pl\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\pt-BR\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\ru\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\src\EliteClinic.Api\bin\validation-api\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp_build_api\appsettings.Development.json
+C:\DATA\Elite Clinic\.tmp_build_api\appsettings.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.staticwebassets.endpoints.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.exe
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.deps.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.dll
+C:\DATA\Elite Clinic\.tmp_build_api\EliteClinic.Api.pdb
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\appsettings.Development.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\appsettings.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Debug\net9.0\appsettings.Development.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Debug\net9.0\appsettings.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Debug\net9.0\EliteClinic.Api.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Debug\net9.0\EliteClinic.Api.runtimeconfig.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Debug\net9.0\EliteClinic.Api.staticwebassets.endpoints.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Release\net9.0\appsettings.Development.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Release\net9.0\appsettings.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Release\net9.0\EliteClinic.Api.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Release\net9.0\EliteClinic.Api.runtimeconfig.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\Release\net9.0\EliteClinic.Api.staticwebassets.endpoints.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\validation-api\appsettings.Development.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\validation-api\appsettings.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\validation-api\EliteClinic.Api.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\validation-api\EliteClinic.Api.runtimeconfig.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\bin\validation-api\EliteClinic.Api.staticwebassets.endpoints.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.staticwebassets.endpoints.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.exe
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.deps.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.runtimeconfig.json
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.dll
+C:\Windows\Temp\elite_validate_out2\Debug\net9.0\EliteClinic.Api.pdb

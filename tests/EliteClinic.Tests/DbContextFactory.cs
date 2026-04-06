@@ -38,17 +38,24 @@ internal static class DbContextFactory
         return (context, connection);
     }
 
+    public static ITenantContext CreateTenantContext(Guid tenantId, Guid? selectedBranchId = null)
+    {
+        return new TestTenantContext(tenantId, selectedBranchId);
+    }
+
     private sealed class TestTenantContext : ITenantContext
     {
         public Guid TenantId { get; }
         public string? TenantSlug { get; } = "test-tenant";
+        public Guid? SelectedBranchId { get; }
         public TenantStatus TenantStatus { get; } = TenantStatus.Active;
         public bool IsTenantResolved { get; } = true;
         public string? UserId { get; }
 
-        public TestTenantContext(Guid tenantId)
+        public TestTenantContext(Guid tenantId, Guid? selectedBranchId = null)
         {
             TenantId = tenantId;
+            SelectedBranchId = selectedBranchId;
             UserId = tenantId.ToString();
         }
     }

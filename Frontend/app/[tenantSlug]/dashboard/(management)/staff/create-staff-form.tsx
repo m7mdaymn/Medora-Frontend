@@ -1,7 +1,9 @@
 'use client'
 
+import { getBranchesAction } from '@/actions/branch/branches'
 import { createStaffAction } from '@/actions/staff/create-staff'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -19,9 +21,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { IBranch } from '@/types/branch'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { Loader2, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { CreateStaffInput, createStaffSchema } from '../../../../../validation/staff'
@@ -35,6 +38,8 @@ interface Props {
 
 export function CreateStaffForm({ tenantSlug, onSuccess }: Props) {
   const [loading, setLoading] = useState(false)
+  const [branches, setBranches] = useState<IBranch[]>([])
+  const [isLoadingBranches, setIsLoadingBranches] = useState(true)
 
   const form = useForm<CreateStaffInput>({
     resolver: valibotResolver(createStaffSchema),
@@ -47,8 +52,47 @@ export function CreateStaffForm({ tenantSlug, onSuccess }: Props) {
       salary: 0,
       notes: '',
       hireDate: new Date().toISOString().split('T')[0],
+      branchIds: [],
     },
   })
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadBranches = async () => {
+      setIsLoadingBranches(true)
+      const res = await getBranchesAction(tenantSlug, false)
+
+      if (isMounted) {
+        if (res.success && res.data) {
+          setBranches(res.data)
+        } else {
+          toast.error(res.message || 'تعذر تحميل قائمة الفروع')
+        }
+        setIsLoadingBranches(false)
+      }
+    }
+
+    void loadBranches()
+
+    return () => {
+      isMounted = false
+    }
+  }, [tenantSlug])
+
+  function toggleBranchSelection(branchId: string, checked: boolean | 'indeterminate') {
+    const current = form.getValues('branchIds') || []
+    const shouldSelect = checked === true
+
+    const next = shouldSelect
+      ? Array.from(new Set([...current, branchId]))
+      : current.filter((id) => id !== branchId)
+
+    form.setValue('branchIds', next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
 
   async function onSubmit(values: CreateStaffInput) {
     setLoading(true)
@@ -123,8 +167,13 @@ export function CreateStaffForm({ tenantSlug, onSuccess }: Props) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-
-                    {[ROLES.CLINIC_MANAGER, ROLES.RECEPTIONIST].map(
+                    {[
+                      ROLES.CLINIC_MANAGER,
+                      ROLES.BRANCH_MANAGER,
+                      ROLES.RECEPTIONIST,
+                      ROLES.NURSE,
+                      ROLES.WORKER,
+                    ].map(
                       (roleKey) => (
                         <SelectItem key={roleKey} value={roleKey}>
                           {ROLE_CONFIG[roleKey].label}
@@ -164,7 +213,10 @@ export function CreateStaffForm({ tenantSlug, onSuccess }: Props) {
                     type='number'
                     {...field}
                     value={Number.isNaN(field.value) ? '' : field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    onChange={(e) => {
+                      const value = e.target.valueAsNumber
+                      field.onChange(Number.isNaN(value) ? 0 : value)
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -180,7 +232,75 @@ export function CreateStaffForm({ tenantSlug, onSuccess }: Props) {
             <FormItem>
               <FormLabel>تاريخ التعيين</FormLabel>
               <FormControl>
-                <Input type='date' {...field} />
+                <Input type='date' {...field} value={field.value || ''} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name='branchIds'
+          render={({ field }) => (
+            <FormItem>
+              <div className='flex items-center justify-between gap-2'>
+                <FormLabel>الفروع المخصصة</FormLabel>
+                {branches.length > 0 && (
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      type='button'
+                      size='sm'
+                      variant='ghost'
+                      onClick={() => {
+                        form.setValue(
+                          'branchIds',
+                          branches.filter((branch) => branch.isActive).map((branch) => branch.id),
+                          { shouldDirty: true, shouldValidate: true },
+                        )
+                      }}
+                    >
+                      تحديد الكل
+                    </Button>
+                    <Button
+                      type='button'
+                      size='sm'
+                      variant='ghost'
+                      onClick={() =>
+                        form.setValue('branchIds', [], { shouldDirty: true, shouldValidate: true })
+                      }
+                    >
+                      إلغاء التحديد
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <FormControl>
+                <div className='space-y-2 rounded-md border p-3'>
+                  {isLoadingBranches ? (
+                    <p className='text-sm text-muted-foreground'>جاري تحميل الفروع...</p>
+                  ) : branches.length === 0 ? (
+                    <p className='text-sm text-muted-foreground'>لا توجد فروع متاحة حالياً</p>
+                  ) : (
+                    branches.map((branch) => (
+                      <label
+                        key={branch.id}
+                        className='flex items-center justify-between rounded-md border px-3 py-2'
+                      >
+                        <div className='space-y-0.5'>
+                          <p className='text-sm font-medium'>{branch.name}</p>
+                          {branch.code ? (
+                            <p className='text-xs text-muted-foreground'>{branch.code}</p>
+                          ) : null}
+                        </div>
+                        <Checkbox
+                          checked={(field.value || []).includes(branch.id)}
+                          onCheckedChange={(checked) => toggleBranchSelection(branch.id, checked)}
+                        />
+                      </label>
+                    ))
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

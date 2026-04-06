@@ -12,6 +12,7 @@ public class PublicClinicDto
     public string? City { get; set; }
     public string? LogoUrl { get; set; }
     public string? ImgUrl { get; set; }
+    public List<string> GalleryImageUrls { get; set; } = new();
     public string? Description { get; set; }
     public Dictionary<string, string> SocialLinks { get; set; } = new();
     public bool BookingEnabled { get; set; }

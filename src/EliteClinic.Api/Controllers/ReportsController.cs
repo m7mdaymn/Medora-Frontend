@@ -26,7 +26,7 @@ public class ReportsController : ControllerBase
     private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
     [HttpGet("overview")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ClinicOverviewReportDto>), 200)]
     public async Task<ActionResult<ApiResponse<ClinicOverviewReportDto>>> GetOverview(
         [FromQuery] DateTime? from,
@@ -56,7 +56,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("services")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ServicesSalesReportDto>), 200)]
     public async Task<ActionResult<ApiResponse<ServicesSalesReportDto>>> GetServicesSales(
         [FromQuery] DateTime? from,

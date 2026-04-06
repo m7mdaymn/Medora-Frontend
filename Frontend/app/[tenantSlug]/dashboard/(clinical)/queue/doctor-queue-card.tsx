@@ -1,7 +1,14 @@
 'use client'
 
 import { closeQueueSession } from '@/actions/queue/sessions'
-import { cancelTicket, markTicketUrgent } from '@/actions/queue/tickets'
+import {
+  callTicketAction,
+  cancelTicket,
+  finishTicketAction,
+  markTicketUrgent,
+  skipTicketAction,
+  startVisitAction,
+} from '@/actions/queue/tickets'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +30,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { IQueueBoardSession } from '@/types/queue'
-import { ArrowUp, MoreHorizontal, Power, X } from 'lucide-react'
+import { BaseApiResponse } from '@/types/api'
+import { ICreateTicketResponse, IQueueBoardSession, IQueueTicket } from '@/types/queue'
+import { ArrowUp, CheckCircle2, FastForward, MoreHorizontal, PlayCircle, Power, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { mutate } from 'swr'
 
@@ -34,43 +44,90 @@ interface DoctorQueueCardProps {
 }
 
 export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
+  const router = useRouter()
+  const [isPendingAction, setIsPendingAction] = useState(false)
+
   // 1. الداتا بتتعرض زي ما الباك إند باعتها بدون أي تلاعب في الترتيب
   const waitlist = session.waitingTickets || []
   // 2. متغيرات حالة الطابور عشان الـ Force Close
   const isPatientInVisit = !!session.currentTicket
   const hasWaitingPatients = waitlist.length > 0
+
+  const handleQueueLifecycleAction = async (
+    action: (
+      tenantSlug: string,
+      ticketId: string,
+    ) => Promise<BaseApiResponse<IQueueTicket | ICreateTicketResponse>>,
+    ticketId: string,
+    successMessage: string,
+  ) => {
+    setIsPendingAction(true)
+    try {
+      const res = await action(tenantSlug, ticketId)
+      if (!res.success) {
+        toast.error(res.message || 'لا يمكن تنفيذ الإجراء حالياً')
+        return
+      }
+
+      await mutate(['queueBoard', tenantSlug])
+
+      if (res.data && typeof res.data === 'object' && 'visitId' in res.data && res.data.visitId) {
+        router.push(`/${tenantSlug}/dashboard/doctor/visits/${res.data.visitId}`)
+        return
+      }
+
+      toast.success(res.message || successMessage)
+    } finally {
+      setIsPendingAction(false)
+    }
+  }
   
   const handleCloseSession = async () => {
-    // الإنهاء الإجباري بيتبعت بس لو فيه مريض لسه بيكشف جوه الأوضة
-    const res = await closeQueueSession(tenantSlug, session.sessionId)
-    if (res.success) {
-      toast.success(`تم إنهاء شفت د. ${session.doctorName}`)
-      await mutate(['queueBoard', tenantSlug])
-    } else {
-      toast.error(res.message)
+    setIsPendingAction(true)
+    try {
+      // الإنهاء الإجباري بيتبعت بس لو فيه مريض لسه بيكشف جوه الأوضة
+      const res = await closeQueueSession(tenantSlug, session.sessionId, isPatientInVisit)
+      if (res.success) {
+        toast.success(`تم إنهاء شفت د. ${session.doctorName}`)
+        await mutate(['queueBoard', tenantSlug])
+      } else {
+        toast.error(res.message)
+      }
+    } finally {
+      setIsPendingAction(false)
     }
   }
-  
+
   const handleUrgent = async (ticketId: string) => {
-    const res = await markTicketUrgent(tenantSlug, ticketId)
-    if (res.success) {
-      toast.success('تم رفع الحالة لطوارئ')
-      await mutate(['queueBoard', tenantSlug])
-    } else {
-      toast.error(res.message)
+    setIsPendingAction(true)
+    try {
+      const res = await markTicketUrgent(tenantSlug, ticketId)
+      if (res.success) {
+        toast.success('تم رفع الحالة لطوارئ')
+        await mutate(['queueBoard', tenantSlug])
+      } else {
+        toast.error(res.message)
+      }
+    } finally {
+      setIsPendingAction(false)
     }
   }
-  
+
   const handleCancel = async (ticketId: string) => {
-    const res = await cancelTicket(tenantSlug, ticketId)
-    if (res.success) {
-      toast.success('تم إلغاء التذكرة')
-      await mutate(['queueBoard', tenantSlug])
-    } else {
-      toast.error(res.message)
+    setIsPendingAction(true)
+    try {
+      const res = await cancelTicket(tenantSlug, ticketId)
+      if (res.success) {
+        toast.success('تم إلغاء التذكرة')
+        await mutate(['queueBoard', tenantSlug])
+      } else {
+        toast.error(res.message)
+      }
+    } finally {
+      setIsPendingAction(false)
     }
   }
-  
+
 
   return (
     <div className='flex flex-col h-full'>
@@ -113,6 +170,7 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
               <AlertDialogCancel>إلغاء</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleCloseSession}
+                disabled={isPendingAction}
                 variant={isPatientInVisit ? 'destructive' : 'default'}
               >
                 {isPatientInVisit ? 'تأكيد الإنهاء الإجباري' : 'تأكيد الإغلاق'}
@@ -142,9 +200,71 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                   حالة طارئة
                 </Badge>
               )}
+
+              <div className='flex flex-wrap justify-center gap-2 pt-2'>
+                {session.currentTicket.status === 'Called' && (
+                  <>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      disabled={isPendingAction}
+                      onClick={() =>
+                        handleQueueLifecycleAction(
+                          skipTicketAction,
+                          session.currentTicket!.id,
+                          'تم تخطي المريض',
+                        )
+                      }
+                    >
+                      <FastForward className='h-4 w-4 ml-1' /> تخطي
+                    </Button>
+                    <Button
+                      size='sm'
+                      disabled={isPendingAction}
+                      onClick={() =>
+                        handleQueueLifecycleAction(
+                          startVisitAction,
+                          session.currentTicket!.id,
+                          'تم بدء الكشف',
+                        )
+                      }
+                    >
+                      <PlayCircle className='h-4 w-4 ml-1' /> بدء الكشف
+                    </Button>
+                  </>
+                )}
+
+                {session.currentTicket.status === 'InVisit' && (
+                  <Button
+                    size='sm'
+                    disabled={isPendingAction}
+                    onClick={() =>
+                      handleQueueLifecycleAction(
+                        finishTicketAction,
+                        session.currentTicket!.id,
+                        'تم إنهاء الزيارة',
+                      )
+                    }
+                  >
+                    <CheckCircle2 className='h-4 w-4 ml-1' /> إنهاء الزيارة
+                  </Button>
+                )}
+              </div>
             </>
           ) : (
-            <p className='text-muted-foreground py-4'>بانتظار دخول المريض التالي...</p>
+            <>
+              <p className='text-muted-foreground py-1'>بانتظار دخول المريض التالي...</p>
+              <Button
+                size='sm'
+                disabled={isPendingAction || waitlist.length === 0}
+                onClick={() =>
+                  handleQueueLifecycleAction(callTicketAction, waitlist[0].id, 'تم نداء المريض التالي')
+                }
+              >
+                <PlayCircle className='h-4 w-4 ml-1' />
+                {waitlist.length > 0 ? 'نداء المريض التالي' : 'قائمة الانتظار فارغة'}
+              </Button>
+            </>
           )}
         </div>
 
@@ -193,12 +313,16 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                     <DropdownMenuContent align='end'>
                       <DropdownMenuLabel>إجراءات</DropdownMenuLabel>
                       {!ticket.isUrgent && (
-                        <DropdownMenuItem onClick={() => handleUrgent(ticket.id)}>
+                        <DropdownMenuItem
+                          disabled={isPendingAction}
+                          onClick={() => handleUrgent(ticket.id)}
+                        >
                           <ArrowUp className='ml-2 h-4 w-4' /> استعجال
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        disabled={isPendingAction}
                         onClick={() => handleCancel(ticket.id)}
                         className='text-destructive focus:text-destructive'
                       >

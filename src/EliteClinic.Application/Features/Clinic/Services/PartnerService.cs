@@ -5,11 +5,15 @@ using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
 
 public class PartnerService : IPartnerService
 {
+    private const string NotesMetaPrefix = "[[ECMETA:";
+    private const string NotesMetaSuffix = "]]";
+
     private readonly EliteClinicDbContext _context;
     private readonly IBranchAccessService _branchAccessService;
     private readonly UserManager<ApplicationUser>? _userManager;
@@ -412,7 +416,7 @@ public class PartnerService : IPartnerService
             ClinicDoctorSharePercentage = request.SettlementTarget == PartnerSettlementTarget.Clinic
                 ? request.ClinicDoctorSharePercentage
                 : null,
-            Notes = request.Notes?.Trim(),
+            Notes = ComposeNotesWithMeta(request.Notes, request.PatientDiscountPercentage, request.DoctorFixedPayoutAmount),
             IsActive = true
         };
 
@@ -478,7 +482,7 @@ public class PartnerService : IPartnerService
             ? request.ClinicDoctorSharePercentage
             : null;
         item.IsActive = request.IsActive;
-        item.Notes = request.Notes?.Trim();
+        item.Notes = ComposeNotesWithMeta(request.Notes, request.PatientDiscountPercentage, request.DoctorFixedPayoutAmount);
 
         await _context.SaveChangesAsync();
 
@@ -545,6 +549,9 @@ public class PartnerService : IPartnerService
                 return ApiResponse<PartnerOrderDto>.Error("Selected partner service item is invalid for this partner/branch");
         }
 
+        var serviceMeta = ExtractNotesMeta(serviceItem?.Notes);
+        var estimatedCost = request.EstimatedCost ?? ApplyPatientDiscount(serviceItem?.Price, serviceMeta.PatientDiscountPercentage);
+
         var order = new PartnerOrder
         {
             TenantId = tenantId,
@@ -564,9 +571,9 @@ public class PartnerService : IPartnerService
             SettlementTarget = serviceItem?.SettlementTarget ?? contractResult.Data?.SettlementTarget,
             SettlementPercentage = serviceItem?.SettlementPercentage ?? contractResult.Data?.CommissionPercentage,
             ClinicDoctorSharePercentage = serviceItem?.ClinicDoctorSharePercentage ?? contractResult.Data?.ClinicDoctorSharePercentage,
-            EstimatedCost = request.EstimatedCost ?? serviceItem?.Price,
+            EstimatedCost = estimatedCost,
             ExternalReference = request.ExternalReference?.Trim(),
-            Notes = request.Notes?.Trim()
+            Notes = ComposeNotesWithMeta(request.Notes, serviceMeta.PatientDiscountPercentage, serviceMeta.DoctorFixedPayoutAmount)
         };
 
         _context.PartnerOrders.Add(order);
@@ -645,6 +652,9 @@ public class PartnerService : IPartnerService
                 return ApiResponse<PartnerOrderDto>.Error("Selected partner service item is invalid for this partner/branch");
         }
 
+        var serviceMeta = ExtractNotesMeta(serviceItem?.Notes);
+        var estimatedCost = request.EstimatedCost ?? ApplyPatientDiscount(serviceItem?.Price, serviceMeta.PatientDiscountPercentage);
+
         var order = new PartnerOrder
         {
             TenantId = tenantId,
@@ -664,9 +674,9 @@ public class PartnerService : IPartnerService
             SettlementTarget = serviceItem?.SettlementTarget ?? contractResult.Data?.SettlementTarget,
             SettlementPercentage = serviceItem?.SettlementPercentage ?? contractResult.Data?.CommissionPercentage,
             ClinicDoctorSharePercentage = serviceItem?.ClinicDoctorSharePercentage ?? contractResult.Data?.ClinicDoctorSharePercentage,
-            EstimatedCost = request.EstimatedCost ?? serviceItem?.Price,
+            EstimatedCost = estimatedCost,
             ExternalReference = request.ExternalReference?.Trim(),
-            Notes = request.Notes?.Trim()
+            Notes = ComposeNotesWithMeta(request.Notes, serviceMeta.PatientDiscountPercentage, serviceMeta.DoctorFixedPayoutAmount)
         };
 
         _context.PartnerOrders.Add(order);
@@ -687,6 +697,118 @@ public class PartnerService : IPartnerService
 
         var saved = await GetOrderWithIncludesAsync(tenantId, order.Id);
         return ApiResponse<PartnerOrderDto>.Created(MapOrder(saved!), "Prescription partner order created successfully");
+    }
+
+    public async Task<ApiResponse<PartnerOrderDto>> CreateVisitOrderAsync(Guid tenantId, Guid visitId, Guid callerUserId, CreateVisitPartnerOrderRequest request)
+    {
+        var visit = await _context.Visits
+            .Include(v => v.Patient)
+            .Include(v => v.Doctor)
+            .FirstOrDefaultAsync(v => v.TenantId == tenantId && !v.IsDeleted && v.Id == visitId);
+
+        if (visit == null)
+            return ApiResponse<PartnerOrderDto>.Error("Visit not found");
+
+        var doctorOwnership = await EnsureDoctorVisitOwnershipAsync(tenantId, callerUserId, visit.DoctorId);
+        if (doctorOwnership != null)
+            return ApiResponse<PartnerOrderDto>.Error(doctorOwnership);
+
+        if (!visit.BranchId.HasValue)
+            return ApiResponse<PartnerOrderDto>.Error("Visit has no branch context");
+
+        var branchAccess = await _branchAccessService.EnsureCanAccessBranchAsync(tenantId, callerUserId, visit.BranchId.Value);
+        if (!branchAccess.Success)
+            return ApiResponse<PartnerOrderDto>.Error(branchAccess.Message);
+
+        var partner = await _context.Partners
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == request.PartnerId && p.IsActive);
+
+        if (partner == null)
+            return ApiResponse<PartnerOrderDto>.Error("Partner not found or inactive");
+
+        var contractResult = await ResolveContractAsync(tenantId, request.PartnerContractId, partner.Id, visit.BranchId.Value);
+        if (!contractResult.Success)
+            return ApiResponse<PartnerOrderDto>.Error(contractResult.Message);
+
+        PartnerServiceCatalogItem? serviceItem = null;
+        if (request.PartnerServiceCatalogItemId.HasValue)
+        {
+            serviceItem = await _context.PartnerServiceCatalogItems
+                .FirstOrDefaultAsync(i => i.TenantId == tenantId
+                                          && !i.IsDeleted
+                                          && i.IsActive
+                                          && i.Id == request.PartnerServiceCatalogItemId.Value
+                                          && i.PartnerId == partner.Id
+                                          && (!i.BranchId.HasValue || i.BranchId == visit.BranchId));
+
+            if (serviceItem == null)
+                return ApiResponse<PartnerOrderDto>.Error("Selected partner service item is invalid for this partner/branch");
+        }
+
+        var requestedServiceName = request.RequestedServiceName?.Trim();
+        if (serviceItem == null && string.IsNullOrWhiteSpace(requestedServiceName))
+            return ApiResponse<PartnerOrderDto>.Error("Select a partner service or provide requested service name");
+
+        var serviceMeta = ExtractNotesMeta(serviceItem?.Notes);
+        var serviceName = serviceItem?.ServiceName ?? requestedServiceName!;
+        var estimatedCost = request.EstimatedCost ?? ApplyPatientDiscount(serviceItem?.Price, serviceMeta.PatientDiscountPercentage);
+
+        var clinicalContextParts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(visit.Complaint))
+            clinicalContextParts.Add($"Complaint: {visit.Complaint.Trim()}");
+        if (!string.IsNullOrWhiteSpace(visit.Diagnosis))
+            clinicalContextParts.Add($"Diagnosis: {visit.Diagnosis.Trim()}");
+        if (!string.IsNullOrWhiteSpace(request.ClinicalNotes))
+            clinicalContextParts.Add($"Doctor note: {request.ClinicalNotes.Trim()}");
+
+        var humanNotes = request.Notes?.Trim();
+        if (clinicalContextParts.Count > 0)
+        {
+            var contextBlock = string.Join(" | ", clinicalContextParts);
+            humanNotes = string.IsNullOrWhiteSpace(humanNotes)
+                ? contextBlock
+                : $"{humanNotes} | {contextBlock}";
+        }
+
+        var order = new PartnerOrder
+        {
+            TenantId = tenantId,
+            PartnerId = partner.Id,
+            PartnerContractId = contractResult.Data?.Id,
+            PartnerServiceCatalogItemId = serviceItem?.Id,
+            BranchId = visit.BranchId.Value,
+            VisitId = visit.Id,
+            PartnerType = partner.Type,
+            OrderedByUserId = callerUserId,
+            OrderedAt = DateTime.UtcNow,
+            Status = PartnerOrderStatus.Sent,
+            SentAt = DateTime.UtcNow,
+            ServiceNameSnapshot = serviceName,
+            ServicePrice = serviceItem?.Price,
+            SettlementTarget = serviceItem?.SettlementTarget ?? contractResult.Data?.SettlementTarget,
+            SettlementPercentage = serviceItem?.SettlementPercentage ?? contractResult.Data?.CommissionPercentage,
+            ClinicDoctorSharePercentage = serviceItem?.ClinicDoctorSharePercentage ?? contractResult.Data?.ClinicDoctorSharePercentage,
+            EstimatedCost = estimatedCost,
+            ExternalReference = request.ExternalReference?.Trim(),
+            Notes = ComposeNotesWithMeta(humanNotes, serviceMeta.PatientDiscountPercentage, serviceMeta.DoctorFixedPayoutAmount)
+        };
+
+        _context.PartnerOrders.Add(order);
+        _context.PartnerOrderStatusHistories.Add(new PartnerOrderStatusHistory
+        {
+            TenantId = tenantId,
+            PartnerOrderId = order.Id,
+            OldStatus = null,
+            NewStatus = PartnerOrderStatus.Sent,
+            ChangedByUserId = callerUserId,
+            Notes = "Partner order created directly from visit"
+        });
+
+        await AddInAppNotificationsForOrderChangeAsync(tenantId, visit.PatientId, visit.DoctorId, callerUserId, order.Id, PartnerOrderStatus.Sent);
+        await _context.SaveChangesAsync();
+
+        var saved = await GetOrderWithIncludesAsync(tenantId, order.Id);
+        return ApiResponse<PartnerOrderDto>.Created(MapOrder(saved!), "Partner order created successfully from visit");
     }
 
     public async Task<ApiResponse<PagedResult<PartnerOrderDto>>> ListOrdersAsync(Guid tenantId, Guid callerUserId, PartnerOrdersQuery query)
@@ -751,6 +873,9 @@ public class PartnerService : IPartnerService
 
         if (query.PartnerId.HasValue)
             q = q.Where(o => o.PartnerId == query.PartnerId.Value);
+
+        if (query.VisitId.HasValue)
+            q = q.Where(o => o.VisitId == query.VisitId.Value);
 
         if (query.PartnerType.HasValue)
             q = q.Where(o => o.PartnerType == query.PartnerType.Value);
@@ -835,11 +960,7 @@ public class PartnerService : IPartnerService
             order.FinalCost = request.FinalCost.Value;
 
         if (!string.IsNullOrWhiteSpace(request.Notes))
-        {
-            order.Notes = string.IsNullOrWhiteSpace(order.Notes)
-                ? request.Notes.Trim()
-                : $"{order.Notes} | {request.Notes.Trim()}";
-        }
+            order.Notes = AppendHumanNote(order.Notes, request.Notes.Trim());
 
         _context.PartnerOrderStatusHistories.Add(new PartnerOrderStatusHistory
         {
@@ -874,6 +995,86 @@ public class PartnerService : IPartnerService
 
         var updated = await GetOrderWithIncludesAsync(tenantId, orderId);
         return ApiResponse<PartnerOrderDto>.Ok(MapOrder(updated!), "Partner order status updated successfully");
+    }
+
+    public async Task<ApiResponse<PartnerOrderDto>> AddOrderCommentAsync(Guid tenantId, Guid callerUserId, Guid orderId, AddPartnerOrderCommentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Comment))
+            return ApiResponse<PartnerOrderDto>.Error("Comment is required");
+
+        var order = await GetOrderWithIncludesAsync(tenantId, orderId);
+        if (order == null)
+            return ApiResponse<PartnerOrderDto>.Error("Partner order not found");
+
+        var access = await EnsureCanReadOrderAsync(tenantId, callerUserId, order);
+        if (!access.Success)
+            return ApiResponse<PartnerOrderDto>.Error(access.Message);
+
+        var callerDoctorId = await ResolveCallerDoctorIdAsync(tenantId, callerUserId);
+        var isContractor = await IsContractorUserAsync(callerUserId);
+        var actorLabel = callerDoctorId.HasValue
+            ? "Doctor comment"
+            : isContractor
+                ? "Contractor comment"
+                : "Team comment";
+
+        var comment = request.Comment.Trim();
+        order.Notes = AppendHumanNote(order.Notes, $"{actorLabel}: {comment}");
+
+        await AddInAppNotificationsForOrderCommentAsync(
+            tenantId,
+            order.Visit.PatientId,
+            order.Visit.DoctorId,
+            callerUserId,
+            order.Id,
+            comment,
+            request.NotifyPatient);
+
+        await _context.SaveChangesAsync();
+
+        var updated = await GetOrderWithIncludesAsync(tenantId, orderId);
+        return ApiResponse<PartnerOrderDto>.Ok(MapOrder(updated!), "Order comment added successfully");
+    }
+
+    public async Task<ApiResponse<PartnerOrderDto>> AddOrderCommentFromPatientAppAsync(
+        Guid tenantId,
+        Guid patientUserId,
+        Guid patientId,
+        Guid orderId,
+        AddPartnerOrderCommentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Comment))
+            return ApiResponse<PartnerOrderDto>.Error("Comment is required");
+
+        var ownsProfile = await _context.Patients.AnyAsync(p =>
+            p.TenantId == tenantId &&
+            !p.IsDeleted &&
+            p.Id == patientId &&
+            p.UserId == patientUserId);
+
+        if (!ownsProfile)
+            return ApiResponse<PartnerOrderDto>.Error("Access denied to requested patient profile");
+
+        var order = await GetOrderWithIncludesAsync(tenantId, orderId);
+        if (order == null || order.Visit.PatientId != patientId)
+            return ApiResponse<PartnerOrderDto>.Error("Partner order not found for this patient");
+
+        var comment = request.Comment.Trim();
+        order.Notes = AppendHumanNote(order.Notes, $"Patient comment: {comment}");
+
+        await AddInAppNotificationsForOrderCommentAsync(
+            tenantId,
+            order.Visit.PatientId,
+            order.Visit.DoctorId,
+            patientUserId,
+            order.Id,
+            comment,
+            notifyPatient: false);
+
+        await _context.SaveChangesAsync();
+
+        var updated = await GetOrderWithIncludesAsync(tenantId, orderId);
+        return ApiResponse<PartnerOrderDto>.Ok(MapOrder(updated!), "Comment sent successfully");
     }
 
     public async Task<ApiResponse<PartnerOrderDto>> AcceptOrderAsync(Guid tenantId, Guid callerUserId, Guid orderId, string? notes)
@@ -920,11 +1121,7 @@ public class PartnerService : IPartnerService
         order.ScheduledAt = scheduledAt;
 
         if (!string.IsNullOrWhiteSpace(request.Notes))
-        {
-            order.Notes = string.IsNullOrWhiteSpace(order.Notes)
-                ? request.Notes.Trim()
-                : $"{order.Notes} | {request.Notes.Trim()}";
-        }
+            order.Notes = AppendHumanNote(order.Notes, request.Notes.Trim());
 
         await _context.SaveChangesAsync();
 
@@ -953,11 +1150,7 @@ public class PartnerService : IPartnerService
         order.Status = PartnerOrderStatus.InProgress;
 
         if (!string.IsNullOrWhiteSpace(request.Notes))
-        {
-            order.Notes = string.IsNullOrWhiteSpace(order.Notes)
-                ? request.Notes.Trim()
-                : $"{order.Notes} | {request.Notes.Trim()}";
-        }
+            order.Notes = AppendHumanNote(order.Notes, request.Notes.Trim());
 
         if (oldStatus != PartnerOrderStatus.InProgress)
         {
@@ -978,6 +1171,67 @@ public class PartnerService : IPartnerService
 
         var updated = await GetOrderWithIncludesAsync(tenantId, orderId);
         return ApiResponse<PartnerOrderDto>.Ok(MapOrder(updated!), "Patient arrival recorded successfully");
+    }
+
+    public async Task<ApiResponse<PartnerOrderDto>> MarkPatientArrivedFromPatientAppAsync(
+        Guid tenantId,
+        Guid patientUserId,
+        Guid patientId,
+        Guid orderId,
+        MarkPartnerOrderArrivedRequest request)
+    {
+        var ownsProfile = await _context.Patients.AnyAsync(p =>
+            p.TenantId == tenantId &&
+            !p.IsDeleted &&
+            p.Id == patientId &&
+            p.UserId == patientUserId);
+
+        if (!ownsProfile)
+            return ApiResponse<PartnerOrderDto>.Error("Access denied to requested patient profile");
+
+        var order = await GetOrderWithIncludesAsync(tenantId, orderId);
+        if (order == null || order.Visit.PatientId != patientId)
+            return ApiResponse<PartnerOrderDto>.Error("Partner order not found for this patient");
+
+        if (order.Status == PartnerOrderStatus.Cancelled || order.Status == PartnerOrderStatus.Completed)
+            return ApiResponse<PartnerOrderDto>.Error("Cannot confirm arrival for a closed partner order");
+
+        var oldStatus = order.Status;
+        order.PatientArrivedAt = request.ArrivedAt ?? DateTime.UtcNow;
+        order.Status = PartnerOrderStatus.InProgress;
+
+        if (!string.IsNullOrWhiteSpace(request.Notes))
+        {
+            var trimmed = request.Notes.Trim();
+            var annotated = $"Patient confirmation: {trimmed}";
+            order.Notes = AppendHumanNote(order.Notes, annotated);
+        }
+
+        if (oldStatus != PartnerOrderStatus.InProgress)
+        {
+            _context.PartnerOrderStatusHistories.Add(new PartnerOrderStatusHistory
+            {
+                TenantId = tenantId,
+                PartnerOrderId = order.Id,
+                OldStatus = oldStatus,
+                NewStatus = PartnerOrderStatus.InProgress,
+                ChangedByUserId = patientUserId,
+                Notes = request.Notes
+            });
+
+            await AddInAppNotificationsForOrderChangeAsync(
+                tenantId,
+                order.Visit.PatientId,
+                order.Visit.DoctorId,
+                patientUserId,
+                order.Id,
+                PartnerOrderStatus.InProgress);
+        }
+
+        await _context.SaveChangesAsync();
+
+        var updated = await GetOrderWithIncludesAsync(tenantId, orderId);
+        return ApiResponse<PartnerOrderDto>.Ok(MapOrder(updated!), "Patient confirmed arrival successfully");
     }
 
     public async Task<ApiResponse<PartnerOrderDto>> UploadResultAndCompleteAsync(Guid tenantId, Guid callerUserId, Guid orderId, UploadPartnerOrderResultRequest request)
@@ -1009,11 +1263,7 @@ public class PartnerService : IPartnerService
             order.ExternalReference = request.ExternalReference.Trim();
 
         if (!string.IsNullOrWhiteSpace(request.Notes))
-        {
-            order.Notes = string.IsNullOrWhiteSpace(order.Notes)
-                ? request.Notes.Trim()
-                : $"{order.Notes} | {request.Notes.Trim()}";
-        }
+            order.Notes = AppendHumanNote(order.Notes, request.Notes.Trim());
 
         if (order.LabRequestId.HasValue)
         {
@@ -1076,6 +1326,7 @@ public class PartnerService : IPartnerService
         var rows = await _context.PartnerOrders
             .Include(o => o.Partner)
             .Include(o => o.Visit)
+            .ThenInclude(v => v.Doctor)
             .Where(o => o.TenantId == tenantId && !o.IsDeleted && o.Visit.PatientId == patientId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
@@ -1201,6 +1452,19 @@ public class PartnerService : IPartnerService
         var settlementAmount = Math.Round(baseAmount.Value * settlementPercentage / 100m, 2, MidpointRounding.AwayFromZero);
         var target = order.SettlementTarget ?? PartnerSettlementTarget.Clinic;
 
+        var meta = ExtractNotesMeta(order.Notes);
+        if (meta.DoctorFixedPayoutAmount.HasValue && meta.DoctorFixedPayoutAmount.Value > 0)
+        {
+            var fixedPayout = Math.Round(meta.DoctorFixedPayoutAmount.Value, 2, MidpointRounding.AwayFromZero);
+            var doctorPayout = Math.Min(settlementAmount, fixedPayout);
+
+            order.DoctorPayoutAmount = doctorPayout;
+            order.ClinicRevenueAmount = target == PartnerSettlementTarget.Doctor
+                ? 0m
+                : Math.Max(0m, settlementAmount - doctorPayout);
+            return;
+        }
+
         if (target == PartnerSettlementTarget.Doctor)
         {
             order.DoctorPayoutAmount = settlementAmount;
@@ -1259,6 +1523,50 @@ public class PartnerService : IPartnerService
         }
     }
 
+    private async Task AddInAppNotificationsForOrderCommentAsync(
+        Guid tenantId,
+        Guid patientId,
+        Guid doctorId,
+        Guid actorUserId,
+        Guid orderId,
+        string comment,
+        bool notifyPatient)
+    {
+        var patientUserId = await _context.Patients
+            .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Id == patientId)
+            .Select(p => (Guid?)p.UserId)
+            .FirstOrDefaultAsync();
+
+        var doctorUserId = await _context.Doctors
+            .Where(d => d.TenantId == tenantId && !d.IsDeleted && d.Id == doctorId)
+            .Select(d => (Guid?)d.UserId)
+            .FirstOrDefaultAsync();
+
+        var recipients = new HashSet<Guid>();
+        if (notifyPatient && patientUserId.HasValue)
+            recipients.Add(patientUserId.Value);
+        if (doctorUserId.HasValue)
+            recipients.Add(doctorUserId.Value);
+        recipients.Remove(actorUserId);
+
+        var normalized = comment.Trim();
+        var preview = normalized.Length > 140 ? $"{normalized[..140]}..." : normalized;
+
+        foreach (var userId in recipients)
+        {
+            _context.InAppNotifications.Add(new InAppNotification
+            {
+                TenantId = tenantId,
+                UserId = userId,
+                Type = InAppNotificationType.PartnerOrderStatusChanged,
+                Title = "Partner order comment",
+                Body = $"New update: {preview}",
+                EntityType = nameof(PartnerOrder),
+                EntityId = orderId
+            });
+        }
+    }
+
     private static bool IsValidTransition(PartnerOrderStatus current, PartnerOrderStatus next)
     {
         if (current == PartnerOrderStatus.Cancelled || current == PartnerOrderStatus.Completed)
@@ -1273,6 +1581,138 @@ public class PartnerService : IPartnerService
             PartnerOrderStatus.Cancelled => current == PartnerOrderStatus.Draft || current == PartnerOrderStatus.Sent || current == PartnerOrderStatus.Accepted || current == PartnerOrderStatus.InProgress,
             _ => false
         };
+    }
+
+    private readonly record struct NotesMeta(decimal? PatientDiscountPercentage, decimal? DoctorFixedPayoutAmount);
+
+    private static NotesMeta ExtractNotesMeta(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes))
+            return default;
+
+        var start = notes.LastIndexOf(NotesMetaPrefix, StringComparison.Ordinal);
+        if (start < 0)
+            return default;
+
+        var contentStart = start + NotesMetaPrefix.Length;
+        var end = notes.IndexOf(NotesMetaSuffix, contentStart, StringComparison.Ordinal);
+        if (end < 0)
+            return default;
+
+        var payload = notes[contentStart..end];
+        decimal? patientDiscount = null;
+        decimal? doctorFixed = null;
+
+        var segments = payload.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var segment in segments)
+        {
+            var pair = segment.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (pair.Length != 2)
+                continue;
+
+            if (!decimal.TryParse(pair[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+                continue;
+
+            if (pair[0].Equals("pd", StringComparison.OrdinalIgnoreCase))
+                patientDiscount = parsed;
+            else if (pair[0].Equals("df", StringComparison.OrdinalIgnoreCase))
+                doctorFixed = parsed;
+        }
+
+        return new NotesMeta(patientDiscount, doctorFixed);
+    }
+
+    private static string? StripNotesMetadata(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes))
+            return null;
+
+        var clean = notes;
+        while (true)
+        {
+            var start = clean.IndexOf(NotesMetaPrefix, StringComparison.Ordinal);
+            if (start < 0)
+                break;
+
+            var end = clean.IndexOf(NotesMetaSuffix, start + NotesMetaPrefix.Length, StringComparison.Ordinal);
+            if (end < 0)
+                break;
+
+            clean = clean.Remove(start, end + NotesMetaSuffix.Length - start);
+        }
+
+        var tokens = clean
+            .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .ToList();
+
+        return tokens.Count == 0 ? null : string.Join(" | ", tokens);
+    }
+
+    private static string? ComposeNotesWithMeta(string? humanNotes, decimal? patientDiscountPercentage, decimal? doctorFixedPayoutAmount)
+    {
+        var stripped = StripNotesMetadata(humanNotes);
+
+        decimal? normalizedDiscount = patientDiscountPercentage;
+        if (normalizedDiscount.HasValue)
+        {
+            if (normalizedDiscount.Value < 0)
+                normalizedDiscount = 0;
+            if (normalizedDiscount.Value > 100)
+                normalizedDiscount = 100;
+        }
+
+        decimal? normalizedFixedPayout = doctorFixedPayoutAmount;
+        if (normalizedFixedPayout.HasValue && normalizedFixedPayout.Value < 0)
+            normalizedFixedPayout = 0;
+
+        if (!normalizedDiscount.HasValue && !normalizedFixedPayout.HasValue)
+            return stripped;
+
+        var metaParts = new List<string>();
+        if (normalizedDiscount.HasValue)
+            metaParts.Add($"pd={normalizedDiscount.Value.ToString("0.####", CultureInfo.InvariantCulture)}");
+        if (normalizedFixedPayout.HasValue)
+            metaParts.Add($"df={normalizedFixedPayout.Value.ToString("0.####", CultureInfo.InvariantCulture)}");
+
+        var metaTag = $"{NotesMetaPrefix}{string.Join(';', metaParts)}{NotesMetaSuffix}";
+
+        return string.IsNullOrWhiteSpace(stripped)
+            ? metaTag
+            : $"{stripped} | {metaTag}";
+    }
+
+    private static string? AppendHumanNote(string? existingNotes, string note)
+    {
+        if (string.IsNullOrWhiteSpace(note))
+            return existingNotes;
+
+        var meta = ExtractNotesMeta(existingNotes);
+        var stripped = StripNotesMetadata(existingNotes);
+        var trimmedNote = note.Trim();
+
+        var combined = string.IsNullOrWhiteSpace(stripped)
+            ? trimmedNote
+            : $"{stripped} | {trimmedNote}";
+
+        return ComposeNotesWithMeta(combined, meta.PatientDiscountPercentage, meta.DoctorFixedPayoutAmount);
+    }
+
+    private static decimal? ApplyPatientDiscount(decimal? price, decimal? patientDiscountPercentage)
+    {
+        if (!price.HasValue)
+            return null;
+
+        if (!patientDiscountPercentage.HasValue)
+            return price;
+
+        var discount = patientDiscountPercentage.Value;
+        if (discount < 0)
+            discount = 0;
+        if (discount > 100)
+            discount = 100;
+
+        return Math.Round(price.Value * (100 - discount) / 100m, 2, MidpointRounding.AwayFromZero);
     }
 
     private static PartnerDto MapPartner(Partner partner)
@@ -1316,6 +1756,8 @@ public class PartnerService : IPartnerService
 
     private static PartnerServiceCatalogItemDto MapServiceCatalogItem(PartnerServiceCatalogItem item)
     {
+        var meta = ExtractNotesMeta(item.Notes);
+
         return new PartnerServiceCatalogItemDto
         {
             Id = item.Id,
@@ -1327,8 +1769,10 @@ public class PartnerService : IPartnerService
             SettlementTarget = item.SettlementTarget,
             SettlementPercentage = item.SettlementPercentage,
             ClinicDoctorSharePercentage = item.ClinicDoctorSharePercentage,
+            PatientDiscountPercentage = meta.PatientDiscountPercentage,
+            DoctorFixedPayoutAmount = meta.DoctorFixedPayoutAmount,
             IsActive = item.IsActive,
-            Notes = item.Notes,
+            Notes = StripNotesMetadata(item.Notes),
             CreatedAt = item.CreatedAt
         };
     }
@@ -1352,13 +1796,21 @@ public class PartnerService : IPartnerService
 
     private static PatientPartnerOrderTimelineDto MapPatientTimeline(PartnerOrder order)
     {
+        var meta = ExtractNotesMeta(order.Notes);
+
         return new PatientPartnerOrderTimelineDto
         {
             Id = order.Id,
             VisitId = order.VisitId,
             PartnerId = order.PartnerId,
             PartnerName = order.Partner?.Name ?? string.Empty,
+            PartnerContactName = order.Partner?.ContactName,
+            PartnerContactPhone = order.Partner?.ContactPhone,
+            PartnerAddress = order.Partner?.Address,
             PartnerType = order.PartnerType,
+            DoctorName = order.Visit.Doctor?.Name ?? string.Empty,
+            VisitComplaint = order.Visit.Complaint,
+            VisitDiagnosis = order.Visit.Diagnosis,
             ServiceName = order.ServiceNameSnapshot,
             Status = order.Status,
             OrderedAt = order.OrderedAt,
@@ -1369,15 +1821,20 @@ public class PartnerService : IPartnerService
             CompletedAt = order.CompletedAt,
             Price = order.ServicePrice ?? order.EstimatedCost,
             FinalCost = order.FinalCost,
+            PatientDiscountPercentage = meta.PatientDiscountPercentage,
+            DoctorFixedPayoutAmount = meta.DoctorFixedPayoutAmount,
             DoctorPayoutAmount = order.DoctorPayoutAmount,
             ClinicRevenueAmount = order.ClinicRevenueAmount,
             ResultSummary = order.ResultSummary,
-            Notes = order.Notes
+            ExternalReference = order.ExternalReference,
+            Notes = StripNotesMetadata(order.Notes)
         };
     }
 
     private static PartnerOrderDto MapOrder(PartnerOrder order)
     {
+        var meta = ExtractNotesMeta(order.Notes);
+
         return new PartnerOrderDto
         {
             Id = order.Id,
@@ -1389,8 +1846,11 @@ public class PartnerService : IPartnerService
             VisitId = order.VisitId,
             PatientId = order.Visit.PatientId,
             PatientName = order.Visit.Patient?.Name ?? string.Empty,
+            PatientPhone = order.Visit.Patient?.Phone,
             DoctorId = order.Visit.DoctorId,
             DoctorName = order.Visit.Doctor?.Name ?? string.Empty,
+            VisitComplaint = order.Visit.Complaint,
+            VisitDiagnosis = order.Visit.Diagnosis,
             LabRequestId = order.LabRequestId,
             PrescriptionId = order.PrescriptionId,
             PartnerServiceCatalogItemId = order.PartnerServiceCatalogItemId,
@@ -1410,13 +1870,15 @@ public class PartnerService : IPartnerService
             SettlementTarget = order.SettlementTarget,
             SettlementPercentage = order.SettlementPercentage,
             ClinicDoctorSharePercentage = order.ClinicDoctorSharePercentage,
+            PatientDiscountPercentage = meta.PatientDiscountPercentage,
+            DoctorFixedPayoutAmount = meta.DoctorFixedPayoutAmount,
             DoctorPayoutAmount = order.DoctorPayoutAmount,
             ClinicRevenueAmount = order.ClinicRevenueAmount,
             ResultSummary = order.ResultSummary,
             EstimatedCost = order.EstimatedCost,
             FinalCost = order.FinalCost,
             ExternalReference = order.ExternalReference,
-            Notes = order.Notes,
+            Notes = StripNotesMetadata(order.Notes),
             StatusHistory = order.StatusHistory
                 .Where(h => !h.IsDeleted)
                 .OrderByDescending(h => h.ChangedAt)

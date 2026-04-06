@@ -21,21 +21,3 @@ export async function uploadClinicLogoAction(
 
   return result
 }
-
-export async function uploadClinicImageAction(
-  tenantSlug: string,
-  formData: FormData,
-): Promise<BaseApiResponse<{ publicUrl: string }>> {
-  const result = await fetchApi<{ publicUrl: string }>('/api/clinic/media/clinic-image', {
-    method: 'POST',
-    tenantSlug,
-    authType: 'staff',
-    body: formData,
-  })
-
-  if (result.success) {
-    revalidatePath(`/${tenantSlug}/dashboard/settings`)
-  }
-
-  return result
-}

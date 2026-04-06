@@ -23,6 +23,7 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ClinicSettings> ClinicSettings { get; set; }
     public DbSet<WorkingHour> WorkingHours { get; set; }
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<EmployeeBranchAssignment> EmployeeBranchAssignments { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<DoctorService> DoctorServices { get; set; }
     public DbSet<DoctorVisitFieldConfig> DoctorVisitFieldConfigs { get; set; }
@@ -199,6 +200,29 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasOne(e => e.User)
                 .WithOne()
                 .HasForeignKey<Employee>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.BranchAssignments)
+                .WithOne(a => a.Employee)
+                .HasForeignKey(a => a.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<EmployeeBranchAssignment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.EmployeeId, e.BranchId })
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0");
+
+            entity.HasOne(e => e.Employee)
+                .WithMany(e => e.BranchAssignments)
+                .HasForeignKey(e => e.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Branch)
+                .WithMany(b => b.EmployeeAssignments)
+                .HasForeignKey(e => e.BranchId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -1069,6 +1093,12 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.WalletNumber).HasMaxLength(80);
             entity.Property(e => e.Instructions).HasMaxLength(1500);
             entity.HasIndex(e => new { e.TenantId, e.DisplayOrder, e.CreatedAt });
+            entity.HasIndex(e => new { e.TenantId, e.BranchId, e.IsActive });
+
+            entity.HasOne(e => e.Branch)
+                .WithMany(b => b.PaymentMethods)
+                .HasForeignKey(e => e.BranchId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<MediaFile>(entity =>
@@ -1231,6 +1261,7 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<ClinicSettings>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<WorkingHour>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<Employee>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
+        builder.Entity<EmployeeBranchAssignment>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<Doctor>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<DoctorService>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<DoctorVisitFieldConfig>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);

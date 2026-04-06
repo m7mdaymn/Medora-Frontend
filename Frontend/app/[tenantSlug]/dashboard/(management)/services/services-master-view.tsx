@@ -1,6 +1,5 @@
 'use client'
 
-import { LayoutList, UserCog } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -33,11 +32,9 @@ export function ServicesMasterView({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // تحديث الـ URL لما يغير التاب عشان الـ State تتحفظ
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
     params.set('tab', value)
-    // لو رجع للكتالوج، مفيش داعي نشيل الـ doctorId عشان لو رجع لتسعير الأطباء يلاقيه
     router.replace(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
@@ -46,21 +43,19 @@ export function ServicesMasterView({
       <div className='flex items-center mb-6'>
         <TabsList className='grid w-100 grid-cols-2 h-11'>
           <TabsTrigger value='catalog' className='flex items-center gap-2 font-bold'>
-            <LayoutList className='h-4 w-4' /> الكتالوج المركزي
+            الكتالوج المركزي
           </TabsTrigger>
           <TabsTrigger value='pricing' className='flex items-center gap-2 font-bold'>
-            <UserCog className='h-4 w-4' /> تسعير الأطباء
+            تسعير الأطباء
           </TabsTrigger>
         </TabsList>
       </div>
 
       <TabsContent value='catalog' className='mt-0 outline-none animate-in fade-in duration-300'>
-        {/* شاشة الكتالوج اللي عملناها */}
         <ClinicServicesView paginatedData={paginatedCatalog} tenantSlug={tenantSlug} />
       </TabsContent>
 
       <TabsContent value='pricing' className='mt-0 outline-none animate-in fade-in duration-300'>
-        {/* شاشة تسعير الأطباء اللي عملناها */}
         <DoctorServicesView
           tenantSlug={tenantSlug}
           doctors={doctors}

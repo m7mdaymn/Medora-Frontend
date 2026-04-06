@@ -37,6 +37,7 @@ export async function createPrescriptionPartnerOrderAction(
       revalidatePath(`/${tenantSlug}/dashboard/doctor/visits/${visitId}`)
       revalidatePath(`/${tenantSlug}/dashboard/contracts`)
       revalidatePath(`/${tenantSlug}/dashboard/contractor/orders`)
+      revalidatePath(`/${tenantSlug}/dashboard/partner-orders`)
     }
 
     return response

@@ -3,6 +3,7 @@ using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Entities;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
+using EliteClinic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -12,11 +13,16 @@ public class InvoiceService : IInvoiceService
 {
     private readonly EliteClinicDbContext _context;
     private readonly IInvoiceNumberService _invoiceNumberService;
+    private readonly ITenantContext _tenantContext;
 
-    public InvoiceService(EliteClinicDbContext context, IInvoiceNumberService invoiceNumberService)
+    public InvoiceService(
+        EliteClinicDbContext context,
+        IInvoiceNumberService invoiceNumberService,
+        ITenantContext tenantContext)
     {
         _context = context;
         _invoiceNumberService = invoiceNumberService;
+        _tenantContext = tenantContext;
     }
 
     public async Task<ApiResponse<InvoiceDto>> EnsureInvoiceForVisitAsync(Guid tenantId, Guid visitId, Guid performedByUserId, string? initialNotes = null)
@@ -27,6 +33,10 @@ public class InvoiceService : IInvoiceService
             .FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId && !v.IsDeleted);
 
         if (visit == null)
+            return ApiResponse<InvoiceDto>.Error("Visit not found");
+
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+        if (selectedBranchId.HasValue && visit.BranchId != selectedBranchId.Value)
             return ApiResponse<InvoiceDto>.Error("Visit not found");
 
         var existing = await _context.Invoices
@@ -86,6 +96,10 @@ public class InvoiceService : IInvoiceService
         if (visit == null)
             return ApiResponse<InvoiceDto>.Error("Visit not found");
 
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+        if (selectedBranchId.HasValue && visit.BranchId != selectedBranchId.Value)
+            return ApiResponse<InvoiceDto>.Error("Visit not found");
+
         // Check no invoice already exists for this visit
         var existing = await _context.Invoices
             .FirstOrDefaultAsync(i => i.VisitId == request.VisitId && !i.IsDeleted);
@@ -99,6 +113,7 @@ public class InvoiceService : IInvoiceService
         {
             TenantId = tenantId,
             InvoiceNumber = await _invoiceNumberService.GenerateNextAsync(tenantId),
+            BranchId = visit.BranchId,
             VisitId = request.VisitId,
             PatientId = visit.PatientId,
             PatientNameSnapshot = visit.Patient?.Name ?? string.Empty,
@@ -198,11 +213,16 @@ public class InvoiceService : IInvoiceService
     public async Task<ApiResponse<PagedResult<InvoiceDto>>> GetInvoicesAsync(Guid tenantId, DateTime? from, DateTime? to,
         Guid? doctorId, string? invoiceNumber = null, int pageNumber = 1, int pageSize = 10)
     {
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+
         var query = _context.Invoices
             .Include(i => i.Patient)
             .Include(i => i.Doctor)
             .Include(i => i.Payments.Where(p => !p.IsDeleted))
             .Where(i => i.TenantId == tenantId && !i.IsDeleted);
+
+        if (selectedBranchId.HasValue)
+            query = query.Where(i => i.BranchId == selectedBranchId.Value);
 
         if (from.HasValue)
             query = query.Where(i => i.CreatedAt >= from.Value);
@@ -533,12 +553,28 @@ public class InvoiceService : IInvoiceService
 
     private async Task<Invoice?> GetInvoiceWithIncludes(Guid tenantId, Guid id)
     {
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+
         return await _context.Invoices
             .Include(i => i.Patient)
             .Include(i => i.Doctor)
             .Include(i => i.LineItems.Where(li => !li.IsDeleted))
             .Include(i => i.Payments.Where(p => !p.IsDeleted))
-            .FirstOrDefaultAsync(i => i.Id == id && i.TenantId == tenantId && !i.IsDeleted);
+            .FirstOrDefaultAsync(i => i.Id == id
+                && i.TenantId == tenantId
+                && !i.IsDeleted
+                && (!selectedBranchId.HasValue || i.BranchId == selectedBranchId.Value));
+    }
+
+    private Guid? GetSelectedBranchId(Guid tenantId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return null;
+
+        if (_tenantContext.TenantId != tenantId)
+            return null;
+
+        return _tenantContext.SelectedBranchId;
     }
 
     private static InvoiceDto MapToDto(Invoice i)

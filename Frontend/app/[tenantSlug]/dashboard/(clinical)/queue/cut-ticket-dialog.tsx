@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -34,7 +35,7 @@ import { IPatient } from '@/types/patient'
 import { IQueueBoardSession } from '@/types/queue'
 import { CutTicketSchema, type CutTicketInput } from '@/validation/queue'
 import { valibotResolver } from '@hookform/resolvers/valibot'
-import { AlertCircle, Banknote, CreditCard, Loader2, Ticket, User, Users } from 'lucide-react' // 👈 ضفنا AlertCircle
+import { AlertCircle, Banknote, CreditCard, Loader2, User, Users } from 'lucide-react' // 👈 ضفنا AlertCircle
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -130,15 +131,15 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
       }}
     >
       <DialogTrigger asChild>
-        <Button className='gap-2 shadow-md'>
-          <Ticket className='h-5 w-5' />
-          قطع تذكرة
-        </Button>
+        <Button size={'lg'}>قطع تذكرة</Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-125 max-h-[90vh] overflow-y-auto'>
+      <DialogContent
+        className='sm:max-w-125 max-h-[90vh] overflow-y-auto'
+        onInteractOutside={(e) => isSubmitting && e.preventDefault()}
+        onEscapeKeyDown={(e) => isSubmitting && e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className='text-xl font-bold flex items-center gap-2'>
-            <Ticket className='h-6 w-6 text-primary' />
             حجز موعد جديد
           </DialogTitle>
         </DialogHeader>
@@ -151,21 +152,19 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
               name='sessionId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    العيادة المفتوحة <span className='text-destructive'>*</span>
-                  </FormLabel>
+                  <FormLabel>العيادات المفتوحة</FormLabel>
                   <Select
                     onValueChange={(val) => {
                       field.onChange(val)
                       const docId = activeSessions.find((s) => s.sessionId === val)?.doctorId
                       if (docId) form.setValue('doctorId', docId)
-                      form.setValue('doctorServiceId', '') // تصفير الخدمة لما يغير العيادة
+                      form.setValue('doctorServiceId', '')
                       form.setValue('paymentAmount', undefined)
                     }}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className='h-11 bg-muted/20'>
+                      <SelectTrigger className='h-25 rounded-full bg-muted/20 w-full'>
                         <SelectValue placeholder='اختر العيادة...' />
                       </SelectTrigger>
                     </FormControl>
@@ -173,9 +172,7 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                       {activeSessions.map((session) => (
                         <SelectItem key={session.sessionId} value={session.sessionId}>
                           عيادة د. {session.doctorName}
-                          <span className='text-muted-foreground mr-2 text-xs'>
-                            ({session.waitingCount} انتظار)
-                          </span>
+                          <span className='text-muted-foreground mr-2 text-xs'></span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -192,9 +189,7 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
               render={({ field }) => (
                 <div className='space-y-3'>
                   <FormItem className='flex flex-col'>
-                    <FormLabel>
-                      المريض (أو ولي الأمر) <span className='text-destructive'>*</span>
-                    </FormLabel>
+                    <FormLabel>المريض</FormLabel>
                     <FormControl>
                       <PatientSearch
                         tenantSlug={tenantSlug}
@@ -268,11 +263,8 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                 name='doctorServiceId'
                 render={({ field }) => (
                   <FormItem className='md:col-span-1'>
-                    <FormLabel>
-                      الخدمة المطلوبة <span className='text-destructive'>*</span>
-                    </FormLabel>
+                    <FormLabel>الخدمة المطلوبة</FormLabel>
 
-                    {/* 🔥 بنشيك هل الدكتور ليه خدمات ولا لأ */}
                     {selectedDoctor && !hasServices ? (
                       <div className='flex items-center gap-2 p-3 text-xs bg-destructive/10 text-destructive rounded-md border border-destructive/20'>
                         <AlertCircle className='h-4 w-4 shrink-0' />
@@ -306,9 +298,7 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                 name='visitType'
                 render={({ field }) => (
                   <FormItem className='md:col-span-1'>
-                    <FormLabel>
-                      نوع الزيارة <span className='text-destructive'>*</span>
-                    </FormLabel>
+                    <FormLabel>نوع الزيارة</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className='h-11 bg-background'>
@@ -316,8 +306,8 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value='Exam'>كشف جديد (Exam)</SelectItem>
-                        <SelectItem value='Consultation'>استشارة (Consultation)</SelectItem>
+                        <SelectItem value='Exam'>كشف</SelectItem>
+                        <SelectItem value='Consultation'>استشارة</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -329,17 +319,29 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                 control={form.control}
                 name='isUrgent'
                 render={({ field }) => (
-                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-destructive/5 border-destructive/10 md:col-span-1 h-11 mt-8'>
+                  <FormItem
+                    className={cn(
+                      'relative flex flex-row items-center justify-between rounded-lg border p-3 transition-all duration-200',
+                      field.value
+                        ? 'border-destructive bg-destructive/5'
+                        : 'border-border bg-background',
+                    )}
+                  >
                     <div className='space-y-0.5'>
-                      <FormLabel className='text-destructive font-bold cursor-pointer ml-2'>
+                      <FormLabel
+                        htmlFor='urgent-toggle'
+                        className='font-bold cursor-pointer after:absolute after:inset-0'
+                      >
                         كشف مستعجل
                       </FormLabel>
                     </div>
+
                     <FormControl>
                       <Checkbox
+                        id='urgent-toggle'
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        className='data-[state=checked]:bg-destructive data-[state=checked]:border-destructive'
+                        className='z-10 data-[state=checked]:bg-destructive data-[state=checked]:border-destructive'
                       />
                     </FormControl>
                   </FormItem>
@@ -350,13 +352,12 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
             {/* 4. تفاصيل الدفع */}
             {selectedServiceId && (
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-muted'>
-                {/* إجمالي تكلفة الخدمة */}
                 <FormField
                   control={form.control}
                   name='paymentAmount'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>المدفوع الآن (جنيه)</FormLabel>
+                      <FormLabel>المدفوع الآن</FormLabel>
                       <FormControl>
                         <Input
                           type='number'
@@ -372,7 +373,6 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                   )}
                 />
 
-                {/* 👈 المبلغ المدفوع فعلياً (الجديد) */}
                 <FormField
                   control={form.control}
                   name='paidAmount'
@@ -382,7 +382,7 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                       <FormControl>
                         <Input
                           type='number'
-                          disabled // 👈 مقفول عشان ده بييجي من الباك إند
+                          disabled
                           className='h-11 font-bold bg-muted/50 cursor-not-allowed'
                           value={field.value ?? ''}
                         />
@@ -430,10 +430,10 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
               name='notes'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ملاحظات الاستقبال</FormLabel>
+                  <FormLabel>شكوى المريض</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder='أي تفاصيل إضافية...'
+                      placeholder='الشكوى المبدئية للمريض'
                       className='resize-none h-20'
                       {...field}
                     />
@@ -442,16 +442,16 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
                 </FormItem>
               )}
             />
-
-            {/* 6. زرار الحفظ */}
-            {/* 🔥 قفلنا الزرار لو مفيش خدمة متحددة أو لو مفيش دكتور متحدد */}
-            <Button
-              type='submit'
-              className='w-full h-12 text-lg font-bold'
-              disabled={isSubmitting || !selectedServiceId || !selectedSessionId}
-            >
-              {isSubmitting ? <Loader2 className='animate-spin' /> : 'إصدار التذكرة'}
-            </Button>
+            <DialogFooter>
+              <Button
+              className='w-full'
+                type='submit'
+                size={'xl'}
+                disabled={isSubmitting || !selectedServiceId || !selectedSessionId}
+              >
+                {isSubmitting ? <Loader2 className='animate-spin' /> : 'إصدار التذكرة'}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

@@ -29,7 +29,11 @@ public class ClinicSettingsService : IClinicSettingsService
             return ApiResponse<ClinicSettingsDto>.Error("Clinic settings not found");
         }
 
-        return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(settings), "Clinic settings retrieved successfully");
+        var galleryImages = await GetClinicGalleryImagesAsync(tenantId, settings.Id);
+
+        return ApiResponse<ClinicSettingsDto>.Ok(
+            MapToDto(settings, galleryImages),
+            "Clinic settings retrieved successfully");
     }
 
     public async Task<ApiResponse<ClinicSettingsDto>> UpdateSettingsAsync(Guid tenantId, UpdateClinicSettingsRequest request)
@@ -100,7 +104,11 @@ public class ClinicSettingsService : IClinicSettingsService
             .Include(s => s.WorkingHours.Where(w => !w.IsDeleted))
             .FirstAsync();
 
-        return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(updated), "Clinic settings updated successfully");
+        var galleryImages = await GetClinicGalleryImagesAsync(tenantId, updated.Id);
+
+        return ApiResponse<ClinicSettingsDto>.Ok(
+            MapToDto(updated, galleryImages),
+            "Clinic settings updated successfully");
     }
 
     public async Task<ApiResponse<ClinicSettingsDto>> PatchSettingsAsync(Guid tenantId, PatchClinicSettingsRequest request)
@@ -163,20 +171,28 @@ public class ClinicSettingsService : IClinicSettingsService
             .Include(s => s.WorkingHours.Where(w => !w.IsDeleted))
             .FirstAsync();
 
-        return ApiResponse<ClinicSettingsDto>.Ok(MapToDto(patched), "Clinic settings patched successfully");
+        var galleryImages = await GetClinicGalleryImagesAsync(tenantId, patched.Id);
+
+        return ApiResponse<ClinicSettingsDto>.Ok(
+            MapToDto(patched, galleryImages),
+            "Clinic settings patched successfully");
     }
 
-    public async Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false)
+    public async Task<ApiResponse<ClinicPaymentOptionsDto>> GetPaymentOptionsAsync(Guid tenantId, bool activeOnly = false, Guid? branchId = null)
     {
         var settings = await _context.ClinicSettings.FirstOrDefaultAsync();
         if (settings == null)
             return ApiResponse<ClinicPaymentOptionsDto>.Error("Clinic settings not found");
 
         var methodsQuery = _context.ClinicPaymentMethods
+            .Include(m => m.Branch)
             .Where(m => m.TenantId == tenantId && !m.IsDeleted);
 
         if (activeOnly)
             methodsQuery = methodsQuery.Where(m => m.IsActive);
+
+        if (branchId.HasValue)
+            methodsQuery = methodsQuery.Where(m => m.BranchId == null || m.BranchId == branchId.Value);
 
         var methods = await methodsQuery
             .OrderBy(m => m.DisplayOrder)
@@ -196,6 +212,23 @@ public class ClinicSettingsService : IClinicSettingsService
         if (request.Methods == null || request.Methods.Count == 0)
             return ApiResponse<List<ClinicPaymentMethodDto>>.Error("At least one payment method is required");
 
+        var requestedBranchIds = request.Methods
+            .Where(m => m.BranchId.HasValue)
+            .Select(m => m.BranchId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (requestedBranchIds.Count > 0)
+        {
+            var validBranchIds = await _context.Branches
+                .Where(b => b.TenantId == tenantId && !b.IsDeleted && b.IsActive && requestedBranchIds.Contains(b.Id))
+                .Select(b => b.Id)
+                .ToListAsync();
+
+            if (validBranchIds.Count != requestedBranchIds.Count)
+                return ApiResponse<List<ClinicPaymentMethodDto>>.Error("One or more payment method branch references are invalid");
+        }
+
         var existing = await _context.ClinicPaymentMethods
             .Where(m => m.TenantId == tenantId && !m.IsDeleted)
             .ToListAsync();
@@ -209,6 +242,7 @@ public class ClinicSettingsService : IClinicSettingsService
         var entities = request.Methods.Select(m => new ClinicPaymentMethod
         {
             TenantId = tenantId,
+            BranchId = m.BranchId,
             MethodName = m.MethodName,
             ProviderName = m.ProviderName,
             AccountName = m.AccountName,
@@ -223,7 +257,13 @@ public class ClinicSettingsService : IClinicSettingsService
         _context.ClinicPaymentMethods.AddRange(entities);
         await _context.SaveChangesAsync();
 
-        var response = entities
+        var entityIds = entities.Select(e => e.Id).ToList();
+        var persisted = await _context.ClinicPaymentMethods
+            .Include(m => m.Branch)
+            .Where(m => m.TenantId == tenantId && !m.IsDeleted && entityIds.Contains(m.Id))
+            .ToListAsync();
+
+        var response = persisted
             .OrderBy(m => m.DisplayOrder)
             .ThenBy(m => m.CreatedAt)
             .Select(MapPaymentMethod)
@@ -232,7 +272,7 @@ public class ClinicSettingsService : IClinicSettingsService
         return ApiResponse<List<ClinicPaymentMethodDto>>.Ok(response, "Payment methods replaced successfully");
     }
 
-    private static ClinicSettingsDto MapToDto(ClinicSettings settings)
+    private static ClinicSettingsDto MapToDto(ClinicSettings settings, List<ClinicGalleryImageDto>? galleryImages = null)
     {
         return new ClinicSettingsDto
         {
@@ -253,6 +293,7 @@ public class ClinicSettingsService : IClinicSettingsService
             CancellationWindowHours = settings.CancellationWindowHours,
             SelfServicePaymentPolicy = settings.SelfServicePaymentPolicy,
             SelfServiceRequestExpiryHours = settings.SelfServiceRequestExpiryHours,
+            GalleryImages = galleryImages ?? new List<ClinicGalleryImageDto>(),
             WorkingHours = settings.WorkingHours
                 .Where(w => !w.IsDeleted)
                 .Select(w => new WorkingHourDto
@@ -294,6 +335,8 @@ public class ClinicSettingsService : IClinicSettingsService
         return new ClinicPaymentMethodDto
         {
             Id = method.Id,
+            BranchId = method.BranchId,
+            BranchName = method.Branch?.Name,
             MethodName = method.MethodName,
             ProviderName = method.ProviderName,
             AccountName = method.AccountName,
@@ -304,5 +347,24 @@ public class ClinicSettingsService : IClinicSettingsService
             IsActive = method.IsActive,
             DisplayOrder = method.DisplayOrder
         };
+    }
+
+    private async Task<List<ClinicGalleryImageDto>> GetClinicGalleryImagesAsync(Guid tenantId, Guid clinicSettingsId)
+    {
+        return await _context.MediaFiles
+            .Where(m => m.TenantId == tenantId
+                && !m.IsDeleted
+                && m.IsActive
+                && m.Category == "ClinicGallery"
+                && m.EntityType == "ClinicSettings"
+                && m.EntityId == clinicSettingsId)
+            .OrderByDescending(m => m.CreatedAt)
+            .Select(m => new ClinicGalleryImageDto
+            {
+                Id = m.Id,
+                PublicUrl = m.PublicUrl,
+                CreatedAt = m.CreatedAt
+            })
+            .ToListAsync();
     }
 }

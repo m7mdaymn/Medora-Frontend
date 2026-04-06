@@ -505,7 +505,8 @@ public class Phase4PartnersThreadsNotificationsTests
 
     private static PartnerService BuildPartnerService(EliteClinicDbContext ctx)
     {
-        return new PartnerService(ctx, new BranchAccessService(ctx));
+        var tenantId = ctx.Tenants.IgnoreQueryFilters().Select(t => t.Id).First();
+        return new PartnerService(ctx, new BranchAccessService(ctx, DbContextFactory.CreateTenantContext(tenantId)));
     }
 
     private static PrescriptionService BuildPrescriptionService(EliteClinicDbContext ctx)

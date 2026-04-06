@@ -2,6 +2,7 @@ using EliteClinic.Application.Common.Models;
 using EliteClinic.Application.Features.Clinic.DTOs;
 using EliteClinic.Domain.Enums;
 using EliteClinic.Infrastructure.Data;
+using EliteClinic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
@@ -9,23 +10,37 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 public class FinanceService : IFinanceService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public FinanceService(EliteClinicDbContext context)
+    public FinanceService(EliteClinicDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<ApiResponse<DailyRevenueDto>> GetDailyRevenueAsync(Guid tenantId, DateTime date)
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
-        var invoices = await _context.Invoices
-            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= dayStart && i.CreatedAt < dayEnd)
+        var invoicesQuery = _context.Invoices
+            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= dayStart && i.CreatedAt < dayEnd);
+
+        if (selectedBranchId.HasValue)
+            invoicesQuery = invoicesQuery.Where(i => i.BranchId == selectedBranchId.Value);
+
+        var invoices = await invoicesQuery
             .ToListAsync();
 
+        var invoiceIds = invoices.Select(i => i.Id).ToList();
+
         var payments = await _context.Payments
-            .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.PaidAt >= dayStart && p.PaidAt < dayEnd)
+            .Where(p => p.TenantId == tenantId
+                && !p.IsDeleted
+                && p.PaidAt >= dayStart
+                && p.PaidAt < dayEnd
+                && invoiceIds.Contains(p.InvoiceId))
             .ToListAsync();
 
         var dto = new DailyRevenueDto
@@ -45,10 +60,14 @@ public class FinanceService : IFinanceService
     {
         var dayStart = date.Date;
         var dayEnd = dayStart.AddDays(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
         var query = _context.Invoices
             .Include(i => i.Doctor)
             .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= dayStart && i.CreatedAt < dayEnd);
+
+        if (selectedBranchId.HasValue)
+            query = query.Where(i => i.BranchId == selectedBranchId.Value);
 
         if (doctorId.HasValue)
             query = query.Where(i => i.DoctorId == doctorId.Value);
@@ -76,13 +95,24 @@ public class FinanceService : IFinanceService
     {
         var monthStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         var monthEnd = monthStart.AddMonths(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
-        var invoices = await _context.Invoices
-            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= monthStart && i.CreatedAt < monthEnd)
+        var invoicesQuery = _context.Invoices
+            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= monthStart && i.CreatedAt < monthEnd);
+
+        if (selectedBranchId.HasValue)
+            invoicesQuery = invoicesQuery.Where(i => i.BranchId == selectedBranchId.Value);
+
+        var invoices = await invoicesQuery
             .ToListAsync();
 
-        var expenses = await _context.Expenses
-            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= monthStart && e.ExpenseDate < monthEnd)
+        var expensesQuery = _context.Expenses
+            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= monthStart && e.ExpenseDate < monthEnd);
+
+        if (selectedBranchId.HasValue)
+            expensesQuery = expensesQuery.Where(e => e.BranchId == selectedBranchId.Value);
+
+        var expenses = await expensesQuery
             .ToListAsync();
 
         var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
@@ -111,13 +141,24 @@ public class FinanceService : IFinanceService
     {
         var yearStart = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var yearEnd = yearStart.AddYears(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
-        var invoices = await _context.Invoices
-            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= yearStart && i.CreatedAt < yearEnd)
+        var invoicesQuery = _context.Invoices
+            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= yearStart && i.CreatedAt < yearEnd);
+
+        if (selectedBranchId.HasValue)
+            invoicesQuery = invoicesQuery.Where(i => i.BranchId == selectedBranchId.Value);
+
+        var invoices = await invoicesQuery
             .ToListAsync();
 
-        var expenses = await _context.Expenses
-            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= yearStart && e.ExpenseDate < yearEnd)
+        var expensesQuery = _context.Expenses
+            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= yearStart && e.ExpenseDate < yearEnd);
+
+        if (selectedBranchId.HasValue)
+            expensesQuery = expensesQuery.Where(e => e.BranchId == selectedBranchId.Value);
+
+        var expenses = await expensesQuery
             .ToListAsync();
 
         var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
@@ -173,14 +214,25 @@ public class FinanceService : IFinanceService
     {
         var fromDate = from.Date;
         var toDate = to.Date.AddDays(1);
+        var selectedBranchId = GetSelectedBranchId(tenantId);
 
-        var invoices = await _context.Invoices
+        var invoicesQuery = _context.Invoices
             .Include(i => i.Doctor)
-            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= fromDate && i.CreatedAt < toDate)
+            .Where(i => i.TenantId == tenantId && !i.IsDeleted && i.CreatedAt >= fromDate && i.CreatedAt < toDate);
+
+        if (selectedBranchId.HasValue)
+            invoicesQuery = invoicesQuery.Where(i => i.BranchId == selectedBranchId.Value);
+
+        var invoices = await invoicesQuery
             .ToListAsync();
 
-        var expenses = await _context.Expenses
-            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= fromDate && e.ExpenseDate < toDate)
+        var expensesQuery = _context.Expenses
+            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= fromDate && e.ExpenseDate < toDate);
+
+        if (selectedBranchId.HasValue)
+            expensesQuery = expensesQuery.Where(e => e.BranchId == selectedBranchId.Value);
+
+        var expenses = await expensesQuery
             .ToListAsync();
 
         var totalRevenue = invoices.Where(i => i.IsServiceRendered).Sum(i => i.Amount);
@@ -227,5 +279,16 @@ public class FinanceService : IFinanceService
             || normalized.Contains("payroll")
             || normalized.Contains("wage")
             || normalized.Contains("compensation");
+    }
+
+    private Guid? GetSelectedBranchId(Guid tenantId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return null;
+
+        if (_tenantContext.TenantId != tenantId)
+            return null;
+
+        return _tenantContext.SelectedBranchId;
     }
 }

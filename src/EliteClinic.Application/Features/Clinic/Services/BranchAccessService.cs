@@ -1,5 +1,6 @@
 using EliteClinic.Application.Common.Models;
 using EliteClinic.Infrastructure.Data;
+using EliteClinic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteClinic.Application.Features.Clinic.Services;
@@ -7,17 +8,25 @@ namespace EliteClinic.Application.Features.Clinic.Services;
 public class BranchAccessService : IBranchAccessService
 {
     private readonly EliteClinicDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public BranchAccessService(EliteClinicDbContext context)
+    public BranchAccessService(EliteClinicDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<HashSet<Guid>?> GetScopedBranchIdsAsync(Guid tenantId, Guid callerUserId, CancellationToken cancellationToken = default)
     {
         var roles = await GetUserRolesAsync(callerUserId, cancellationToken);
         if (roles.Contains("SUPERADMIN") || roles.Contains("CLINICOWNER") || roles.Contains("CLINICMANAGER"))
+        {
+            var selectedBranchId = GetSelectedBranchId(tenantId);
+            if (selectedBranchId.HasValue)
+                return new HashSet<Guid> { selectedBranchId.Value };
+
             return null;
+        }
 
         if (roles.Contains("DOCTOR"))
         {
@@ -47,10 +56,33 @@ public class BranchAccessService : IBranchAccessService
                 .Distinct()
                 .ToListAsync(cancellationToken);
 
-            return scheduleBranches
+            var doctorScope = scheduleBranches
                 .Concat(activeSessionBranches)
                 .Concat(visitBranches)
                 .ToHashSet();
+
+            return ApplySelectedBranchFilter(tenantId, doctorScope);
+        }
+
+        var employeeId = await _context.Employees
+            .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.UserId == callerUserId && e.IsEnabled)
+            .Select(e => (Guid?)e.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (employeeId.HasValue)
+        {
+            var assignedBranches = await _context.EmployeeBranchAssignments
+                .Where(a => a.TenantId == tenantId
+                    && !a.IsDeleted
+                    && a.EmployeeId == employeeId.Value
+                    && a.Branch.IsActive
+                    && !a.Branch.IsDeleted)
+                .Select(a => a.BranchId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            if (assignedBranches.Count > 0)
+                return ApplySelectedBranchFilter(tenantId, assignedBranches.ToHashSet());
         }
 
         var activeBranches = await _context.Branches
@@ -58,7 +90,7 @@ public class BranchAccessService : IBranchAccessService
             .Select(b => b.Id)
             .ToListAsync(cancellationToken);
 
-        return activeBranches.ToHashSet();
+        return ApplySelectedBranchFilter(tenantId, activeBranches.ToHashSet());
     }
 
     public async Task<ApiResponse> EnsureCanAccessBranchAsync(Guid tenantId, Guid callerUserId, Guid branchId, CancellationToken cancellationToken = default)
@@ -88,5 +120,28 @@ public class BranchAccessService : IBranchAccessService
             .ToListAsync(cancellationToken);
 
         return roles.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r!).ToHashSet();
+    }
+
+    private Guid? GetSelectedBranchId(Guid tenantId)
+    {
+        if (!_tenantContext.IsTenantResolved)
+            return null;
+
+        if (_tenantContext.TenantId != tenantId)
+            return null;
+
+        return _tenantContext.SelectedBranchId;
+    }
+
+    private HashSet<Guid> ApplySelectedBranchFilter(Guid tenantId, HashSet<Guid> scope)
+    {
+        var selectedBranchId = GetSelectedBranchId(tenantId);
+        if (!selectedBranchId.HasValue)
+            return scope;
+
+        if (scope.Contains(selectedBranchId.Value))
+            return new HashSet<Guid> { selectedBranchId.Value };
+
+        return new HashSet<Guid>();
     }
 }

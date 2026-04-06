@@ -2,6 +2,8 @@
 
 export const ROLES = {
   SUPER_ADMIN: 'SuperAdmin',
+  WORKER: 'Worker',
+  BRANCH_MANAGER: 'BranchManager',
   CLINIC_OWNER: 'ClinicOwner',
   CLINIC_MANAGER: 'ClinicManager',
   RECEPTIONIST: 'Receptionist',
@@ -35,6 +37,8 @@ export const ROLE_CONFIG: Record<
   { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
 > = {
   [ROLES.SUPER_ADMIN]: { label: 'مدير النظام', variant: 'destructive' },
+  [ROLES.WORKER]: { label: 'موظف منصة', variant: 'secondary' },
+  [ROLES.BRANCH_MANAGER]: { label: 'مسؤول الفروع', variant: 'secondary' },
   [ROLES.CLINIC_OWNER]: { label: 'مالك العيادة', variant: 'default' },
   [ROLES.CLINIC_MANAGER]: { label: 'مدير عيادة', variant: 'default' },
   [ROLES.DOCTOR]: { label: 'طبيب', variant: 'default' },

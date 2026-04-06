@@ -490,7 +490,7 @@ public class PatientSelfServiceRequestService : IPatientSelfServiceRequestServic
                 PaymentMethod = string.IsNullOrWhiteSpace(entity.PaymentMethod) ? "SelfServiceProof" : entity.PaymentMethod,
                 PaymentReference = entity.TransferReference,
                 PaymentNotes = $"Converted from self-service request {entity.Id}"
-            });
+            }, approverUserId);
 
             if (!queueResult.Success || queueResult.Data == null)
                 return ApiResponse<PatientSelfServiceRequestDto>.Error(queueResult.Message);
