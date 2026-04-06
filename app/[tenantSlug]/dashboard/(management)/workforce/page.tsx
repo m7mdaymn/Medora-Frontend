@@ -4,7 +4,6 @@ import { getDoctorsAction } from '@/actions/doctor/get-doctors'
 import {
   createAbsenceAction,
   createAttendanceAction,
-  createDoctorCompensationRuleAction,
   generateDailyClosingAction,
   listAbsenceAction,
   listAttendanceAction,
@@ -21,16 +20,9 @@ import { FormEvent, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
 
-const COMPENSATION_MODES = ['Salary', 'Percentage', 'FixedPerVisit'] as const
-
 export default function WorkforcePage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
-
-  const [doctorId, setDoctorId] = useState('')
-  const [compensationMode, setCompensationMode] = useState<(typeof COMPENSATION_MODES)[number]>('Salary')
-  const [compensationValue, setCompensationValue] = useState('')
-  const [effectiveFrom, setEffectiveFrom] = useState(new Date().toISOString().slice(0, 10))
 
   const [attendanceDoctorId, setAttendanceDoctorId] = useState('')
   const [attendanceBranchId, setAttendanceBranchId] = useState('')
@@ -67,42 +59,6 @@ export default function WorkforcePage() {
   const closings = closingRes?.data || []
 
   const defaultDoctorId = useMemo(() => doctors[0]?.id || '', [doctors])
-
-  const submitCompensation = async (event: FormEvent) => {
-    event.preventDefault()
-
-    const selectedDoctorId = doctorId || defaultDoctorId
-    const parsedValue = Number(compensationValue)
-
-    if (!selectedDoctorId) {
-      toast.error('اختر طبيباً أولاً')
-      return
-    }
-
-    if (Number.isNaN(parsedValue) || parsedValue <= 0) {
-      toast.error('قيمة التعاقد غير صحيحة')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      const response = await createDoctorCompensationRuleAction(tenantSlug, selectedDoctorId, {
-        mode: compensationMode,
-        value: parsedValue,
-        effectiveFrom,
-      })
-
-      if (!response.success) {
-        toast.error(response.message || 'فشل حفظ قاعدة التعاقد')
-        return
-      }
-
-      toast.success('تم حفظ قاعدة التعاقد')
-      setCompensationValue('')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   const submitAttendance = async (event: FormEvent) => {
     event.preventDefault()
@@ -178,74 +134,14 @@ export default function WorkforcePage() {
     <DashboardShell>
       <DashboardHeader
         heading='شئون العاملين'
-        text='التعاقدات، الحضور والغياب، والإقفال اليومي'
+        text='الحضور والغياب والإقفال اليومي'
       >
         <Button variant='outline' onClick={() => void generateDailyClosing()}>
           توليد إقفال اليوم
         </Button>
       </DashboardHeader>
 
-      <div className='grid grid-cols-1 xl:grid-cols-3 gap-4'>
-        <Card className='rounded-2xl border-border/50 p-4'>
-          <h3 className='text-sm font-bold mb-3'>قاعدة تعاقد طبيب</h3>
-          <form onSubmit={submitCompensation} className='space-y-3'>
-            <div className='space-y-2'>
-              <Label>الطبيب</Label>
-              <select
-                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={doctorId}
-                onChange={(event) => setDoctorId(event.target.value)}
-              >
-                <option value=''>اختر الطبيب</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>نمط التعاقد</Label>
-              <select
-                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={compensationMode}
-                onChange={(event) =>
-                  setCompensationMode(event.target.value as (typeof COMPENSATION_MODES)[number])
-                }
-              >
-                {COMPENSATION_MODES.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {mode}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>القيمة</Label>
-              <Input
-                type='number'
-                value={compensationValue}
-                onChange={(event) => setCompensationValue(event.target.value)}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label>ساري من</Label>
-              <Input
-                type='date'
-                value={effectiveFrom}
-                onChange={(event) => setEffectiveFrom(event.target.value)}
-              />
-            </div>
-
-            <Button type='submit' disabled={isSubmitting}>
-              حفظ القاعدة
-            </Button>
-          </form>
-        </Card>
-
+      <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
         <Card className='rounded-2xl border-border/50 p-4'>
           <h3 className='text-sm font-bold mb-3'>تسجيل حضور</h3>
           <form onSubmit={submitAttendance} className='space-y-3'>

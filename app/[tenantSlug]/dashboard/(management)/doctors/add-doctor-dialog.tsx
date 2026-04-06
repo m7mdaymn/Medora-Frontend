@@ -54,11 +54,15 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
       password: '',
       phone: '',
       specialty: '',
-      urgentInsertAfterCount: 0, // 👈 التعديل هنا
+      urgentInsertAfterCount: 0,
       avgVisitDurationMinutes: 15,
+      compensationMode: 'Percentage',
+      compensationValue: 0,
       bio: '',
     },
   })
+
+  const selectedCompensationMode = form.watch('compensationMode')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -298,13 +302,60 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* 👈 التعديل هنا للقِيَم الجديدة بوضوح */}
                         <SelectItem value='0'>مباشرة (أول الطابور)</SelectItem>
                         <SelectItem value='1'>بعد مريض واحد</SelectItem>
                         <SelectItem value='2'>بعد مريضين</SelectItem>
                         <SelectItem value='3'>بعد 3 مرضى</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='compensationMode'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>نظام التعاقد</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className='h-11 bg-background'>
+                          <SelectValue placeholder='اختر نظام التعاقد' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value='Percentage'>نسبة من الكشف</SelectItem>
+                        <SelectItem value='Salary'>راتب ثابت</SelectItem>
+                        <SelectItem value='FixedPerVisit'>قيمة ثابتة لكل كشف</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='compensationValue'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {selectedCompensationMode === 'Percentage'
+                        ? 'قيمة النسبة %'
+                        : selectedCompensationMode === 'FixedPerVisit'
+                          ? 'قيمة كل كشف'
+                          : 'قيمة الراتب'}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type='number'
+                        step='0.01'
+                        min='0'
+                        className='h-11 bg-background'
+                        value={(field.value as number) ?? ''}
+                        onChange={(event) => field.onChange(event.target.valueAsNumber || 0)}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

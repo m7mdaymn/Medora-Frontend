@@ -1,16 +1,3 @@
-export type DoctorCompensationMode = 'Salary' | 'Percentage' | 'FixedPerVisit' | string
-
-export interface IDoctorCompensationRule {
-  id: string
-  doctorId: string
-  mode: DoctorCompensationMode
-  value: number
-  effectiveFrom: string
-  effectiveTo: string | null
-  isActive: boolean
-  createdAt: string
-}
-
 export interface IAttendanceRecord {
   id: string
   employeeId: string | null

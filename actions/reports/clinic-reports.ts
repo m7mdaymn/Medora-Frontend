@@ -5,6 +5,8 @@ import { BaseApiResponse } from '@/types/api'
 import { IClinicOverviewReport, IServicesSalesReport } from '@/types/reporting'
 
 type ReportFilters = {
+  from?: string
+  to?: string
   fromDate?: string
   toDate?: string
   doctorId?: string
@@ -15,8 +17,11 @@ type ReportFilters = {
 function toQueryString(filters: ReportFilters): string {
   const search = new URLSearchParams()
 
-  if (filters.fromDate) search.set('fromDate', filters.fromDate)
-  if (filters.toDate) search.set('toDate', filters.toDate)
+  const from = filters.from ?? filters.fromDate
+  const to = filters.to ?? filters.toDate
+
+  if (from) search.set('from', from)
+  if (to) search.set('to', to)
   if (filters.doctorId) search.set('doctorId', filters.doctorId)
   if (filters.visitType) search.set('visitType', filters.visitType)
   if (filters.source) search.set('source', filters.source)
@@ -49,7 +54,7 @@ export async function getClinicServicesReportAction(
 
 export async function getDoctorMyOverviewReportAction(
   tenantSlug: string,
-  filters: Pick<ReportFilters, 'fromDate' | 'toDate'> = {},
+  filters: Pick<ReportFilters, 'fromDate' | 'toDate' | 'from' | 'to' | 'visitType' | 'source'> = {},
 ): Promise<BaseApiResponse<IClinicOverviewReport>> {
   return await fetchApi<IClinicOverviewReport>(
     `/api/clinic/reports/my-overview${toQueryString(filters)}`,
