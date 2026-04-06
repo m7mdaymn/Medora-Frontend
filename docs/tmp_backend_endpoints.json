@@ -200,14 +200,14 @@
         "Route":  "/api/clinic/expenses",
         "Controller":  "ExpensesController",
         "Action":  "GetAll",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
     },
     {
         "Method":  "POST",
         "Route":  "/api/clinic/expenses",
         "Controller":  "ExpensesController",
         "Action":  "Create",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
     },
     {
         "Method":  "DELETE",
@@ -645,20 +645,6 @@
     },
     {
         "Method":  "GET",
-        "Route":  "/api/clinic/patient-credits/{patientId:guid}/balance",
-        "Controller":  "PatientCreditsController",
-        "Action":  "GetBalance",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
-    },
-    {
-        "Method":  "GET",
-        "Route":  "/api/clinic/patient-credits/{patientId:guid}/history",
-        "Controller":  "PatientCreditsController",
-        "Action":  "GetHistory",
-        "Auth":  "Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin"
-    },
-    {
-        "Method":  "GET",
         "Route":  "/api/clinic/patients",
         "Controller":  "PatientsController",
         "Action":  "GetAllPatients",
@@ -1082,7 +1068,7 @@
         "Route":  "/api/clinic/staff",
         "Controller":  "StaffController",
         "Action":  "GetAllStaff",
-        "Auth":  "Authorized"
+        "Auth":  "Roles: ClinicOwner,ClinicManager,SuperAdmin"
     },
     {
         "Method":  "POST",

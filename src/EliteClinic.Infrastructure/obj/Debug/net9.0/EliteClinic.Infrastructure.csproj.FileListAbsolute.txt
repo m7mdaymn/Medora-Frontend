@@ -16,3 +16,15 @@ C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\obj\Debug\net9.0\refint\Elit
 C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\obj\Debug\net9.0\EliteClinic.Infrastructure.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\obj\Debug\net9.0\EliteClinic.Infrastructure.genruntimeconfig.cache
 C:\DATA\Elite Clinic\src\EliteClinic.Infrastructure\obj\Debug\net9.0\ref\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Infrastructure.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.runtimeconfig.json
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.dll
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Infrastructure.pdb

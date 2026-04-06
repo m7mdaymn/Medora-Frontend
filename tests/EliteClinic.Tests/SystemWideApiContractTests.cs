@@ -32,7 +32,6 @@ public class SystemWideApiContractTests
         nameof(PartnerOrdersController),
         nameof(PartnersController),
         nameof(PatientAppController),
-        nameof(PatientCreditsController),
         nameof(PatientMedicalController),
         nameof(PatientsController),
         nameof(PrescriptionsController),

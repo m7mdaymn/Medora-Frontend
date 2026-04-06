@@ -48,8 +48,6 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<AbsenceRecord> AbsenceRecords { get; set; }
     public DbSet<DailyClosingSnapshot> DailyClosingSnapshots { get; set; }
     public DbSet<ClinicPaymentMethod> ClinicPaymentMethods { get; set; }
-    public DbSet<PatientCreditBalance> PatientCreditBalances { get; set; }
-    public DbSet<PatientCreditTransaction> PatientCreditTransactions { get; set; }
     public DbSet<MediaFile> MediaFiles { get; set; }
     public DbSet<Branch> Branches { get; set; }
     public DbSet<DoctorBranchSchedule> DoctorBranchSchedules { get; set; }
@@ -461,7 +459,6 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.PaidAmount).HasPrecision(18, 2);
             entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
-            entity.Property(e => e.CreditAmount).HasPrecision(18, 2);
             entity.Property(e => e.PendingSettlementAmount).HasPrecision(18, 2);
             entity.Property(e => e.Status).HasConversion<int>();
             entity.Property(e => e.Notes).HasMaxLength(500);
@@ -1074,60 +1071,6 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasIndex(e => new { e.TenantId, e.DisplayOrder, e.CreatedAt });
         });
 
-        builder.Entity<PatientCreditBalance>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Balance).HasPrecision(18, 2);
-            entity.Property(e => e.RowVersion).IsRowVersion();
-            entity.HasIndex(e => new { e.TenantId, e.PatientId }).IsUnique().HasFilter("[IsDeleted] = 0");
-
-            entity.HasOne(e => e.Patient)
-                .WithMany()
-                .HasForeignKey(e => e.PatientId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        builder.Entity<PatientCreditTransaction>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Type).HasConversion<int>();
-            entity.Property(e => e.Reason).HasConversion<int>();
-            entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.Property(e => e.BalanceAfter).HasPrecision(18, 2);
-            entity.Property(e => e.Notes).HasMaxLength(1000);
-            entity.HasIndex(e => new { e.TenantId, e.PatientId, e.CreatedAt });
-
-            entity.HasOne(e => e.CreditBalance)
-                .WithMany(b => b.Transactions)
-                .HasForeignKey(e => e.CreditBalanceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.Patient)
-                .WithMany()
-                .HasForeignKey(e => e.PatientId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.Invoice)
-                .WithMany()
-                .HasForeignKey(e => e.InvoiceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.Payment)
-                .WithMany()
-                .HasForeignKey(e => e.PaymentId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.QueueTicket)
-                .WithMany()
-                .HasForeignKey(e => e.QueueTicketId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(e => e.QueueSession)
-                .WithMany()
-                .HasForeignKey(e => e.QueueSessionId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
         builder.Entity<MediaFile>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -1340,8 +1283,6 @@ public class EliteClinicDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<ClinicService>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<DoctorServiceLink>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<InvoiceNumberCounter>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
-        builder.Entity<PatientCreditBalance>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
-        builder.Entity<PatientCreditTransaction>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<MediaFile>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<MessageTemplate>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);
         builder.Entity<InvoiceLineItem>().HasQueryFilter(e => !e.IsDeleted && e.TenantId == CurrentTenantId);

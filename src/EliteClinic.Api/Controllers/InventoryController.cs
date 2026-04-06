@@ -4,6 +4,7 @@ using EliteClinic.Application.Features.Clinic.Services;
 using EliteClinic.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EliteClinic.Api.Controllers;
 
@@ -21,6 +22,8 @@ public class InventoryController : ControllerBase
         _tenantContext = tenantContext;
     }
 
+    private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
     [HttpGet]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<InventoryItemDto>>), 200)]
@@ -29,7 +32,7 @@ public class InventoryController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<PagedResult<InventoryItemDto>>.Error("Tenant context not resolved"));
 
-        var result = await _inventoryService.ListItemsAsync(_tenantContext.TenantId, query);
+        var result = await _inventoryService.ListItemsAsync(_tenantContext.TenantId, GetCurrentUserId(), query);
         return Ok(result);
     }
 
@@ -42,7 +45,7 @@ public class InventoryController : ControllerBase
         if (!_tenantContext.IsTenantResolved)
             return BadRequest(ApiResponse<InventoryItemDto>.Error("Tenant context not resolved"));
 
-        var result = await _inventoryService.GetItemByIdAsync(_tenantContext.TenantId, itemId);
+        var result = await _inventoryService.GetItemByIdAsync(_tenantContext.TenantId, GetCurrentUserId(), itemId);
         if (!result.Success)
             return NotFound(result);
 

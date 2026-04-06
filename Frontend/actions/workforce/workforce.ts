@@ -7,7 +7,6 @@ import {
   IAbsenceRecord,
   IAttendanceRecord,
   IDailyClosingSnapshot,
-  IDoctorCompensationRule,
   ISalaryPayoutExpense,
 } from '@/types/workforce'
 
@@ -25,46 +24,6 @@ function toDateRangeQuery(params: {
 
   const query = search.toString()
   return query ? `?${query}` : ''
-}
-
-export async function listDoctorCompensationRulesAction(
-  tenantSlug: string,
-  doctorId: string,
-): Promise<BaseApiResponse<IDoctorCompensationRule[]>> {
-  return await fetchApi<IDoctorCompensationRule[]>(
-    `/api/clinic/workforce/doctors/${doctorId}/compensation-rules`,
-    {
-      method: 'GET',
-      tenantSlug,
-      cache: 'no-store',
-    },
-  )
-}
-
-export async function createDoctorCompensationRuleAction(
-  tenantSlug: string,
-  doctorId: string,
-  payload: {
-    mode: string
-    value: number
-    effectiveFrom: string
-    effectiveTo?: string
-  },
-): Promise<BaseApiResponse<IDoctorCompensationRule>> {
-  const response = await fetchApi<IDoctorCompensationRule>(
-    `/api/clinic/workforce/doctors/${doctorId}/compensation-rules`,
-    {
-      method: 'POST',
-      tenantSlug,
-      body: JSON.stringify(payload),
-    },
-  )
-
-  if (response.success) {
-    revalidatePath(`/${tenantSlug}/dashboard/workforce`)
-  }
-
-  return response
 }
 
 export async function listAttendanceAction(

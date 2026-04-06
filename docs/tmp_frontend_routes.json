@@ -68,8 +68,24 @@
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/expenses/page.tsx"
     },
     {
+        "route":  "/{*}/dashboard/inventory",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/inventory/page.tsx"
+    },
+    {
         "route":  "/{*}/dashboard/invoices",
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/invoices/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/marketplace-orders",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/marketplace-orders/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/messages",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/messages/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/notifications",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/notifications/page.tsx"
     },
     {
         "route":  "/{*}/dashboard/patients",
@@ -80,12 +96,20 @@
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/[id]/page.tsx"
     },
     {
+        "route":  "/{*}/dashboard/patients/{*}/medical-documents",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/patients/[id]/medical-documents/page.tsx"
+    },
+    {
         "route":  "/{*}/dashboard/queue",
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/queue/page.tsx"
     },
     {
         "route":  "/{*}/dashboard/reports",
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(finance)/reports/page.tsx"
+    },
+    {
+        "route":  "/{*}/dashboard/self-service-requests",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(clinical)/self-service-requests/page.tsx"
     },
     {
         "route":  "/{*}/dashboard/services",
@@ -100,8 +124,16 @@
         "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/staff/page.tsx"
     },
     {
+        "route":  "/{*}/dashboard/workforce",
+        "sourceFile":  "Frontend/app/[tenantSlug]/dashboard/(management)/workforce/page.tsx"
+    },
+    {
         "route":  "/{*}/login",
         "sourceFile":  "Frontend/app/[tenantSlug]/login/page.tsx"
+    },
+    {
+        "route":  "/{*}/marketplace",
+        "sourceFile":  "Frontend/app/[tenantSlug]/(public)/marketplace/page.tsx"
     },
     {
         "route":  "/{*}/patient",
@@ -122,6 +154,14 @@
     {
         "route":  "/{*}/patient/profile",
         "sourceFile":  "Frontend/app/[tenantSlug]/patient/(main)/profile/page.tsx"
+    },
+    {
+        "route":  "/{*}/payment-options",
+        "sourceFile":  "Frontend/app/[tenantSlug]/(public)/payment-options/page.tsx"
+    },
+    {
+        "route":  "/{*}/services",
+        "sourceFile":  "Frontend/app/[tenantSlug]/(public)/services/page.tsx"
     },
     {
         "route":  "/admin",

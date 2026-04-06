@@ -443,7 +443,6 @@ public class InvoiceService : IInvoiceService
             invoice.Amount,
             invoice.PaidAmount,
             invoice.RemainingAmount,
-            invoice.CreditAmount,
             invoice.Status
         };
 
@@ -457,16 +456,12 @@ public class InvoiceService : IInvoiceService
             invoice.Amount = 0;
             invoice.PaidAmount = 0;
             invoice.RemainingAmount = 0;
-            invoice.CreditAmount = 0;
-            invoice.CreditIssuedAt = null;
             invoice.HasPendingSettlement = false;
             invoice.PendingSettlementAmount = 0;
         }
         else
         {
-            invoice.RemainingAmount = invoice.Amount - invoice.PaidAmount;
-            invoice.CreditAmount += request.Amount;
-            invoice.CreditIssuedAt = DateTime.UtcNow;
+            invoice.RemainingAmount = Math.Max(invoice.Amount - invoice.PaidAmount, 0m);
         }
         invoice.Status = isFullRefund
             ? InvoiceStatus.Refunded
@@ -485,7 +480,6 @@ public class InvoiceService : IInvoiceService
                 invoice.Amount,
                 invoice.PaidAmount,
                 invoice.RemainingAmount,
-                invoice.CreditAmount,
                 invoice.Status,
                 RefundAmount = request.Amount,
                 request.Reason
@@ -577,11 +571,9 @@ public class InvoiceService : IInvoiceService
             RemainingAmount = remainingAmount,
             Status = status,
             IsServiceRendered = i.IsServiceRendered,
-            CreditAmount = i.CreditAmount,
             HasPendingSettlement = i.HasPendingSettlement,
             PendingSettlementAmount = i.PendingSettlementAmount,
             TotalRefunded = totalRefunded,
-            CreditIssuedAt = i.CreditIssuedAt,
             Notes = i.Notes,
             LineItems = i.LineItems?.Where(li => !li.IsDeleted).Select(li => new InvoiceLineItemDto
             {

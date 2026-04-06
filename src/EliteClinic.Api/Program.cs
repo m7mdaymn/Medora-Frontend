@@ -141,7 +141,6 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceNumberService, InvoiceNumberService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
-builder.Services.AddScoped<IPatientCreditService, PatientCreditService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
@@ -354,7 +353,6 @@ async Task SeedDefaultMessageTemplatesAsync(EliteClinicDbContext dbContext)
         ["QueueTicketIssued"] = "مرحباً {{patientName}}، تم إصدار تذكرتك رقم {{ticketNumber}} لدى {{doctorName}} في {{clinicName}}.",
         ["QueueTurnReady"] = "{{patientName}}، دورك الآن لدى {{doctorName}} في {{clinicName}}. رقم التذكرة {{ticketNumber}}.",
         ["MedicationReminder"] = "تذكير دواء: {{medicationName}} الجرعة {{dosage}} بمعدل {{frequency}}. {{notes}}",
-        ["CreditIssued"] = "تم إضافة رصيد بقيمة {{creditAmount}} جنيه إلى حسابك في {{clinicName}}. السبب: {{creditReason}}.",
         ["BookingConfirmed"] = "تم تأكيد حجزك في {{clinicName}} مع {{doctorName}} يوم {{bookingDate}} الساعة {{bookingTime}}. رابط الحجز: {{bookingLink}}.",
         ["BookingCancelled"] = "تم إلغاء حجزك في {{clinicName}} مع {{doctorName}} يوم {{bookingDate}} الساعة {{bookingTime}}. السبب: {{cancelReason}}."
     };

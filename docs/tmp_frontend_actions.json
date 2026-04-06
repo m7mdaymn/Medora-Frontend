@@ -73,9 +73,10 @@
                         {
                             "file":  "Frontend/actions/booking/get-booking.ts",
                             "exportedFunctions":  [
+                                                      "getBookingByIdAction",
                                                       "getBookingsAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/booking/reschedule-booking.ts",
@@ -94,9 +95,11 @@
                         {
                             "file":  "Frontend/actions/doctor/get-doctor.ts",
                             "exportedFunctions":  [
-                                                      "getDoctorAction"
+                                                      "getDoctorAction",
+                                                      "getMyDoctorProfileAction",
+                                                      "updateDoctorServicesAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  3
                         },
                         {
                             "file":  "Frontend/actions/doctor/get-doctors.ts",
@@ -122,9 +125,10 @@
                         {
                             "file":  "Frontend/actions/doctor/get-my-today-visits.ts",
                             "exportedFunctions":  [
-                                                      "getMyTodayVisitsAction"
+                                                      "getMyTodayVisitsAction",
+                                                      "getMyVisitsAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/doctor/get-my-visit-fields.ts",
@@ -150,9 +154,10 @@
                         {
                             "file":  "Frontend/actions/doctor/update-doctor.ts",
                             "exportedFunctions":  [
+                                                      "patchDoctorAction",
                                                       "updateDoctorAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/doctor/update-my-visit-fields.ts",
@@ -201,10 +206,11 @@
                                                       "addPaymentAction",
                                                       "editInvoiceAction",
                                                       "getInvoiceByIdAction",
+                                                      "getInvoicePaymentsAction",
                                                       "getInvoicesAction",
                                                       "refundInvoiceAction"
                                                   ],
-                            "exportedFunctionCount":  7
+                            "exportedFunctionCount":  8
                         },
                         {
                             "file":  "Frontend/actions/finance/reports.ts",
@@ -216,6 +222,24 @@
                                                       "getYearlyFinanceAction"
                                                   ],
                             "exportedFunctionCount":  5
+                        },
+                        {
+                            "file":  "Frontend/actions/inventory/items.ts",
+                            "exportedFunctions":  [
+                                                      "createInventoryItemAction",
+                                                      "getInventoryItemByIdAction",
+                                                      "listInventoryItemsAction",
+                                                      "setInventoryItemActivationAction",
+                                                      "updateInventoryItemAction"
+                                                  ],
+                            "exportedFunctionCount":  5
+                        },
+                        {
+                            "file":  "Frontend/actions/labs/create-lab-partner-order.ts",
+                            "exportedFunctions":  [
+                                                      "createLabPartnerOrderAction"
+                                                  ],
+                            "exportedFunctionCount":  1
                         },
                         {
                             "file":  "Frontend/actions/labs/create-lab-request.ts",
@@ -232,28 +256,79 @@
                             "exportedFunctionCount":  0
                         },
                         {
+                            "file":  "Frontend/actions/labs/lab-requests.ts",
+                            "exportedFunctions":  [
+                                                      "addLabResultAction",
+                                                      "getLabRequestsByVisitAction",
+                                                      "updateLabRequestAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/marketplace/orders.ts",
+                            "exportedFunctions":  [
+                                                      "getMarketplaceOrderByIdAction",
+                                                      "listMarketplaceOrdersAction",
+                                                      "updateMarketplaceOrderStatusAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/messages/messages.ts",
+                            "exportedFunctions":  [
+                                                      "getMessageByIdAction",
+                                                      "listMessagesAction",
+                                                      "retryMessageAction",
+                                                      "sendMessageAction"
+                                                  ],
+                            "exportedFunctionCount":  4
+                        },
+                        {
                             "file":  "Frontend/actions/notes/notes.ts",
                             "exportedFunctions":  [
                                                       "createDoctorNoteAction",
+                                                      "getAllDoctorNotesAction",
                                                       "getUnreadDoctorNotes",
                                                       "markDoctorNoteAsReadAction"
                                                   ],
-                            "exportedFunctionCount":  3
+                            "exportedFunctionCount":  4
+                        },
+                        {
+                            "file":  "Frontend/actions/notifications/notifications.ts",
+                            "exportedFunctions":  [
+                                                      "getMyNotificationSubscriptionsAction",
+                                                      "listInAppNotificationsAction",
+                                                      "markAllInAppNotificationsReadAction",
+                                                      "markInAppNotificationReadAction",
+                                                      "sendPushNotificationAction",
+                                                      "subscribeNotificationAction",
+                                                      "unsubscribeNotificationAction"
+                                                  ],
+                            "exportedFunctionCount":  7
                         },
                         {
                             "file":  "Frontend/actions/partner/workflow.ts",
                             "exportedFunctions":  [
                                                       "acceptPartnerOrderAction",
+                                                      "createPartnerAction",
+                                                      "createPartnerContractAction",
                                                       "createPartnerServiceAction",
                                                       "createPartnerUserAction",
+                                                      "getPartnerOrderByIdAction",
+                                                      "listPartnerContractsAction",
                                                       "listPartnerOrdersAction",
                                                       "listPartnersAction",
                                                       "listPartnerServicesAction",
                                                       "markPartnerOrderArrivedAction",
                                                       "schedulePartnerOrderAction",
+                                                      "setPartnerActivationAction",
+                                                      "updatePartnerAction",
+                                                      "updatePartnerContractAction",
+                                                      "updatePartnerOrderStatusAction",
+                                                      "updatePartnerServiceAction",
                                                       "uploadPartnerResultAction"
                                                   ],
-                            "exportedFunctionCount":  9
+                            "exportedFunctionCount":  18
                         },
                         {
                             "file":  "Frontend/actions/patient/add-subprofile.ts",
@@ -286,9 +361,9 @@
                         {
                             "file":  "Frontend/actions/patient/getPatient.ts",
                             "exportedFunctions":  [
-
+                                                      "getPatientAction"
                                                   ],
-                            "exportedFunctionCount":  0
+                            "exportedFunctionCount":  1
                         },
                         {
                             "file":  "Frontend/actions/patient/get-patient-profile.ts",
@@ -321,9 +396,12 @@
                         {
                             "file":  "Frontend/actions/patient/update-patient.ts",
                             "exportedFunctions":  [
+                                                      "patchPatientAction",
+                                                      "resetPatientPasswordAction",
+                                                      "sendPatientCredentialsAction",
                                                       "updatePatientAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  4
                         },
                         {
                             "file":  "Frontend/actions/patient-app/cancel-booking-patient.ts",
@@ -350,29 +428,44 @@
                             "file":  "Frontend/actions/patient-app/profile.ts",
                             "exportedFunctions":  [
                                                       "getPatientBookingsAppAction",
-                                                      "getPatientCreditBalanceAction",
-                                                      "getPatientCreditHistoryAction",
                                                       "getPatientPartnerOrdersAppAction",
                                                       "getPatientProfileAppAction",
                                                       "getPatientQueueTicketAppAction",
                                                       "getPatientSummaryAppAction",
                                                       "getPatientVisitsAppAction"
                                                   ],
-                            "exportedFunctionCount":  8
+                            "exportedFunctionCount":  6
+                        },
+                        {
+                            "file":  "Frontend/actions/patient-medical/documents.ts",
+                            "exportedFunctions":  [
+                                                      "addPatientMedicalThreadReplyAction",
+                                                      "closePatientMedicalThreadAction",
+                                                      "createPatientMedicalDocumentThreadAction",
+                                                      "getPatientChronicProfileAction",
+                                                      "getPatientMedicalDocumentAction",
+                                                      "listPatientMedicalDocumentsAction",
+                                                      "listPatientMedicalDocumentThreadsAction",
+                                                      "uploadPatientMedicalDocumentAction",
+                                                      "upsertPatientChronicProfileAction"
+                                                  ],
+                            "exportedFunctionCount":  9
                         },
                         {
                             "file":  "Frontend/actions/platform/create-tenant.ts",
                             "exportedFunctions":  [
-                                                      "createTenantAction"
+                                                      "createTenantAction",
+                                                      "updateTenantAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/platform/delete-tenant.ts",
                             "exportedFunctions":  [
-                                                      "deleteTenant"
+                                                      "deleteTenant",
+                                                      "deleteTenantByIdAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/platform/feature-flags.ts",
@@ -385,7 +478,15 @@
                         {
                             "file":  "Frontend/actions/platform/get-tenants.ts",
                             "exportedFunctions":  [
+                                                      "getTenantByIdAction",
                                                       "getTenants"
+                                                  ],
+                            "exportedFunctionCount":  2
+                        },
+                        {
+                            "file":  "Frontend/actions/platform/health.ts",
+                            "exportedFunctions":  [
+                                                      "getHealthAction"
                                                   ],
                             "exportedFunctionCount":  1
                         },
@@ -417,6 +518,13 @@
                             "exportedFunctionCount":  0
                         },
                         {
+                            "file":  "Frontend/actions/prescription/create-prescription-partner-order.ts",
+                            "exportedFunctions":  [
+                                                      "createPrescriptionPartnerOrderAction"
+                                                  ],
+                            "exportedFunctionCount":  1
+                        },
+                        {
                             "file":  "Frontend/actions/prescription/delete-prescription.ts",
                             "exportedFunctions":  [
 
@@ -424,11 +532,35 @@
                             "exportedFunctionCount":  0
                         },
                         {
+                            "file":  "Frontend/actions/prescription/prescriptions.ts",
+                            "exportedFunctions":  [
+                                                      "getPrescriptionRevisionsAction",
+                                                      "listVisitPrescriptionsAction"
+                                                  ],
+                            "exportedFunctionCount":  2
+                        },
+                        {
                             "file":  "Frontend/actions/prescription/update-prescription.ts",
                             "exportedFunctions":  [
 
                                                   ],
                             "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/public/landing.ts",
+                            "exportedFunctions":  [
+                                                      "createPublicMarketplaceOrderAction",
+                                                      "getPublicClinicAction",
+                                                      "getPublicDoctorsAction",
+                                                      "getPublicDoctorsAvailableNowAction",
+                                                      "getPublicLandingAction",
+                                                      "getPublicMarketplaceItemByIdAction",
+                                                      "getPublicMarketplaceItemsAction",
+                                                      "getPublicPaymentOptionsAction",
+                                                      "getPublicServicesAction",
+                                                      "getPublicWorkingHoursAction"
+                                                  ],
+                            "exportedFunctionCount":  10
                         },
                         {
                             "file":  "Frontend/actions/queue/open-my-session.ts",
@@ -447,10 +579,14 @@
                         {
                             "file":  "Frontend/actions/queue/sessions.ts",
                             "exportedFunctions":  [
+                                                      "closeAllQueueSessions",
                                                       "closeQueueSession",
+                                                      "getQueueSessionByIdAction",
+                                                      "getQueueSessionsAction",
+                                                      "getQueueSessionTicketsAction",
                                                       "openQueueSession"
                                                   ],
-                            "exportedFunctionCount":  2
+                            "exportedFunctionCount":  6
                         },
                         {
                             "file":  "Frontend/actions/queue/tickets.ts",
@@ -466,14 +602,36 @@
                             "exportedFunctionCount":  7
                         },
                         {
+                            "file":  "Frontend/actions/reports/clinic-reports.ts",
+                            "exportedFunctions":  [
+                                                      "getClinicOverviewReportAction",
+                                                      "getClinicServicesReportAction",
+                                                      "getDoctorMyOverviewReportAction"
+                                                  ],
+                            "exportedFunctionCount":  3
+                        },
+                        {
+                            "file":  "Frontend/actions/self-service/requests.ts",
+                            "exportedFunctions":  [
+                                                      "adjustSelfServicePaidAmountAction",
+                                                      "approveSelfServiceRequestAction",
+                                                      "getSelfServiceRequestByIdAction",
+                                                      "listSelfServiceRequestsAction",
+                                                      "rejectSelfServiceRequestAction",
+                                                      "requestSelfServicePaymentReuploadAction"
+                                                  ],
+                            "exportedFunctionCount":  6
+                        },
+                        {
                             "file":  "Frontend/actions/service/clinic-services.ts",
                             "exportedFunctions":  [
                                                       "createClinicServiceAction",
                                                       "deleteClinicServiceAction",
+                                                      "getClinicServiceByIdAction",
                                                       "getClinicServicesAction",
                                                       "updateClinicServiceAction"
                                                   ],
-                            "exportedFunctionCount":  4
+                            "exportedFunctionCount":  5
                         },
                         {
                             "file":  "Frontend/actions/service/doctor-services.ts",
@@ -487,51 +645,70 @@
                         {
                             "file":  "Frontend/actions/settings/get-settings.ts",
                             "exportedFunctions":  [
+                                                      "getClinicPaymentOptionsAction",
                                                       "getClinicSettings"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/settings/update-settings.ts",
                             "exportedFunctions":  [
+                                                      "patchClinicSettings",
+                                                      "replaceClinicPaymentMethodsAction",
                                                       "updateClinicSettings"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  3
                         },
                         {
                             "file":  "Frontend/actions/settings/upload-logo.ts",
                             "exportedFunctions":  [
+                                                      "uploadClinicImageAction",
                                                       "uploadClinicLogoAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/staff/create-staff.ts",
                             "exportedFunctions":  [
+                                                      "createPayrollOnlyWorkerAction",
                                                       "createStaffAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/staff/get-staff.ts",
                             "exportedFunctions":  [
-                                                      "getAllStaffAction"
+                                                      "getAllStaffAction",
+                                                      "getStaffByIdAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
                         },
                         {
                             "file":  "Frontend/actions/staff/toggle-staff-status.ts",
                             "exportedFunctions":  [
+                                                      "disableStaffAction",
+                                                      "enableStaffAction",
                                                       "toggleStaffStatusAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  3
                         },
                         {
                             "file":  "Frontend/actions/staff/update-staff.ts",
                             "exportedFunctions":  [
+                                                      "patchStaffAction",
                                                       "updateStaffAction"
                                                   ],
-                            "exportedFunctionCount":  1
+                            "exportedFunctionCount":  2
+                        },
+                        {
+                            "file":  "Frontend/actions/visit/advanced.ts",
+                            "exportedFunctions":  [
+                                                      "closeStaleVisitAction",
+                                                      "getMyVisitPatientsAction",
+                                                      "getStaleOpenVisitsAction",
+                                                      "recordVisitInventoryUsageAction"
+                                                  ],
+                            "exportedFunctionCount":  4
                         },
                         {
                             "file":  "Frontend/actions/visit/complete-visit.ts",
@@ -560,10 +737,26 @@
 
                                                   ],
                             "exportedFunctionCount":  0
+                        },
+                        {
+                            "file":  "Frontend/actions/workforce/workforce.ts",
+                            "exportedFunctions":  [
+                                                      "checkOutAttendanceAction",
+                                                      "createAbsenceAction",
+                                                      "createAttendanceAction",
+                                                      "createDoctorCompensationRuleAction",
+                                                      "createSalaryPayoutAction",
+                                                      "generateDailyClosingAction",
+                                                      "listAbsenceAction",
+                                                      "listAttendanceAction",
+                                                      "listDailyClosingSnapshotsAction",
+                                                      "listDoctorCompensationRulesAction"
+                                                  ],
+                            "exportedFunctionCount":  10
                         }
                     ],
     "summary":  {
-                    "actionFileCount":  73,
-                    "actionExportedFunctionCount":  112
+                    "actionFileCount":  88,
+                    "actionExportedFunctionCount":  216
                 }
 }

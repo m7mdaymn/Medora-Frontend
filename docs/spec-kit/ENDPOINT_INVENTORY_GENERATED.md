@@ -1,6 +1,6 @@
 ﻿# Endpoint Inventory (Generated)
 
-Generated: 2026-04-05 19:42:12 +02:00
+Generated: 2026-04-06 12:40:05 +02:00
 Source: src/EliteClinic.Api/Controllers
 
 | Method | Route | Controller | Action | Auth |
@@ -33,8 +33,8 @@ Source: src/EliteClinic.Api/Controllers
 | GET | /api/clinic/doctors/me/patients/{patientId:guid}/history | DoctorsController | GetMyPatientHistory | Roles: Doctor,SuperAdmin |
 | GET | /api/clinic/doctors/me/visit-fields | DoctorsController | GetMyVisitFields | Roles: Doctor,SuperAdmin |
 | PUT | /api/clinic/doctors/me/visit-fields | DoctorsController | UpdateMyVisitFields | Roles: Doctor,SuperAdmin |
-| GET | /api/clinic/expenses | ExpensesController | GetAll | Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
-| POST | /api/clinic/expenses | ExpensesController | Create | Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
+| GET | /api/clinic/expenses | ExpensesController | GetAll | Roles: ClinicOwner,ClinicManager,SuperAdmin |
+| POST | /api/clinic/expenses | ExpensesController | Create | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | DELETE | /api/clinic/expenses/{id:guid} | ExpensesController | Delete | Roles: ClinicOwner,SuperAdmin |
 | PUT | /api/clinic/expenses/{id:guid} | ExpensesController | Update | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | GET | /api/clinic/finance/by-doctor | FinanceController | GetByDoctor | Roles: ClinicOwner,ClinicManager,SuperAdmin |
@@ -97,8 +97,6 @@ Source: src/EliteClinic.Api/Controllers
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/queue-ticket | PatientAppController | GetQueueTicket | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/summary | PatientAppController | GetSummary | Roles: Patient,SuperAdmin |
 | GET | /api/clinic/patient-app/profiles/{patientId:guid}/visits | PatientAppController | GetVisits | Roles: Patient,SuperAdmin |
-| GET | /api/clinic/patient-credits/{patientId:guid}/balance | PatientCreditsController | GetBalance | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin |
-| GET | /api/clinic/patient-credits/{patientId:guid}/history | PatientCreditsController | GetHistory | Roles: ClinicOwner,ClinicManager,Receptionist,Doctor,SuperAdmin |
 | GET | /api/clinic/patients | PatientsController | GetAllPatients | Roles: ClinicOwner,ClinicManager,Receptionist,Nurse,SuperAdmin |
 | POST | /api/clinic/patients | PatientsController | CreatePatient | Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
 | DELETE | /api/clinic/patients/{id:guid} | PatientsController | DeletePatient | Roles: ClinicOwner,Receptionist,SuperAdmin |
@@ -159,7 +157,7 @@ Source: src/EliteClinic.Api/Controllers
 | PUT | /api/clinic/settings | ClinicSettingsController | UpdateSettings | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | PUT | /api/clinic/settings/payment-methods | ClinicSettingsController | ReplacePaymentMethods | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | GET | /api/clinic/settings/payment-options | ClinicSettingsController | GetPaymentOptions | Roles: ClinicOwner,ClinicManager,Receptionist,SuperAdmin |
-| GET | /api/clinic/staff | StaffController | GetAllStaff | Authorized |
+| GET | /api/clinic/staff | StaffController | GetAllStaff | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | POST | /api/clinic/staff | StaffController | CreateStaff | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | GET | /api/clinic/staff/{id:guid} | StaffController | GetStaffById | Roles: ClinicOwner,ClinicManager,SuperAdmin |
 | PATCH | /api/clinic/staff/{id:guid} | StaffController | PatchStaff | Roles: ClinicOwner,ClinicManager,SuperAdmin |

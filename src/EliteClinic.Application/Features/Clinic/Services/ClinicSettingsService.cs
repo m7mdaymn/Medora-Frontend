@@ -56,7 +56,6 @@ public class ClinicSettingsService : IClinicSettingsService
         settings.SocialLinksJson = SerializeSocialLinks(request.SocialLinks);
         settings.BookingEnabled = request.BookingEnabled;
         settings.CancellationWindowHours = request.CancellationWindowHours;
-        settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow;
         settings.SelfServicePaymentPolicy = request.SelfServicePaymentPolicy;
         settings.SelfServiceRequestExpiryHours = request.SelfServiceRequestExpiryHours;
 
@@ -124,7 +123,6 @@ public class ClinicSettingsService : IClinicSettingsService
         if (request.Description != null) settings.Description = request.Description;
         if (request.SocialLinks != null) settings.SocialLinksJson = SerializeSocialLinks(request.SocialLinks);
         if (request.BookingEnabled.HasValue) settings.BookingEnabled = request.BookingEnabled.Value;
-        if (request.RetainCreditOnNoShow.HasValue) settings.RetainCreditOnNoShow = request.RetainCreditOnNoShow.Value;
         if (request.CancellationWindowHours.HasValue) settings.CancellationWindowHours = request.CancellationWindowHours.Value;
         if (request.SelfServicePaymentPolicy.HasValue) settings.SelfServicePaymentPolicy = request.SelfServicePaymentPolicy.Value;
         if (request.SelfServiceRequestExpiryHours.HasValue) settings.SelfServiceRequestExpiryHours = request.SelfServiceRequestExpiryHours.Value;
@@ -253,7 +251,6 @@ public class ClinicSettingsService : IClinicSettingsService
             SocialLinks = ParseSocialLinks(settings.SocialLinksJson),
             BookingEnabled = settings.BookingEnabled,
             CancellationWindowHours = settings.CancellationWindowHours,
-            RetainCreditOnNoShow = settings.RetainCreditOnNoShow,
             SelfServicePaymentPolicy = settings.SelfServicePaymentPolicy,
             SelfServiceRequestExpiryHours = settings.SelfServiceRequestExpiryHours,
             WorkingHours = settings.WorkingHours

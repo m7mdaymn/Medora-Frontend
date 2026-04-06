@@ -162,8 +162,6 @@ public class VisitService : IVisitService
                 .FirstOrDefaultAsync();
 
             invoice.IsServiceRendered = true;
-            invoice.CreditAmount = 0;
-            invoice.CreditIssuedAt = null;
 
             if (invoice.RemainingAmount <= 0)
             {
@@ -355,8 +353,12 @@ public class VisitService : IVisitService
         if (request.IsBooking.HasValue)
         {
             query = request.IsBooking.Value
-                ? query.Where(v => v.Source == VisitSource.Booking)
-                : query.Where(v => v.Source != VisitSource.Booking);
+                ? query.Where(v => v.Source == VisitSource.Booking
+                    || v.Source == VisitSource.ConsultationBooking
+                    || v.Source == VisitSource.PatientSelfServiceBooking)
+                : query.Where(v => v.Source != VisitSource.Booking
+                    && v.Source != VisitSource.ConsultationBooking
+                    && v.Source != VisitSource.PatientSelfServiceBooking);
         }
 
         if (request.IsExam.HasValue)
@@ -629,6 +631,7 @@ public class VisitService : IVisitService
     internal static VisitDto MapVisitToDto(Visit v)
     {
         var serviceName = v.QueueTicket?.DoctorService?.ServiceName;
+        var servicePrice = v.QueueTicket?.DoctorService?.Price;
         if (string.IsNullOrWhiteSpace(serviceName))
         {
             serviceName = v.Invoice?.LineItems?
@@ -636,6 +639,34 @@ public class VisitService : IVisitService
                 .OrderBy(li => li.CreatedAt)
                 .Select(li => li.ItemName)
                 .FirstOrDefault();
+        }
+
+        if (!servicePrice.HasValue)
+        {
+            servicePrice = v.Invoice?.LineItems?
+                .Where(li => !li.IsDeleted)
+                .OrderBy(li => li.CreatedAt)
+                .Select(li => (decimal?)li.UnitPrice)
+                .FirstOrDefault();
+        }
+
+        var activePayments = v.Invoice?.Payments?.Where(p => !p.IsDeleted).ToList() ?? new List<Payment>();
+        var paidAmount = activePayments.Count > 0
+            ? Math.Max(activePayments.Sum(p => p.Amount), 0m)
+            : (v.Invoice?.PaidAmount ?? 0m);
+
+        var compensationMode = (DoctorCompensationMode?)v.Doctor?.CompensationMode;
+        var compensationValue = v.Doctor?.CompensationValue;
+        decimal? estimatedDoctorCompensationAmount = null;
+        if (compensationMode.HasValue && compensationValue.HasValue)
+        {
+            estimatedDoctorCompensationAmount = compensationMode.Value switch
+            {
+                DoctorCompensationMode.Percentage => paidAmount * compensationValue.Value / 100m,
+                DoctorCompensationMode.FixedPerVisit => compensationValue.Value,
+                DoctorCompensationMode.Salary => compensationValue.Value,
+                _ => 0m
+            };
         }
 
         var ticketStatus = v.QueueTicket?.Status;
@@ -647,6 +678,9 @@ public class VisitService : IVisitService
             BranchId = v.BranchId,
             VisitType = v.VisitType,
             Source = v.Source,
+            IsBookingSource = v.Source == VisitSource.Booking
+                || v.Source == VisitSource.ConsultationBooking
+                || v.Source == VisitSource.PatientSelfServiceBooking,
             QueueTicketId = v.QueueTicketId,
             DoctorId = v.DoctorId,
             DoctorName = v.Doctor?.Name ?? string.Empty,
@@ -656,6 +690,10 @@ public class VisitService : IVisitService
             PatientDateOfBirth = v.Patient?.DateOfBirth,
             PatientGender = v.Patient?.Gender.ToString() ?? string.Empty,
             ServiceName = serviceName,
+            ServicePrice = servicePrice,
+            DoctorCompensationMode = compensationMode,
+            DoctorCompensationValue = compensationValue,
+            EstimatedDoctorCompensationAmount = estimatedDoctorCompensationAmount,
             TicketStatus = ticketStatus,
             TicketCancelledAt = v.QueueTicket?.CancelledAt,
             IsCancelled = isCancelled,
@@ -723,10 +761,8 @@ public class VisitService : IVisitService
                 RemainingAmount = v.Invoice.RemainingAmount,
                 Status = v.Invoice.Status,
                 IsServiceRendered = v.Invoice.IsServiceRendered,
-                CreditAmount = v.Invoice.CreditAmount,
                 HasPendingSettlement = v.Invoice.HasPendingSettlement,
                 PendingSettlementAmount = v.Invoice.PendingSettlementAmount,
-                CreditIssuedAt = v.Invoice.CreditIssuedAt,
                 Notes = v.Invoice.Notes,
                 Payments = v.Invoice.Payments?.Where(p => !p.IsDeleted).Select(p => new PaymentDto
                 {

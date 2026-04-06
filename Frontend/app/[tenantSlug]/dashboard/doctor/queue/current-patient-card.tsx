@@ -39,6 +39,20 @@ interface Props {
   ) => void
 }
 
+function getVisitTypeLabel(type?: string | null): string {
+  if (!type) return 'غير محدد'
+  if (type === 'Exam') return 'كشف'
+  if (type === 'Consultation') return 'استشارة'
+  return type
+}
+
+function getSourceLabel(ticket: IQueueTicket): string {
+  if (ticket.isFromBooking) return 'من حجز'
+  if (ticket.isFromWalkIn) return 'من تذكرة'
+  if (ticket.isFromSelfService) return 'من طلب ذاتي'
+  return ticket.source || 'غير محدد'
+}
+
 export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, onAction }: Props) {
   const router = useRouter()
   const params = useParams()
@@ -91,12 +105,22 @@ export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, o
                     {currentTicket.serviceName || 'كشف عام'}
                   </span>
                   <span className='hidden sm:inline opacity-40'>•</span>
+                  <span className='text-xs font-bold text-foreground/80'>
+                    {getVisitTypeLabel(currentTicket.visitType)}
+                  </span>
+                  <span className='hidden sm:inline opacity-40'>•</span>
+                  <span className='text-xs font-bold text-foreground/80'>
+                    {getSourceLabel(currentTicket)}
+                  </span>
+                  <span className='hidden sm:inline opacity-40'>•</span>
                   <span className='flex items-center gap-1.5'>
                     <Clock className='w-4 h-4 opacity-70' />
-                    {new Date(currentTicket.calledAt!).toLocaleTimeString('ar-EG', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {currentTicket.calledAt
+                      ? new Date(currentTicket.calledAt).toLocaleTimeString('ar-EG', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : '--'}
                   </span>
                 </div>
               </div>

@@ -18,6 +18,17 @@ public class ClinicOverviewReportDto
     public decimal TotalExpenses { get; set; }
     public decimal NetCashflow { get; set; }
     public List<DoctorOverviewReportRowDto> Doctors { get; set; } = new();
+    public List<DoctorPercentageReportRowDto> DoctorsPercentages { get; set; } = new();
+    public List<ServiceSalesReportRowDto> ServicesSold { get; set; } = new();
+    public ServiceSalesReportRowDto? TopSoldService { get; set; }
+}
+
+public class DoctorPercentageReportRowDto
+{
+    public Guid DoctorId { get; set; }
+    public string DoctorName { get; set; } = string.Empty;
+    public decimal CollectedAmount { get; set; }
+    public decimal PercentageOfClinicCollection { get; set; }
 }
 
 public class DoctorOverviewReportRowDto
@@ -26,6 +37,7 @@ public class DoctorOverviewReportRowDto
     public string DoctorName { get; set; } = string.Empty;
     public int VisitsCount { get; set; }
     public decimal CollectedAmount { get; set; }
+    public decimal CollectedSharePercent { get; set; }
     public DoctorCompensationMode CompensationMode { get; set; }
     public decimal CompensationValue { get; set; }
     public decimal EstimatedCompensationAmount { get; set; }

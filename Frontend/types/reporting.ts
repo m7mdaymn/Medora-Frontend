@@ -5,9 +5,24 @@ export interface IDoctorOverviewReportRow {
   doctorName: string
   visitsCount: number
   collectedAmount: number
+  collectedSharePercent: number
   compensationMode: DoctorCompensationMode
   compensationValue: number
   estimatedCompensationAmount: number
+}
+
+export interface IDoctorPercentageReportRow {
+  doctorId: string
+  doctorName: string
+  collectedAmount: number
+  percentageOfClinicCollection: number
+}
+
+export interface IServiceSalesReportRow {
+  serviceName: string
+  quantity: number
+  grossAmount: number
+  invoicesCount: number
 }
 
 export interface IClinicOverviewReport {
@@ -25,13 +40,9 @@ export interface IClinicOverviewReport {
   totalExpenses: number
   netCashflow: number
   doctors: IDoctorOverviewReportRow[]
-}
-
-export interface IServiceSalesReportRow {
-  serviceName: string
-  quantity: number
-  grossAmount: number
-  invoicesCount: number
+  doctorsPercentages: IDoctorPercentageReportRow[]
+  servicesSold: IServiceSalesReportRow[]
+  topSoldService: IServiceSalesReportRow | null
 }
 
 export interface IServicesSalesReport {

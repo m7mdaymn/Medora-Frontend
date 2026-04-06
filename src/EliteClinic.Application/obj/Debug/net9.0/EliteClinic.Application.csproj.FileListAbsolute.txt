@@ -16,3 +16,12 @@ C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Ap
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\refint\EliteClinic.Application.dll
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\EliteClinic.Application.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Application\obj\Debug\net9.0\ref\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Application.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.dll
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Application.pdb

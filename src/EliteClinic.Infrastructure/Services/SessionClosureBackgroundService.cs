@@ -86,49 +86,35 @@ public class SessionClosureBackgroundService : BackgroundService
                         .FirstOrDefaultAsync(i => !i.IsDeleted && i.VisitId == visit.Id && i.TenantId == session.TenantId, cancellationToken);
                     if (invoice != null && invoice.PaidAmount > 0 && !invoice.IsServiceRendered)
                     {
-                        invoice.CreditAmount = invoice.PaidAmount;
-                        invoice.CreditIssuedAt = DateTime.UtcNow;
-                        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
-                            ? "Credit entitlement preserved by auto-session closure"
-                            : $"{invoice.Notes} | Credit entitlement preserved by auto-session closure";
+                        var alreadyAutoRefunded = await dbContext.Payments.IgnoreQueryFilters()
+                            .AnyAsync(p => !p.IsDeleted
+                                && p.TenantId == session.TenantId
+                                && p.InvoiceId == invoice.Id
+                                && p.Amount < 0
+                                && p.PaymentMethod == "AutoRefundSessionClosure", cancellationToken);
 
-                        var balance = await dbContext.PatientCreditBalances.IgnoreQueryFilters()
-                            .FirstOrDefaultAsync(b => !b.IsDeleted && b.TenantId == session.TenantId && b.PatientId == visit.PatientId, cancellationToken);
-                        if (balance == null)
+                        if (!alreadyAutoRefunded)
                         {
-                            balance = new PatientCreditBalance
+                            dbContext.Payments.Add(new Payment
                             {
                                 TenantId = session.TenantId,
-                                PatientId = visit.PatientId,
-                                Balance = 0
-                            };
-                            dbContext.PatientCreditBalances.Add(balance);
-                        }
-
-                        var alreadyIssued = await dbContext.PatientCreditTransactions.IgnoreQueryFilters()
-                            .AnyAsync(t => !t.IsDeleted && t.TenantId == session.TenantId
-                                && t.Type == CreditTransactionType.Issued
-                                && t.Reason == CreditReason.SessionAutoClosedUnserved
-                                && t.InvoiceId == invoice.Id, cancellationToken);
-
-                        if (!alreadyIssued)
-                        {
-                            balance.Balance += invoice.PaidAmount;
-                            dbContext.PatientCreditTransactions.Add(new PatientCreditTransaction
-                            {
-                                TenantId = session.TenantId,
-                                PatientId = visit.PatientId,
-                                CreditBalance = balance,
-                                Type = CreditTransactionType.Issued,
-                                Reason = CreditReason.SessionAutoClosedUnserved,
-                                Amount = invoice.PaidAmount,
-                                BalanceAfter = balance.Balance,
                                 InvoiceId = invoice.Id,
-                                QueueTicketId = ticket.Id,
-                                QueueSessionId = session.Id,
-                                Notes = invoice.Notes
+                                Amount = -invoice.PaidAmount,
+                                PaymentMethod = "AutoRefundSessionClosure",
+                                Notes = "Auto refund issued by session closure for unserved paid ticket",
+                                PaidAt = DateTime.UtcNow
                             });
                         }
+
+                        invoice.Amount = 0;
+                        invoice.PaidAmount = 0;
+                        invoice.RemainingAmount = 0;
+                        invoice.Status = InvoiceStatus.Refunded;
+                        invoice.HasPendingSettlement = false;
+                        invoice.PendingSettlementAmount = 0;
+                        invoice.Notes = string.IsNullOrWhiteSpace(invoice.Notes)
+                            ? "Auto refund issued by session closure"
+                            : $"{invoice.Notes} | Auto refund issued by session closure";
                     }
                 }
             }

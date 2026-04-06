@@ -25,6 +25,15 @@
                                      "matchedBackendRoutes":  "POST /api/auth/patient/login"
                                  },
                                  {
+                                     "normalizedPath":  "/api/auth/refresh",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/auth/refresh-token.ts",
+                                                         "Frontend/proxy.ts"
+                                                     ],
+                                     "matchedBackendRoutes":  "POST /api/auth/refresh"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/bookings",
                                      "occurrenceCount":  2,
                                      "sampleFiles":  [
@@ -34,6 +43,17 @@
                                      "matchedBackendRoutes":  [
                                                                   "GET /api/clinic/bookings",
                                                                   "GET /api/clinic/bookings/{id:guid}",
+                                                                  "POST /api/clinic/bookings"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/bookings/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/booking/get-booking.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/bookings",
+                                                                  "GET /api/clinic/bookings/{id:guid}",
+                                                                  "GET /api/clinic/bookings/my",
                                                                   "POST /api/clinic/bookings"
                                                               ]
                                  },
@@ -63,7 +83,7 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/doctor-notes",
-                                     "occurrenceCount":  1,
+                                     "occurrenceCount":  2,
                                      "sampleFiles":  "Frontend/actions/notes/notes.ts",
                                      "matchedBackendRoutes":  [
                                                                   "GET /api/clinic/doctor-notes",
@@ -100,7 +120,7 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/doctors/{*}",
-                                     "occurrenceCount":  2,
+                                     "occurrenceCount":  3,
                                      "sampleFiles":  [
                                                          "Frontend/actions/doctor/get-doctor.ts",
                                                          "Frontend/actions/doctor/update-doctor.ts"
@@ -127,6 +147,12 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/doctors/{id:guid}/enable"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/doctors/{*}/services",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/doctor/get-doctor.ts",
+                                     "matchedBackendRoutes":  "PUT /api/clinic/doctors/{id:guid}/services"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/doctors/{*}/visit-fields",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/doctor/update-visit-fields.ts",
@@ -134,6 +160,17 @@
                                                                   "GET /api/clinic/doctors/me/visit-fields",
                                                                   "PUT /api/clinic/doctors/{id:guid}/visit-fields",
                                                                   "PUT /api/clinic/doctors/me/visit-fields"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/doctors/me",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/doctor/get-doctor.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/doctors/{id:guid}",
+                                                                  "GET /api/clinic/doctors/me",
+                                                                  "PATCH /api/clinic/doctors/{id:guid}",
+                                                                  "PUT /api/clinic/doctors/{id:guid}"
                                                               ]
                                  },
                                  {
@@ -217,6 +254,34 @@
                                      "matchedBackendRoutes":  "GET /api/clinic/finance/yearly"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/inventory/items",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/inventory/items.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/inventory/items",
+                                                                  "GET /api/clinic/inventory/items/{itemId:guid}",
+                                                                  "POST /api/clinic/inventory/items",
+                                                                  "PUT /api/clinic/inventory/items/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/inventory/items/{*}",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  "Frontend/actions/inventory/items.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/inventory/items",
+                                                                  "GET /api/clinic/inventory/items/{itemId:guid}",
+                                                                  "POST /api/clinic/inventory/items",
+                                                                  "PUT /api/clinic/inventory/items/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/inventory/items/{*}/activation",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/inventory/items.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/inventory/items/{itemId:guid}/activation"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/invoices",
                                      "occurrenceCount":  2,
                                      "sampleFiles":  [
@@ -259,10 +324,37 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/invoices/{id:guid}/line-items"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/invoices/{*}/payments",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/finance/invoices.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/invoices/{id:guid}/payments"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/invoices/{*}/refund",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/finance/invoices.ts",
                                      "matchedBackendRoutes":  "POST /api/clinic/invoices/{id:guid}/refund"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/marketplace/orders/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/marketplace/orders.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/marketplace/orders",
+                                                                  "GET /api/clinic/marketplace/orders/{orderId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/marketplace/orders/{*}/status",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/marketplace/orders.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/marketplace/orders/{orderId:guid}/status"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/media/clinic-image",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/settings/upload-logo.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/media/clinic-image"
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/media/clinic-logo",
@@ -275,6 +367,97 @@
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/doctor/upload-photo.ts",
                                      "matchedBackendRoutes":  "POST /api/clinic/media/doctors/{doctorId:guid}/photo"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/messages/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/messages/messages.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/messages",
+                                                                  "GET /api/clinic/messages/{id:guid}",
+                                                                  "POST /api/clinic/messages/send"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/messages/{*}/retry",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/messages/messages.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/messages/{id:guid}/retry"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/messages/send",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/messages/messages.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/messages/{id:guid}",
+                                                                  "POST /api/clinic/messages/send"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/clinic/notifications/{id:guid}",
+                                                                  "GET /api/clinic/notifications/in-app",
+                                                                  "GET /api/clinic/notifications/my",
+                                                                  "POST /api/clinic/notifications/send",
+                                                                  "POST /api/clinic/notifications/subscribe"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/in-app${query",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  "DELETE /api/clinic/notifications/{id:guid}"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/in-app/{*}/read",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/notifications/in-app/{id:guid}/read"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/in-app/mark-all-read",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/notifications/in-app/mark-all-read"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/my",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/clinic/notifications/{id:guid}",
+                                                                  "GET /api/clinic/notifications/my"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/send",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/clinic/notifications/{id:guid}",
+                                                                  "POST /api/clinic/notifications/send"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/notifications/subscribe",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/notifications/notifications.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/clinic/notifications/{id:guid}",
+                                                                  "POST /api/clinic/notifications/subscribe"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partner-orders",
+                                                                  "GET /api/clinic/partner-orders/{orderId:guid}"
+                                                              ]
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/partner-orders/{*}/accept",
@@ -301,6 +484,48 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/schedule"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/partner-orders/{*}/status",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/partner-orders/{orderId:guid}/status"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners",
+                                                                  "POST /api/clinic/partners",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners",
+                                                                  "GET /api/clinic/partners/contracts",
+                                                                  "GET /api/clinic/partners/services",
+                                                                  "POST /api/clinic/partners",
+                                                                  "POST /api/clinic/partners/contracts",
+                                                                  "POST /api/clinic/partners/services",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}",
+                                                                  "PUT /api/clinic/partners/contracts/{contractId:guid}",
+                                                                  "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/{*}/activation",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/activation",
+                                                                  "PUT /api/clinic/partners/contracts/{contractId:guid}",
+                                                                  "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/partners/{*}/users",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/partner/workflow.ts",
@@ -308,6 +533,36 @@
                                                                   "POST /api/clinic/partners/{partnerId:guid}/users",
                                                                   "PUT /api/clinic/partners/contracts/{contractId:guid}",
                                                                   "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/contracts",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners/contracts",
+                                                                  "POST /api/clinic/partners/contracts",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}",
+                                                                  "PUT /api/clinic/partners/contracts/{contractId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/contracts${query",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  "PUT /api/clinic/partners/{partnerId:guid}"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/contracts/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners/contracts",
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/activation",
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/users",
+                                                                  "POST /api/clinic/partners/contracts",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}",
+                                                                  "PUT /api/clinic/partners/contracts/{contractId:guid}"
                                                               ]
                                  },
                                  {
@@ -326,6 +581,19 @@
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/partner/workflow.ts",
                                      "matchedBackendRoutes":  "PUT /api/clinic/partners/{partnerId:guid}"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/partners/services/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/partner/workflow.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/partners/services",
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/activation",
+                                                                  "POST /api/clinic/partners/{partnerId:guid}/users",
+                                                                  "POST /api/clinic/partners/services",
+                                                                  "PUT /api/clinic/partners/{partnerId:guid}",
+                                                                  "PUT /api/clinic/partners/services/{itemId:guid}"
+                                                              ]
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/patient-app/profiles/{*}",
@@ -364,18 +632,6 @@
                                      "matchedBackendRoutes":  "GET /api/clinic/patient-app/profiles/{patientId:guid}/visits"
                                  },
                                  {
-                                     "normalizedPath":  "/api/clinic/patient-credits/{*}/balance",
-                                     "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/patient-app/profile.ts",
-                                     "matchedBackendRoutes":  "GET /api/clinic/patient-credits/{patientId:guid}/balance"
-                                 },
-                                 {
-                                     "normalizedPath":  "/api/clinic/patient-credits/{*}/history",
-                                     "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/patient-app/profile.ts",
-                                     "matchedBackendRoutes":  "GET /api/clinic/patient-credits/{patientId:guid}/history"
-                                 },
-                                 {
                                      "normalizedPath":  "/api/clinic/patients",
                                      "occurrenceCount":  2,
                                      "sampleFiles":  [
@@ -393,9 +649,10 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/patients/{*}",
-                                     "occurrenceCount":  3,
+                                     "occurrenceCount":  5,
                                      "sampleFiles":  [
                                                          "Frontend/actions/patient/delete-patient.ts",
+                                                         "Frontend/actions/patient/getPatient.ts",
                                                          "Frontend/actions/patient/get-patient-profile.ts",
                                                          "Frontend/actions/patient/update-patient.ts"
                                                      ],
@@ -410,10 +667,11 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/patients/{*}/chronic-conditions",
-                                     "occurrenceCount":  2,
+                                     "occurrenceCount":  4,
                                      "sampleFiles":  [
                                                          "Frontend/actions/patient/get-chronic-conditions.ts",
-                                                         "Frontend/actions/patient/updateChronicConditions.ts"
+                                                         "Frontend/actions/patient/updateChronicConditions.ts",
+                                                         "Frontend/actions/patient-medical/documents.ts"
                                                      ],
                                      "matchedBackendRoutes":  [
                                                                   "GET /api/clinic/patients/{patientId:guid}/chronic-conditions",
@@ -421,10 +679,63 @@
                                                               ]
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/medical-documents",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  "Frontend/actions/patient-medical/documents.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/patients/{patientId:guid}/medical-documents",
+                                                                  "GET /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}",
+                                                                  "POST /api/clinic/patients/{patientId:guid}/medical-documents"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient-medical/documents.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/patients/{patientId:guid}/medical-documents",
+                                                                  "GET /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}",
+                                                                  "POST /api/clinic/patients/{patientId:guid}/medical-documents"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  "Frontend/actions/patient-medical/documents.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads",
+                                                                  "POST /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/close",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient-medical/documents.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/close"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/replies",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient-medical/documents.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/replies"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/patients/{*}/profiles",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/patient/add-subprofile.ts",
                                      "matchedBackendRoutes":  "POST /api/clinic/patients/{id:guid}/profiles"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/reset-password",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient/update-patient.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/patients/{id:guid}/reset-password"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/patients/{*}/send-credentials",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/patient/update-patient.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/patients/{id:guid}/send-credentials"
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/patients/{*}/summary",
@@ -479,10 +790,36 @@
                                                               ]
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/queue/sessions/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/queue/sessions.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/queue/sessions",
+                                                                  "GET /api/clinic/queue/sessions/{id:guid}",
+                                                                  "POST /api/clinic/queue/sessions",
+                                                                  "POST /api/clinic/queue/sessions/close-all"
+                                                              ]
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/queue/sessions/{*}/close",
                                      "occurrenceCount":  1,
                                      "sampleFiles":  "Frontend/actions/queue/sessions.ts",
                                      "matchedBackendRoutes":  "POST /api/clinic/queue/sessions/{id:guid}/close"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/queue/sessions/{*}/tickets",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/queue/sessions.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/queue/sessions/{id:guid}/tickets"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/queue/sessions/close-all",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/queue/sessions.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/queue/sessions/{id:guid}",
+                                                                  "POST /api/clinic/queue/sessions/close-all"
+                                                              ]
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/queue/tickets",
@@ -533,6 +870,39 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/queue/tickets/with-payment"
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/self-service-requests/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/self-service/requests.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/self-service-requests",
+                                                                  "GET /api/clinic/self-service-requests/{requestId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/self-service-requests/{*}/adjust-paid-amount",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/self-service/requests.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/self-service-requests/{requestId:guid}/adjust-paid-amount"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/self-service-requests/{*}/approve",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/self-service/requests.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/self-service-requests/{requestId:guid}/approve"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/self-service-requests/{*}/reject",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/self-service/requests.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/self-service-requests/{requestId:guid}/reject"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/self-service-requests/{*}/request-reupload",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/self-service/requests.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/self-service-requests/{requestId:guid}/request-reupload"
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/services",
                                      "occurrenceCount":  2,
                                      "sampleFiles":  "Frontend/actions/service/clinic-services.ts",
@@ -546,7 +916,7 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/services/{*}",
-                                     "occurrenceCount":  2,
+                                     "occurrenceCount":  3,
                                      "sampleFiles":  "Frontend/actions/service/clinic-services.ts",
                                      "matchedBackendRoutes":  [
                                                                   "DELETE /api/clinic/services/{id:guid}",
@@ -578,7 +948,7 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/settings",
-                                     "occurrenceCount":  2,
+                                     "occurrenceCount":  3,
                                      "sampleFiles":  [
                                                          "Frontend/actions/settings/get-settings.ts",
                                                          "Frontend/actions/settings/update-settings.ts"
@@ -588,6 +958,18 @@
                                                                   "PATCH /api/clinic/settings",
                                                                   "PUT /api/clinic/settings"
                                                               ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/settings/payment-methods",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/settings/update-settings.ts",
+                                     "matchedBackendRoutes":  "PUT /api/clinic/settings/payment-methods"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/settings/payment-options",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/settings/get-settings.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/settings/payment-options"
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/staff",
@@ -606,8 +988,11 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/staff/{*}",
-                                     "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/staff/update-staff.ts",
+                                     "occurrenceCount":  3,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/staff/get-staff.ts",
+                                                         "Frontend/actions/staff/update-staff.ts"
+                                                     ],
                                      "matchedBackendRoutes":  [
                                                                   "GET /api/clinic/staff",
                                                                   "GET /api/clinic/staff/{id:guid}",
@@ -633,6 +1018,29 @@
                                                               ]
                                  },
                                  {
+                                     "normalizedPath":  "/api/clinic/staff/{*}/disable",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/staff/toggle-staff-status.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/staff/{id:guid}/disable"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/staff/{*}/enable",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/staff/toggle-staff-status.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/staff/{id:guid}/enable"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/staff/payroll-only",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/staff/create-staff.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/staff/{id:guid}",
+                                                                  "PATCH /api/clinic/staff/{id:guid}",
+                                                                  "POST /api/clinic/staff/payroll-only",
+                                                                  "PUT /api/clinic/staff/{id:guid}"
+                                                              ]
+                                 },
+                                 {
                                      "normalizedPath":  "/api/clinic/visits/{*}",
                                      "occurrenceCount":  2,
                                      "sampleFiles":  [
@@ -653,9 +1061,18 @@
                                      "matchedBackendRoutes":  "POST /api/clinic/visits/{id:guid}/complete"
                                  },
                                  {
-                                     "normalizedPath":  "/api/clinic/visits/{*}/labs",
+                                     "normalizedPath":  "/api/clinic/visits/{*}/inventory-usage",
                                      "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/labs/create-lab-request.ts",
+                                     "sampleFiles":  "Frontend/actions/visit/advanced.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/visits/{id:guid}/inventory-usage"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/{*}/labs",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/labs/create-lab-request.ts",
+                                                         "Frontend/actions/labs/lab-requests.ts"
+                                                     ],
                                      "matchedBackendRoutes":  [
                                                                   "DELETE /api/clinic/visits/{visitId:guid}/labs/{id:guid}",
                                                                   "GET /api/clinic/visits/{visitId:guid}/labs",
@@ -665,8 +1082,11 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}",
-                                     "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/labs/delete-lab-request.ts",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/labs/delete-lab-request.ts",
+                                                         "Frontend/actions/labs/lab-requests.ts"
+                                                     ],
                                      "matchedBackendRoutes":  [
                                                                   "DELETE /api/clinic/visits/{visitId:guid}/labs/{id:guid}",
                                                                   "GET /api/clinic/visits/{visitId:guid}/labs",
@@ -676,9 +1096,24 @@
                                                               ]
                                  },
                                  {
-                                     "normalizedPath":  "/api/clinic/visits/{*}/prescriptions",
+                                     "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}/partner-order",
                                      "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/actions/prescription/create-prescription.ts",
+                                     "sampleFiles":  "Frontend/actions/labs/create-lab-partner-order.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/visits/{visitId:guid}/labs/{labRequestId:guid}/partner-order"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}/result",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/labs/lab-requests.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/visits/{visitId:guid}/labs/{id:guid}/result"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/{*}/prescriptions",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/prescription/create-prescription.ts",
+                                                         "Frontend/actions/prescription/prescriptions.ts"
+                                                     ],
                                      "matchedBackendRoutes":  [
                                                                   "DELETE /api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}",
                                                                   "GET /api/clinic/visits/{visitId:guid}/prescriptions",
@@ -700,6 +1135,90 @@
                                                                   "POST /api/clinic/visits/maintenance/{id:guid}/close",
                                                                   "PUT /api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}"
                                                               ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}/partner-order",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/prescription/create-prescription-partner-order.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/visits/{visitId:guid}/prescriptions/{prescriptionId:guid}/partner-order"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}/revisions",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/prescription/prescriptions.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}/revisions"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/maintenance/{*}/close",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/visit/advanced.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/clinic/visits/{visitId:guid}/labs/{id:guid}",
+                                                                  "DELETE /api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}",
+                                                                  "POST /api/clinic/visits/maintenance/{id:guid}/close",
+                                                                  "PUT /api/clinic/visits/{visitId:guid}/labs/{id:guid}",
+                                                                  "PUT /api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/maintenance/stale-open",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/visit/advanced.ts",
+                                     "matchedBackendRoutes":  "GET /api/clinic/visits/maintenance/stale-open"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/visits/my{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/doctor/get-my-today-visits.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/visits/{id:guid}",
+                                                                  "PUT /api/clinic/visits/{id:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/workforce/absence",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/workforce/workforce.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/workforce/absence",
+                                                                  "POST /api/clinic/workforce/absence"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/workforce/attendance",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/workforce/workforce.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/workforce/attendance",
+                                                                  "POST /api/clinic/workforce/attendance"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/workforce/attendance/{*}/checkout",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/workforce/workforce.ts",
+                                     "matchedBackendRoutes":  "PUT /api/clinic/workforce/attendance/{attendanceId:guid}/checkout"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/workforce/doctors/{*}/compensation-rules",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  "Frontend/actions/workforce/workforce.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules",
+                                                                  "POST /api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/clinic/workforce/salary-payouts",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/workforce/workforce.ts",
+                                     "matchedBackendRoutes":  "POST /api/clinic/workforce/salary-payouts"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/health",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/platform/health.ts",
+                                     "matchedBackendRoutes":  "GET /api/health"
                                  },
                                  {
                                      "normalizedPath":  "/api/platform/feature-flags/{*}",
@@ -739,7 +1258,22 @@
                                  },
                                  {
                                      "normalizedPath":  "/api/platform/tenants",
-                                     "occurrenceCount":  3,
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  [
+                                                         "Frontend/actions/platform/create-tenant.ts",
+                                                         "Frontend/actions/platform/get-tenants.ts"
+                                                     ],
+                                     "matchedBackendRoutes":  [
+                                                                  "DELETE /api/platform/tenants/{id}",
+                                                                  "GET /api/platform/tenants",
+                                                                  "GET /api/platform/tenants/{id}",
+                                                                  "POST /api/platform/tenants",
+                                                                  "PUT /api/platform/tenants/{id}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/platform/tenants/{*}",
+                                     "occurrenceCount":  4,
                                      "sampleFiles":  [
                                                          "Frontend/actions/platform/create-tenant.ts",
                                                          "Frontend/actions/platform/delete-tenant.ts",
@@ -775,7 +1309,7 @@
                                      "normalizedPath":  "/api/public/{*}/clinic",
                                      "occurrenceCount":  3,
                                      "sampleFiles":  [
-                                                         "Frontend/app/[tenantSlug]/(public)/page.tsx",
+                                                         "Frontend/actions/public/landing.ts",
                                                          "Frontend/app/[tenantSlug]/layout.tsx",
                                                          "Frontend/app/[tenantSlug]/manifest.json/route.ts"
                                                      ],
@@ -784,24 +1318,84 @@
                                  {
                                      "normalizedPath":  "/api/public/{*}/doctors",
                                      "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/app/[tenantSlug]/(public)/page.tsx",
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
                                      "matchedBackendRoutes":  "GET /api/public/{slug}/doctors"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/doctors/available-now",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  "GET /api/public/{slug}/doctors/available-now"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/landing",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  "GET /api/public/{slug}/landing"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/marketplace/items",
+                                     "occurrenceCount":  2,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/public/{slug}/marketplace/items",
+                                                                  "GET /api/public/{slug}/marketplace/items/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/marketplace/items/{*}",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  [
+                                                                  "GET /api/public/{slug}/marketplace/items",
+                                                                  "GET /api/public/{slug}/marketplace/items/{itemId:guid}"
+                                                              ]
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/marketplace/orders",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  "POST /api/public/{slug}/marketplace/orders"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/payment-options",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  "GET /api/public/{slug}/payment-options"
+                                 },
+                                 {
+                                     "normalizedPath":  "/api/public/{*}/services",
+                                     "occurrenceCount":  1,
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
+                                     "matchedBackendRoutes":  "GET /api/public/{slug}/services"
                                  },
                                  {
                                      "normalizedPath":  "/api/public/{*}/working-hours",
                                      "occurrenceCount":  1,
-                                     "sampleFiles":  "Frontend/app/[tenantSlug]/(public)/page.tsx",
+                                     "sampleFiles":  "Frontend/actions/public/landing.ts",
                                      "matchedBackendRoutes":  "GET /api/public/{slug}/working-hours"
                                  }
                              ],
     "unmatchedFrontendCalls":  [
                                    {
-                                       "normalizedPath":  "/api/auth/refresh-token",
-                                       "occurrenceCount":  2,
-                                       "sampleFiles":  [
-                                                           "Frontend/actions/auth/refresh-token.ts",
-                                                           "Frontend/proxy.ts"
-                                                       ]
+                                       "normalizedPath":  "/api",
+                                       "occurrenceCount":  5,
+                                       "sampleFiles":  "Frontend/public/sw.js"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/inventory/items{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/inventory/items.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/marketplace/orders{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/marketplace/orders.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/messages${query",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/messages/messages.ts"
                                    },
                                    {
                                        "normalizedPath":  "/api/clinic/partner-orders{*}",
@@ -814,9 +1408,54 @@
                                        "sampleFiles":  "Frontend/actions/partner/workflow.ts"
                                    },
                                    {
-                                       "normalizedPath":  "/api/clinic/visits/my/today",
+                                       "normalizedPath":  "/api/clinic/queue/sessions{*}",
                                        "occurrenceCount":  1,
-                                       "sampleFiles":  "Frontend/actions/doctor/get-my-today-visits.ts"
+                                       "sampleFiles":  "Frontend/actions/queue/sessions.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/reports/my-overview{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/reports/clinic-reports.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/reports/overview{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/reports/clinic-reports.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/reports/services{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/reports/clinic-reports.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/self-service-requests{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/self-service/requests.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/visits/my/patients${query",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/visit/advanced.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/workforce/absence{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/workforce/workforce.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/workforce/attendance{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/workforce/workforce.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/workforce/daily-closing${query",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/workforce/workforce.ts"
+                                   },
+                                   {
+                                       "normalizedPath":  "/api/clinic/workforce/daily-closing/generate{*}",
+                                       "occurrenceCount":  1,
+                                       "sampleFiles":  "Frontend/actions/workforce/workforce.ts"
                                    },
                                    {
                                        "normalizedPath":  "/api/platform/subscriptions{*}",
@@ -825,300 +1464,6 @@
                                    }
                                ],
     "backendEndpointsNotReferencedByFrontend":  [
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/auth/refresh",
-                                                        "NormalizedRoute":  "/api/auth/refresh",
-                                                        "Controller":  "AuthController",
-                                                        "Action":  "Refresh"
-                                                    },
-                                                    {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/doctors/{id:guid}/services",
-                                                        "NormalizedRoute":  "/api/clinic/doctors/{*}/services",
-                                                        "Controller":  "DoctorsController",
-                                                        "Action":  "UpdateServices"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/inventory/items",
-                                                        "NormalizedRoute":  "/api/clinic/inventory/items",
-                                                        "Controller":  "InventoryController",
-                                                        "Action":  "GetItems"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/inventory/items",
-                                                        "NormalizedRoute":  "/api/clinic/inventory/items",
-                                                        "Controller":  "InventoryController",
-                                                        "Action":  "Create"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/inventory/items/{itemId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/inventory/items/{*}",
-                                                        "Controller":  "InventoryController",
-                                                        "Action":  "GetItemById"
-                                                    },
-                                                    {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/inventory/items/{itemId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/inventory/items/{*}",
-                                                        "Controller":  "InventoryController",
-                                                        "Action":  "Update"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/inventory/items/{itemId:guid}/activation",
-                                                        "NormalizedRoute":  "/api/clinic/inventory/items/{*}/activation",
-                                                        "Controller":  "InventoryController",
-                                                        "Action":  "SetActivation"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/invoices/{id:guid}/payments",
-                                                        "NormalizedRoute":  "/api/clinic/invoices/{*}/payments",
-                                                        "Controller":  "InvoicesController",
-                                                        "Action":  "GetPayments"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/marketplace/orders",
-                                                        "NormalizedRoute":  "/api/clinic/marketplace/orders",
-                                                        "Controller":  "MarketplaceOrdersController",
-                                                        "Action":  "GetOrders"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/marketplace/orders/{orderId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/marketplace/orders/{*}",
-                                                        "Controller":  "MarketplaceOrdersController",
-                                                        "Action":  "GetOrderById"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/marketplace/orders/{orderId:guid}/status",
-                                                        "NormalizedRoute":  "/api/clinic/marketplace/orders/{*}/status",
-                                                        "Controller":  "MarketplaceOrdersController",
-                                                        "Action":  "UpdateStatus"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/media/clinic-image",
-                                                        "NormalizedRoute":  "/api/clinic/media/clinic-image",
-                                                        "Controller":  "MediaController",
-                                                        "Action":  "UploadClinicImage"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/messages",
-                                                        "NormalizedRoute":  "/api/clinic/messages",
-                                                        "Controller":  "MessagesController",
-                                                        "Action":  "GetAll"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/messages/{id:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/messages/{*}",
-                                                        "Controller":  "MessagesController",
-                                                        "Action":  "GetById"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/messages/{id:guid}/retry",
-                                                        "NormalizedRoute":  "/api/clinic/messages/{*}/retry",
-                                                        "Controller":  "MessagesController",
-                                                        "Action":  "Retry"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/messages/send",
-                                                        "NormalizedRoute":  "/api/clinic/messages/send",
-                                                        "Controller":  "MessagesController",
-                                                        "Action":  "Send"
-                                                    },
-                                                    {
-                                                        "Method":  "DELETE",
-                                                        "Route":  "/api/clinic/notifications/{id:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/{*}",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "Unsubscribe"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/notifications/in-app",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/in-app",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "GetInApp"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/notifications/in-app/{id:guid}/read",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/in-app/{*}/read",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "MarkInAppRead"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/notifications/in-app/mark-all-read",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/in-app/mark-all-read",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "MarkAllInAppRead"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/notifications/my",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/my",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "GetMySubscriptions"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/notifications/send",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/send",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "SendNotification"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/notifications/subscribe",
-                                                        "NormalizedRoute":  "/api/clinic/notifications/subscribe",
-                                                        "Controller":  "NotificationsController",
-                                                        "Action":  "Subscribe"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/partner-orders",
-                                                        "NormalizedRoute":  "/api/clinic/partner-orders",
-                                                        "Controller":  "PartnerOrdersController",
-                                                        "Action":  "List"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/partner-orders/{orderId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/partner-orders/{*}",
-                                                        "Controller":  "PartnerOrdersController",
-                                                        "Action":  "GetById"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/partner-orders/{orderId:guid}/status",
-                                                        "NormalizedRoute":  "/api/clinic/partner-orders/{*}/status",
-                                                        "Controller":  "PartnerOrdersController",
-                                                        "Action":  "UpdateStatus"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/partners",
-                                                        "NormalizedRoute":  "/api/clinic/partners",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "List"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/partners",
-                                                        "NormalizedRoute":  "/api/clinic/partners",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "Create"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/partners/{partnerId:guid}/activation",
-                                                        "NormalizedRoute":  "/api/clinic/partners/{*}/activation",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "SetActivation"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/partners/contracts",
-                                                        "NormalizedRoute":  "/api/clinic/partners/contracts",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "ListContracts"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/partners/contracts",
-                                                        "NormalizedRoute":  "/api/clinic/partners/contracts",
-                                                        "Controller":  "PartnersController",
-                                                        "Action":  "CreateContract"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "ListDocuments"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "UploadDocument"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents/{*}",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "DownloadDocument"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents/{*}/threads",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "ListDocumentThreads"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents/{*}/threads",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "CreateDocumentThread"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/close",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/close",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "CloseThread"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{patientId:guid}/medical-documents/{documentId:guid}/threads/{threadId:guid}/replies",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/replies",
-                                                        "Controller":  "PatientMedicalController",
-                                                        "Action":  "AddThreadReply"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{id:guid}/reset-password",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/reset-password",
-                                                        "Controller":  "PatientsController",
-                                                        "Action":  "ResetPassword"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/patients/{id:guid}/send-credentials",
-                                                        "NormalizedRoute":  "/api/clinic/patients/{*}/send-credentials",
-                                                        "Controller":  "PatientsController",
-                                                        "Action":  "SendCredentials"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/queue/sessions/{id:guid}/tickets",
-                                                        "NormalizedRoute":  "/api/clinic/queue/sessions/{*}/tickets",
-                                                        "Controller":  "QueueSessionsController",
-                                                        "Action":  "GetTickets"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/queue/sessions/close-all",
-                                                        "NormalizedRoute":  "/api/clinic/queue/sessions/close-all",
-                                                        "Controller":  "QueueSessionsController",
-                                                        "Action":  "CloseAllSessions"
-                                                    },
                                                     {
                                                         "Method":  "GET",
                                                         "Route":  "/api/clinic/reports/my-overview",
@@ -1142,143 +1487,10 @@
                                                     },
                                                     {
                                                         "Method":  "GET",
-                                                        "Route":  "/api/clinic/self-service-requests",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "GetAll"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/self-service-requests/{requestId:guid}",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests/{*}",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "GetById"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/adjust-paid-amount",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests/{*}/adjust-paid-amount",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "AdjustPaidAmount"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/approve",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests/{*}/approve",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "Approve"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/reject",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests/{*}/reject",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "Reject"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/self-service-requests/{requestId:guid}/request-reupload",
-                                                        "NormalizedRoute":  "/api/clinic/self-service-requests/{*}/request-reupload",
-                                                        "Controller":  "SelfServiceRequestsController",
-                                                        "Action":  "RequestReupload"
-                                                    },
-                                                    {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/settings/payment-methods",
-                                                        "NormalizedRoute":  "/api/clinic/settings/payment-methods",
-                                                        "Controller":  "ClinicSettingsController",
-                                                        "Action":  "ReplacePaymentMethods"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/settings/payment-options",
-                                                        "NormalizedRoute":  "/api/clinic/settings/payment-options",
-                                                        "Controller":  "ClinicSettingsController",
-                                                        "Action":  "GetPaymentOptions"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/visits/{id:guid}/inventory-usage",
-                                                        "NormalizedRoute":  "/api/clinic/visits/{*}/inventory-usage",
-                                                        "Controller":  "VisitsController",
-                                                        "Action":  "RecordInventoryUsage"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{labRequestId:guid}/partner-order",
-                                                        "NormalizedRoute":  "/api/clinic/visits/{*}/labs/{*}/partner-order",
-                                                        "Controller":  "LabRequestsController",
-                                                        "Action":  "CreatePartnerOrder"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/visits/{visitId:guid}/labs/{id:guid}/result",
-                                                        "NormalizedRoute":  "/api/clinic/visits/{*}/labs/{*}/result",
-                                                        "Controller":  "LabRequestsController",
-                                                        "Action":  "AddResult"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{prescriptionId:guid}/partner-order",
-                                                        "NormalizedRoute":  "/api/clinic/visits/{*}/prescriptions/{*}/partner-order",
-                                                        "Controller":  "PrescriptionsController",
-                                                        "Action":  "CreatePartnerOrder"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/visits/{visitId:guid}/prescriptions/{id:guid}/revisions",
-                                                        "NormalizedRoute":  "/api/clinic/visits/{*}/prescriptions/{*}/revisions",
-                                                        "Controller":  "PrescriptionsController",
-                                                        "Action":  "GetRevisions"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/visits/maintenance/stale-open",
-                                                        "NormalizedRoute":  "/api/clinic/visits/maintenance/stale-open",
-                                                        "Controller":  "VisitsController",
-                                                        "Action":  "GetStaleOpenVisits"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
                                                         "Route":  "/api/clinic/visits/my/patients",
                                                         "NormalizedRoute":  "/api/clinic/visits/my/patients",
                                                         "Controller":  "VisitsController",
                                                         "Action":  "GetMyPatients"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/workforce/absence",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/absence",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "ListAbsence"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/workforce/absence",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/absence",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "CreateAbsence"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/workforce/attendance",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/attendance",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "ListAttendance"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/workforce/attendance",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/attendance",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "CreateAttendance"
-                                                    },
-                                                    {
-                                                        "Method":  "PUT",
-                                                        "Route":  "/api/clinic/workforce/attendance/{attendanceId:guid}/checkout",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/attendance/{*}/checkout",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "CheckOutAttendance"
                                                     },
                                                     {
                                                         "Method":  "GET",
@@ -1293,90 +1505,13 @@
                                                         "NormalizedRoute":  "/api/clinic/workforce/daily-closing/generate",
                                                         "Controller":  "WorkforceController",
                                                         "Action":  "GenerateDailyClosing"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/doctors/{*}/compensation-rules",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "ListCompensationRules"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/workforce/doctors/{doctorId:guid}/compensation-rules",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/doctors/{*}/compensation-rules",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "CreateCompensationRule"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/clinic/workforce/salary-payouts",
-                                                        "NormalizedRoute":  "/api/clinic/workforce/salary-payouts",
-                                                        "Controller":  "WorkforceController",
-                                                        "Action":  "CreateSalaryPayout"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/health",
-                                                        "NormalizedRoute":  "/api/health",
-                                                        "Controller":  "HealthController",
-                                                        "Action":  "GetHealth"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/doctors/available-now",
-                                                        "NormalizedRoute":  "/api/public/{*}/doctors/available-now",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetAvailableDoctorsNow"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/landing",
-                                                        "NormalizedRoute":  "/api/public/{*}/landing",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetLanding"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/marketplace/items",
-                                                        "NormalizedRoute":  "/api/public/{*}/marketplace/items",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetMarketplaceItems"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/marketplace/items/{itemId:guid}",
-                                                        "NormalizedRoute":  "/api/public/{*}/marketplace/items/{*}",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetMarketplaceItemById"
-                                                    },
-                                                    {
-                                                        "Method":  "POST",
-                                                        "Route":  "/api/public/{slug}/marketplace/orders",
-                                                        "NormalizedRoute":  "/api/public/{*}/marketplace/orders",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "CreateMarketplaceOrder"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/payment-options",
-                                                        "NormalizedRoute":  "/api/public/{*}/payment-options",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetPaymentOptions"
-                                                    },
-                                                    {
-                                                        "Method":  "GET",
-                                                        "Route":  "/api/public/{slug}/services",
-                                                        "NormalizedRoute":  "/api/public/{*}/services",
-                                                        "Controller":  "PublicController",
-                                                        "Action":  "GetServices"
                                                     }
                                                 ],
     "summary":  {
-                    "normalizedFrontendApiPathCount":  98,
-                    "matchedFrontendApiPathCount":  93,
-                    "unmatchedFrontendApiPathCount":  5,
-                    "backendEndpointCount":  219,
-                    "backendEndpointsNotReferencedCount":  78
+                    "normalizedFrontendApiPathCount":  180,
+                    "matchedFrontendApiPathCount":  163,
+                    "unmatchedFrontendApiPathCount":  17,
+                    "backendEndpointCount":  217,
+                    "backendEndpointsNotReferencedCount":  6
                 }
 }

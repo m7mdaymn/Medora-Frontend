@@ -64,7 +64,7 @@ public class CreateDoctorRequest
     [Required]
     public DoctorCompensationMode CompensationMode { get; set; } = DoctorCompensationMode.Percentage;
 
-    [Range(0, 1000000000)]
+    [Range(0.01, 1000000000)]
     public decimal CompensationValue { get; set; }
 
     public DateTime? CompensationEffectiveFrom { get; set; }
@@ -96,7 +96,7 @@ public class UpdateDoctorRequest
     [Required]
     public DoctorCompensationMode CompensationMode { get; set; } = DoctorCompensationMode.Percentage;
 
-    [Range(0, 1000000000)]
+    [Range(0.01, 1000000000)]
     public decimal CompensationValue { get; set; }
 
     public DateTime? CompensationEffectiveFrom { get; set; }
@@ -114,7 +114,7 @@ public class PatchDoctorRequest
     [Range(0, 3)] public int? UrgentInsertAfterCount { get; set; }
     [Range(1, 120)] public int? AvgVisitDurationMinutes { get; set; }
     public DoctorCompensationMode? CompensationMode { get; set; }
-    [Range(0, 1000000000)] public decimal? CompensationValue { get; set; }
+    [Range(0.01, 1000000000)] public decimal? CompensationValue { get; set; }
     public DateTime? CompensationEffectiveFrom { get; set; }
 }
 

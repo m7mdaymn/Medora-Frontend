@@ -19,12 +19,10 @@ public class InvoiceDto
     public decimal RemainingAmount { get; set; }
     public InvoiceStatus Status { get; set; }
     public bool IsServiceRendered { get; set; }
-    public decimal CreditAmount { get; set; }
     public bool HasPendingSettlement { get; set; }
     public decimal PendingSettlementAmount { get; set; }
     public EncounterFinancialState? EncounterFinancialState { get; set; }
     public decimal TotalRefunded { get; set; }
-    public DateTime? CreditIssuedAt { get; set; }
     public string? Notes { get; set; }
     public List<InvoiceLineItemDto> LineItems { get; set; } = new();
     public List<PaymentDto> Payments { get; set; } = new();

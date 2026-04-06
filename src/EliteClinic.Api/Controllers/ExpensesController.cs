@@ -28,7 +28,7 @@ public class ExpensesController : ControllerBase
     /// Add expense
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<ExpenseDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<ActionResult<ApiResponse<ExpenseDto>>> Create([FromBody] CreateExpenseRequest request)
@@ -85,7 +85,7 @@ public class ExpensesController : ControllerBase
     /// List expenses (paginated, filterable by date & category)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ExpenseDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<ExpenseDto>>>> GetAll(
         [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? category,

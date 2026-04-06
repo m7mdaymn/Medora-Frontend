@@ -11,3 +11,12 @@ C:\DATA\Elite Clinic\src\EliteClinic.Domain\obj\Debug\net9.0\EliteClinic.Domain.
 C:\DATA\Elite Clinic\src\EliteClinic.Domain\obj\Debug\net9.0\refint\EliteClinic.Domain.dll
 C:\DATA\Elite Clinic\src\EliteClinic.Domain\obj\Debug\net9.0\EliteClinic.Domain.pdb
 C:\DATA\Elite Clinic\src\EliteClinic.Domain\obj\Debug\net9.0\ref\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp-build\api-verify-2\EliteClinic.Domain.pdb
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.deps.json
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.dll
+C:\DATA\Elite Clinic\.tmp-build\api-contract-cleanup-verify\EliteClinic.Domain.pdb

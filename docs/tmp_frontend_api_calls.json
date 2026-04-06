@@ -17,8 +17,8 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/auth/refresh-token.ts",
-                                         "literal":  "${process.env.NEXT_PUBLIC_API_URL}/api/Auth/refresh-token",
-                                         "normalizedPath":  "/api/auth/refresh-token"
+                                         "literal":  "/api/auth/refresh",
+                                         "normalizedPath":  "/api/auth/refresh"
                                      },
                                      {
                                          "file":  "Frontend/actions/billing/create-invoice.ts",
@@ -42,6 +42,11 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/booking/get-booking.ts",
+                                         "literal":  "/api/clinic/bookings/${bookingId}",
+                                         "normalizedPath":  "/api/clinic/bookings/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/booking/get-booking.ts",
                                          "literal":  "/api/clinic/bookings?${queryParams.toString()}",
                                          "normalizedPath":  "/api/clinic/bookings"
                                      },
@@ -61,6 +66,16 @@
                                          "normalizedPath":  "/api/clinic/doctors/{*}"
                                      },
                                      {
+                                         "file":  "Frontend/actions/doctor/get-doctor.ts",
+                                         "literal":  "/api/clinic/doctors/${doctorId}/services",
+                                         "normalizedPath":  "/api/clinic/doctors/{*}/services"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/doctor/get-doctor.ts",
+                                         "literal":  "/api/clinic/doctors/me",
+                                         "normalizedPath":  "/api/clinic/doctors/me"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/doctor/get-doctors.ts",
                                          "literal":  "/api/clinic/doctors?pageNumber=1\u0026pageSize=1000",
                                          "normalizedPath":  "/api/clinic/doctors"
@@ -77,8 +92,8 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/doctor/get-my-today-visits.ts",
-                                         "literal":  "/api/clinic/visits/my/today",
-                                         "normalizedPath":  "/api/clinic/visits/my/today"
+                                         "literal":  "/api/clinic/visits/my${toQueryString(options)}",
+                                         "normalizedPath":  "/api/clinic/visits/my{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/doctor/get-my-visit-fields.ts",
@@ -99,6 +114,11 @@
                                          "file":  "Frontend/actions/doctor/toggle-doctor-status.ts",
                                          "literal":  "/api/clinic/doctors/${doctorId}/enable",
                                          "normalizedPath":  "/api/clinic/doctors/{*}/enable"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/doctor/update-doctor.ts",
+                                         "literal":  "/api/clinic/doctors/${id}",
+                                         "normalizedPath":  "/api/clinic/doctors/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/doctor/update-doctor.ts",
@@ -172,6 +192,11 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/finance/invoices.ts",
+                                         "literal":  "/api/clinic/invoices/${invoiceId}/payments",
+                                         "normalizedPath":  "/api/clinic/invoices/{*}/payments"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/finance/invoices.ts",
                                          "literal":  "/api/clinic/invoices/${invoiceId}/refund",
                                          "normalizedPath":  "/api/clinic/invoices/{*}/refund"
                                      },
@@ -211,6 +236,36 @@
                                          "normalizedPath":  "/api/clinic/finance/yearly"
                                      },
                                      {
+                                         "file":  "Frontend/actions/inventory/items.ts",
+                                         "literal":  "/api/clinic/inventory/items",
+                                         "normalizedPath":  "/api/clinic/inventory/items"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/inventory/items.ts",
+                                         "literal":  "/api/clinic/inventory/items${toQueryString(params)}",
+                                         "normalizedPath":  "/api/clinic/inventory/items{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/inventory/items.ts",
+                                         "literal":  "/api/clinic/inventory/items/${itemId}",
+                                         "normalizedPath":  "/api/clinic/inventory/items/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/inventory/items.ts",
+                                         "literal":  "/api/clinic/inventory/items/${itemId}",
+                                         "normalizedPath":  "/api/clinic/inventory/items/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/inventory/items.ts",
+                                         "literal":  "/api/clinic/inventory/items/${itemId}/activation",
+                                         "normalizedPath":  "/api/clinic/inventory/items/{*}/activation"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/labs/create-lab-partner-order.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/labs/${labRequestId}/partner-order",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}/partner-order"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/labs/create-lab-request.ts",
                                          "literal":  "/api/clinic/visits/${visitId}/labs",
                                          "normalizedPath":  "/api/clinic/visits/{*}/labs"
@@ -219,6 +274,61 @@
                                          "file":  "Frontend/actions/labs/delete-lab-request.ts",
                                          "literal":  "/api/clinic/visits/${visitId}/labs/${labId}",
                                          "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/labs/lab-requests.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/labs",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/labs"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/labs/lab-requests.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/labs/${labId}",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/labs/lab-requests.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/labs/${labId}/result",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/labs/{*}/result"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/marketplace/orders.ts",
+                                         "literal":  "/api/clinic/marketplace/orders${toQueryString(params)}",
+                                         "normalizedPath":  "/api/clinic/marketplace/orders{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/marketplace/orders.ts",
+                                         "literal":  "/api/clinic/marketplace/orders/${orderId}",
+                                         "normalizedPath":  "/api/clinic/marketplace/orders/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/marketplace/orders.ts",
+                                         "literal":  "/api/clinic/marketplace/orders/${orderId}/status",
+                                         "normalizedPath":  "/api/clinic/marketplace/orders/{*}/status"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/messages/messages.ts",
+                                         "literal":  "/api/clinic/messages${query ? ",
+                                         "normalizedPath":  "/api/clinic/messages${query"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/messages/messages.ts",
+                                         "literal":  "/api/clinic/messages/${id}",
+                                         "normalizedPath":  "/api/clinic/messages/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/messages/messages.ts",
+                                         "literal":  "/api/clinic/messages/${id}/retry",
+                                         "normalizedPath":  "/api/clinic/messages/{*}/retry"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/messages/messages.ts",
+                                         "literal":  "/api/clinic/messages/send",
+                                         "normalizedPath":  "/api/clinic/messages/send"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notes/notes.ts",
+                                         "literal":  "/api/clinic/doctor-notes",
+                                         "normalizedPath":  "/api/clinic/doctor-notes"
                                      },
                                      {
                                          "file":  "Frontend/actions/notes/notes.ts",
@@ -236,9 +346,49 @@
                                          "normalizedPath":  "/api/clinic/doctor-notes/unread"
                                      },
                                      {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/${id}",
+                                         "normalizedPath":  "/api/clinic/notifications/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/in-app${query ? ",
+                                         "normalizedPath":  "/api/clinic/notifications/in-app${query"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/in-app/${id}/read",
+                                         "normalizedPath":  "/api/clinic/notifications/in-app/{*}/read"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/in-app/mark-all-read",
+                                         "normalizedPath":  "/api/clinic/notifications/in-app/mark-all-read"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/my",
+                                         "normalizedPath":  "/api/clinic/notifications/my"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/send",
+                                         "normalizedPath":  "/api/clinic/notifications/send"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/notifications/notifications.ts",
+                                         "literal":  "/api/clinic/notifications/subscribe",
+                                         "normalizedPath":  "/api/clinic/notifications/subscribe"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/partner/workflow.ts",
                                          "literal":  "/api/clinic/partner-orders${query}",
                                          "normalizedPath":  "/api/clinic/partner-orders{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/partner/workflow.ts",
@@ -262,13 +412,48 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partner-orders/${orderId}/status",
+                                         "normalizedPath":  "/api/clinic/partner-orders/{*}/status"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners",
+                                         "normalizedPath":  "/api/clinic/partners"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
                                          "literal":  "/api/clinic/partners${query}",
                                          "normalizedPath":  "/api/clinic/partners{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/${partnerId}",
+                                         "normalizedPath":  "/api/clinic/partners/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/${partnerId}/activation",
+                                         "normalizedPath":  "/api/clinic/partners/{*}/activation"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
                                          "literal":  "/api/clinic/partners/${partnerId}/users",
                                          "normalizedPath":  "/api/clinic/partners/{*}/users"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/contracts",
+                                         "normalizedPath":  "/api/clinic/partners/contracts"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/contracts${query ? ",
+                                         "normalizedPath":  "/api/clinic/partners/contracts${query"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/contracts/${contractId}",
+                                         "normalizedPath":  "/api/clinic/partners/contracts/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/partner/workflow.ts",
@@ -279,6 +464,11 @@
                                          "file":  "Frontend/actions/partner/workflow.ts",
                                          "literal":  "/api/clinic/partners/services${query ? ",
                                          "normalizedPath":  "/api/clinic/partners/services${query"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/partner/workflow.ts",
+                                         "literal":  "/api/clinic/partners/services/${itemId}",
+                                         "normalizedPath":  "/api/clinic/partners/services/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/patient/add-subprofile.ts",
@@ -292,13 +482,18 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/patient/delete-patient.ts",
-                                         "literal":  "${process.env.NEXT_PUBLIC_API_URL}/api/clinic/patients/${id}",
+                                         "literal":  "/api/clinic/patients/${id}",
                                          "normalizedPath":  "/api/clinic/patients/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/patient/get-chronic-conditions.ts",
                                          "literal":  "/api/clinic/patients/${patientId}/chronic-conditions",
                                          "normalizedPath":  "/api/clinic/patients/{*}/chronic-conditions"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient/getPatient.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}",
+                                         "normalizedPath":  "/api/clinic/patients/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/patient/get-patient-profile.ts",
@@ -329,6 +524,21 @@
                                          "file":  "Frontend/actions/patient/update-patient.ts",
                                          "literal":  "/api/clinic/patients/${id}",
                                          "normalizedPath":  "/api/clinic/patients/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient/update-patient.ts",
+                                         "literal":  "/api/clinic/patients/${id}",
+                                         "normalizedPath":  "/api/clinic/patients/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient/update-patient.ts",
+                                         "literal":  "/api/clinic/patients/${id}/reset-password",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/reset-password"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient/update-patient.ts",
+                                         "literal":  "/api/clinic/patients/${id}/send-credentials",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/send-credentials"
                                      },
                                      {
                                          "file":  "Frontend/actions/patient-app/cancel-booking-patient.ts",
@@ -376,14 +586,49 @@
                                          "normalizedPath":  "/api/clinic/patient-app/profiles/{*}/visits"
                                      },
                                      {
-                                         "file":  "Frontend/actions/patient-app/profile.ts",
-                                         "literal":  "/api/clinic/patient-credits/${patientId}/balance",
-                                         "normalizedPath":  "/api/clinic/patient-credits/{*}/balance"
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/chronic-conditions",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/chronic-conditions"
                                      },
                                      {
-                                         "file":  "Frontend/actions/patient-app/profile.ts",
-                                         "literal":  "/api/clinic/patient-credits/${patientId}/history?pageNumber=${pageNumber}\u0026pageSize=${pageSize}",
-                                         "normalizedPath":  "/api/clinic/patient-credits/{*}/history"
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/chronic-conditions",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/chronic-conditions"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents/${documentId}",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents/${documentId}/threads",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents/${documentId}/threads",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents/${documentId}/threads/${threadId}/close",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/close"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/patient-medical/documents.ts",
+                                         "literal":  "/api/clinic/patients/${patientId}/medical-documents/${documentId}/threads/${threadId}/replies",
+                                         "normalizedPath":  "/api/clinic/patients/{*}/medical-documents/{*}/threads/{*}/replies"
                                      },
                                      {
                                          "file":  "Frontend/actions/platform/create-tenant.ts",
@@ -391,9 +636,19 @@
                                          "normalizedPath":  "/api/platform/tenants"
                                      },
                                      {
+                                         "file":  "Frontend/actions/platform/create-tenant.ts",
+                                         "literal":  "/api/platform/tenants/${tenantId}",
+                                         "normalizedPath":  "/api/platform/tenants/{*}"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/platform/delete-tenant.ts",
-                                         "literal":  "/api/platform/tenants?${id}",
-                                         "normalizedPath":  "/api/platform/tenants"
+                                         "literal":  "/api/platform/tenants/${id}",
+                                         "normalizedPath":  "/api/platform/tenants/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/platform/delete-tenant.ts",
+                                         "literal":  "/api/platform/tenants/${id}",
+                                         "normalizedPath":  "/api/platform/tenants/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/platform/feature-flags.ts",
@@ -407,8 +662,18 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/platform/get-tenants.ts",
+                                         "literal":  "/api/platform/tenants/${tenantId}",
+                                         "normalizedPath":  "/api/platform/tenants/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/platform/get-tenants.ts",
                                          "literal":  "/api/platform/tenants?pageNumber=1\u0026pageSize=10000",
                                          "normalizedPath":  "/api/platform/tenants"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/platform/health.ts",
+                                         "literal":  "/api/Health",
+                                         "normalizedPath":  "/api/health"
                                      },
                                      {
                                          "file":  "Frontend/actions/platform/subscriptions.ts",
@@ -456,14 +721,84 @@
                                          "normalizedPath":  "/api/clinic/visits/{*}/prescriptions"
                                      },
                                      {
+                                         "file":  "Frontend/actions/prescription/create-prescription-partner-order.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/prescriptions/${prescriptionId}/partner-order",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}/partner-order"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/prescription/delete-prescription.ts",
                                          "literal":  "/api/clinic/visits/${visitId}/prescriptions/${prescriptionId}",
                                          "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}"
                                      },
                                      {
+                                         "file":  "Frontend/actions/prescription/prescriptions.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/prescriptions",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/prescriptions"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/prescription/prescriptions.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/prescriptions/${prescriptionId}/revisions",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}/revisions"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/prescription/update-prescription.ts",
                                          "literal":  "/api/clinic/visits/${visitId}/prescriptions/${prescriptionId}",
                                          "normalizedPath":  "/api/clinic/visits/{*}/prescriptions/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/clinic",
+                                         "normalizedPath":  "/api/public/{*}/clinic"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/doctors",
+                                         "normalizedPath":  "/api/public/{*}/doctors"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/doctors/available-now",
+                                         "normalizedPath":  "/api/public/{*}/doctors/available-now"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/landing",
+                                         "normalizedPath":  "/api/public/{*}/landing"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/marketplace/items",
+                                         "normalizedPath":  "/api/public/{*}/marketplace/items"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/marketplace/items/${itemId}",
+                                         "normalizedPath":  "/api/public/{*}/marketplace/items/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/marketplace/items?${query}",
+                                         "normalizedPath":  "/api/public/{*}/marketplace/items"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/marketplace/orders",
+                                         "normalizedPath":  "/api/public/{*}/marketplace/orders"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/payment-options",
+                                         "normalizedPath":  "/api/public/{*}/payment-options"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/services",
+                                         "normalizedPath":  "/api/public/{*}/services"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/public/landing.ts",
+                                         "literal":  "/api/public/${slug}/working-hours",
+                                         "normalizedPath":  "/api/public/{*}/working-hours"
                                      },
                                      {
                                          "file":  "Frontend/actions/queue/open-my-session.ts",
@@ -492,8 +827,28 @@
                                      },
                                      {
                                          "file":  "Frontend/actions/queue/sessions.ts",
+                                         "literal":  "/api/clinic/queue/sessions${query}",
+                                         "normalizedPath":  "/api/clinic/queue/sessions{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/queue/sessions.ts",
+                                         "literal":  "/api/clinic/queue/sessions/${sessionId}",
+                                         "normalizedPath":  "/api/clinic/queue/sessions/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/queue/sessions.ts",
                                          "literal":  "/api/clinic/queue/sessions/${sessionId}/close",
                                          "normalizedPath":  "/api/clinic/queue/sessions/{*}/close"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/queue/sessions.ts",
+                                         "literal":  "/api/clinic/queue/sessions/${sessionId}/tickets",
+                                         "normalizedPath":  "/api/clinic/queue/sessions/{*}/tickets"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/queue/sessions.ts",
+                                         "literal":  "/api/clinic/queue/sessions/close-all",
+                                         "normalizedPath":  "/api/clinic/queue/sessions/close-all"
                                      },
                                      {
                                          "file":  "Frontend/actions/queue/tickets.ts",
@@ -536,9 +891,59 @@
                                          "normalizedPath":  "/api/clinic/queue/tickets/with-payment"
                                      },
                                      {
+                                         "file":  "Frontend/actions/reports/clinic-reports.ts",
+                                         "literal":  "/api/clinic/reports/my-overview${toQueryString(filters)}",
+                                         "normalizedPath":  "/api/clinic/reports/my-overview{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/reports/clinic-reports.ts",
+                                         "literal":  "/api/clinic/reports/overview${toQueryString(filters)}",
+                                         "normalizedPath":  "/api/clinic/reports/overview{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/reports/clinic-reports.ts",
+                                         "literal":  "/api/clinic/reports/services${toQueryString(filters)}",
+                                         "normalizedPath":  "/api/clinic/reports/services{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests${toQueryString(params)}",
+                                         "normalizedPath":  "/api/clinic/self-service-requests{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests/${requestId}",
+                                         "normalizedPath":  "/api/clinic/self-service-requests/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests/${requestId}/adjust-paid-amount",
+                                         "normalizedPath":  "/api/clinic/self-service-requests/{*}/adjust-paid-amount"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests/${requestId}/approve",
+                                         "normalizedPath":  "/api/clinic/self-service-requests/{*}/approve"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests/${requestId}/reject",
+                                         "normalizedPath":  "/api/clinic/self-service-requests/{*}/reject"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/self-service/requests.ts",
+                                         "literal":  "/api/clinic/self-service-requests/${requestId}/request-reupload",
+                                         "normalizedPath":  "/api/clinic/self-service-requests/{*}/request-reupload"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/service/clinic-services.ts",
                                          "literal":  "/api/clinic/services",
                                          "normalizedPath":  "/api/clinic/services"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/service/clinic-services.ts",
+                                         "literal":  "/api/clinic/services/${id}",
+                                         "normalizedPath":  "/api/clinic/services/{*}"
                                      },
                                      {
                                          "file":  "Frontend/actions/service/clinic-services.ts",
@@ -576,9 +981,29 @@
                                          "normalizedPath":  "/api/clinic/settings"
                                      },
                                      {
+                                         "file":  "Frontend/actions/settings/get-settings.ts",
+                                         "literal":  "/api/clinic/settings/payment-options",
+                                         "normalizedPath":  "/api/clinic/settings/payment-options"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/settings/update-settings.ts",
                                          "literal":  "/api/clinic/settings",
                                          "normalizedPath":  "/api/clinic/settings"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/settings/update-settings.ts",
+                                         "literal":  "/api/clinic/settings",
+                                         "normalizedPath":  "/api/clinic/settings"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/settings/update-settings.ts",
+                                         "literal":  "/api/clinic/settings/payment-methods",
+                                         "normalizedPath":  "/api/clinic/settings/payment-methods"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/settings/upload-logo.ts",
+                                         "literal":  "/api/clinic/media/clinic-image",
+                                         "normalizedPath":  "/api/clinic/media/clinic-image"
                                      },
                                      {
                                          "file":  "Frontend/actions/settings/upload-logo.ts",
@@ -591,6 +1016,16 @@
                                          "normalizedPath":  "/api/clinic/staff"
                                      },
                                      {
+                                         "file":  "Frontend/actions/staff/create-staff.ts",
+                                         "literal":  "/api/clinic/staff/payroll-only",
+                                         "normalizedPath":  "/api/clinic/staff/payroll-only"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/staff/get-staff.ts",
+                                         "literal":  "/api/clinic/staff/${staffId}",
+                                         "normalizedPath":  "/api/clinic/staff/{*}"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/staff/get-staff.ts",
                                          "literal":  "/api/clinic/staff?${query}",
                                          "normalizedPath":  "/api/clinic/staff"
@@ -601,9 +1036,44 @@
                                          "normalizedPath":  "/api/clinic/staff/{*}/{*}"
                                      },
                                      {
+                                         "file":  "Frontend/actions/staff/toggle-staff-status.ts",
+                                         "literal":  "/api/clinic/staff/${staffId}/disable",
+                                         "normalizedPath":  "/api/clinic/staff/{*}/disable"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/staff/toggle-staff-status.ts",
+                                         "literal":  "/api/clinic/staff/${staffId}/enable",
+                                         "normalizedPath":  "/api/clinic/staff/{*}/enable"
+                                     },
+                                     {
                                          "file":  "Frontend/actions/staff/update-staff.ts",
                                          "literal":  "/api/clinic/staff/${data.id}",
                                          "normalizedPath":  "/api/clinic/staff/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/staff/update-staff.ts",
+                                         "literal":  "/api/clinic/staff/${id}",
+                                         "normalizedPath":  "/api/clinic/staff/{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/visit/advanced.ts",
+                                         "literal":  "/api/clinic/visits/${visitId}/inventory-usage",
+                                         "normalizedPath":  "/api/clinic/visits/{*}/inventory-usage"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/visit/advanced.ts",
+                                         "literal":  "/api/clinic/visits/maintenance/${visitId}/close",
+                                         "normalizedPath":  "/api/clinic/visits/maintenance/{*}/close"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/visit/advanced.ts",
+                                         "literal":  "/api/clinic/visits/maintenance/stale-open?olderThanHours=${olderThanHours}",
+                                         "normalizedPath":  "/api/clinic/visits/maintenance/stale-open"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/visit/advanced.ts",
+                                         "literal":  "/api/clinic/visits/my/patients${query ? ",
+                                         "normalizedPath":  "/api/clinic/visits/my/patients${query"
                                      },
                                      {
                                          "file":  "Frontend/actions/visit/complete-visit.ts",
@@ -626,43 +1096,103 @@
                                          "normalizedPath":  "/api/clinic/visits/{*}"
                                      },
                                      {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/absence",
+                                         "normalizedPath":  "/api/clinic/workforce/absence"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/absence${toDateRangeQuery(filters)}",
+                                         "normalizedPath":  "/api/clinic/workforce/absence{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/attendance",
+                                         "normalizedPath":  "/api/clinic/workforce/attendance"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/attendance${toDateRangeQuery(filters)}",
+                                         "normalizedPath":  "/api/clinic/workforce/attendance{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/attendance/${attendanceId}/checkout",
+                                         "normalizedPath":  "/api/clinic/workforce/attendance/{*}/checkout"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/daily-closing${query ? ",
+                                         "normalizedPath":  "/api/clinic/workforce/daily-closing${query"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/daily-closing/generate${query}",
+                                         "normalizedPath":  "/api/clinic/workforce/daily-closing/generate{*}"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/doctors/${doctorId}/compensation-rules",
+                                         "normalizedPath":  "/api/clinic/workforce/doctors/{*}/compensation-rules"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/doctors/${doctorId}/compensation-rules",
+                                         "normalizedPath":  "/api/clinic/workforce/doctors/{*}/compensation-rules"
+                                     },
+                                     {
+                                         "file":  "Frontend/actions/workforce/workforce.ts",
+                                         "literal":  "/api/clinic/workforce/salary-payouts",
+                                         "normalizedPath":  "/api/clinic/workforce/salary-payouts"
+                                     },
+                                     {
                                          "file":  "Frontend/app/(platform)/admin/(dashboard)/layout.tsx",
                                          "literal":  "/api/Auth/me",
                                          "normalizedPath":  "/api/auth/me"
                                      },
                                      {
-                                         "file":  "Frontend/app/[tenantSlug]/(public)/page.tsx",
+                                         "file":  "Frontend/app/[tenantSlug]/layout.tsx",
                                          "literal":  "/api/public/${tenantSlug}/clinic",
                                          "normalizedPath":  "/api/public/{*}/clinic"
                                      },
                                      {
-                                         "file":  "Frontend/app/[tenantSlug]/(public)/page.tsx",
-                                         "literal":  "/api/public/${tenantSlug}/doctors",
-                                         "normalizedPath":  "/api/public/{*}/doctors"
-                                     },
-                                     {
-                                         "file":  "Frontend/app/[tenantSlug]/(public)/page.tsx",
-                                         "literal":  "/api/public/${tenantSlug}/working-hours",
-                                         "normalizedPath":  "/api/public/{*}/working-hours"
-                                     },
-                                     {
-                                         "file":  "Frontend/app/[tenantSlug]/layout.tsx",
-                                         "literal":  "${process.env.NEXT_PUBLIC_API_URL}/api/public/${tenantSlug}/clinic",
-                                         "normalizedPath":  "/api/public/{*}/clinic"
-                                     },
-                                     {
                                          "file":  "Frontend/app/[tenantSlug]/manifest.json/route.ts",
-                                         "literal":  "${process.env.NEXT_PUBLIC_API_URL}/api/public/${tenantSlug}/clinic",
+                                         "literal":  "/api/public/${tenantSlug}/clinic",
                                          "normalizedPath":  "/api/public/{*}/clinic"
                                      },
                                      {
                                          "file":  "Frontend/proxy.ts",
-                                         "literal":  "${process.env.NEXT_PUBLIC_API_URL}/api/Auth/refresh-token",
-                                         "normalizedPath":  "/api/auth/refresh-token"
+                                         "literal":  "/api/auth/refresh",
+                                         "normalizedPath":  "/api/auth/refresh"
+                                     },
+                                     {
+                                         "file":  "Frontend/public/sw.js",
+                                         "literal":  "/api/",
+                                         "normalizedPath":  "/api"
+                                     },
+                                     {
+                                         "file":  "Frontend/public/sw.js",
+                                         "literal":  "/api/",
+                                         "normalizedPath":  "/api"
+                                     },
+                                     {
+                                         "file":  "Frontend/public/sw.js",
+                                         "literal":  "/api/",
+                                         "normalizedPath":  "/api"
+                                     },
+                                     {
+                                         "file":  "Frontend/public/sw.js",
+                                         "literal":  "/api/",
+                                         "normalizedPath":  "/api"
+                                     },
+                                     {
+                                         "file":  "Frontend/public/sw.js",
+                                         "literal":  "/api/",
+                                         "normalizedPath":  "/api"
                                      }
                                  ],
     "summary":  {
-                    "extractedApiCallLiteralCount":  132,
-                    "uniqueNormalizedFrontendApiPathCount":  98
+                    "extractedApiCallLiteralCount":  238,
+                    "uniqueNormalizedFrontendApiPathCount":  180
                 }
 }

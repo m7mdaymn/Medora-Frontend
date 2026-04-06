@@ -13,6 +13,21 @@ import { useParams } from 'next/navigation'
 import useSWR from 'swr'
 import { ProfileSwitcher } from '../../../../components/patient/profile-switcher'
 
+function getVisitTypeLabel(type?: string | null): string {
+  if (!type) return 'غير محدد'
+  if (type === 'Exam') return 'كشف'
+  if (type === 'Consultation') return 'استشارة'
+  return type
+}
+
+function getSourceLabel(source?: string | null, isFromBooking?: boolean): string {
+  if (isFromBooking) return 'حجز'
+  if (!source) return 'غير محدد'
+  if (source === 'WalkInTicket' || source === 'PatientSelfServiceTicket') return 'تذكرة'
+  if (source === 'Booking' || source === 'ConsultationBooking' || source === 'PatientSelfServiceBooking') return 'حجز'
+  return source
+}
+
 export default function PatientHomePage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
@@ -92,6 +107,14 @@ export default function PatientHomePage() {
                   <span className='text-[11px] font-bold text-muted-foreground truncate max-w-37.5'>
                     د. {ticket.doctorName}
                   </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='outline' className='text-[10px]'>
+                    {getVisitTypeLabel(ticket.visitType)}
+                  </Badge>
+                  <Badge variant='outline' className='text-[10px]'>
+                    {getSourceLabel(ticket.source, ticket.isFromBooking)}
+                  </Badge>
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
                   <div className='bg-background border border-border/40 rounded-xl p-2.5 flex items-center gap-2'>

@@ -24,34 +24,6 @@ public class WorkforceController : ControllerBase
 
     private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-    [HttpPost("doctors/{doctorId:guid}/compensation-rules")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
-    [ProducesResponseType(typeof(ApiResponse<DoctorCompensationRuleDto>), 201)]
-    [ProducesResponseType(typeof(ApiResponse), 400)]
-    public async Task<ActionResult<ApiResponse<DoctorCompensationRuleDto>>> CreateCompensationRule(Guid doctorId, [FromBody] CreateDoctorCompensationRuleRequest request, CancellationToken cancellationToken)
-    {
-        if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<DoctorCompensationRuleDto>.Error("Tenant context not resolved"));
-
-        var result = await _workforceService.CreateDoctorCompensationRuleAsync(_tenantContext.TenantId, doctorId, GetCurrentUserId(), request, cancellationToken);
-        if (!result.Success)
-            return BadRequest(result);
-
-        return StatusCode(201, result);
-    }
-
-    [HttpGet("doctors/{doctorId:guid}/compensation-rules")]
-    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
-    [ProducesResponseType(typeof(ApiResponse<List<DoctorCompensationRuleDto>>), 200)]
-    public async Task<ActionResult<ApiResponse<List<DoctorCompensationRuleDto>>>> ListCompensationRules(Guid doctorId, CancellationToken cancellationToken)
-    {
-        if (!_tenantContext.IsTenantResolved)
-            return BadRequest(ApiResponse<List<DoctorCompensationRuleDto>>.Error("Tenant context not resolved"));
-
-        var result = await _workforceService.ListDoctorCompensationRulesAsync(_tenantContext.TenantId, doctorId, cancellationToken);
-        return Ok(result);
-    }
-
     [HttpPost("attendance")]
     [Authorize(Roles = "ClinicOwner,ClinicManager,Receptionist,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<AttendanceRecordDto>), 201)]

@@ -52,6 +52,7 @@ public class ReportsService : IReportsService
             .ToListAsync();
 
         var invoiceSnapshots = invoices.ToDictionary(i => i.Id, ComputeFinancialSnapshot);
+        var totalCollectedAmount = invoiceSnapshots.Sum(x => x.Value.PaidAmount);
 
         var expenses = await _context.Expenses
             .Where(e => e.TenantId == tenantId && !e.IsDeleted && e.ExpenseDate >= start && e.ExpenseDate < endExclusive)
@@ -78,6 +79,9 @@ public class ReportsService : IReportsService
                 var estimatedCompensation = mode == DoctorCompensationMode.Percentage
                     ? collected * value / 100m
                     : value;
+                var collectedSharePercent = totalCollectedAmount <= 0m
+                    ? 0m
+                    : Math.Round((collected / totalCollectedAmount) * 100m, 2);
 
                 return new DoctorOverviewReportRowDto
                 {
@@ -85,6 +89,7 @@ public class ReportsService : IReportsService
                     DoctorName = group.Key.DoctorName,
                     VisitsCount = group.Count(),
                     CollectedAmount = collected,
+                    CollectedSharePercent = collectedSharePercent,
                     CompensationMode = mode,
                     CompensationValue = value,
                     EstimatedCompensationAmount = estimatedCompensation
@@ -92,6 +97,41 @@ public class ReportsService : IReportsService
             })
             .OrderByDescending(r => r.CollectedAmount)
             .ToList();
+
+        var doctorPercentages = doctorRows
+            .Select(row => new DoctorPercentageReportRowDto
+            {
+                DoctorId = row.DoctorId,
+                DoctorName = row.DoctorName,
+                CollectedAmount = row.CollectedAmount,
+                PercentageOfClinicCollection = row.CollectedSharePercent
+            })
+            .OrderByDescending(row => row.CollectedAmount)
+            .ToList();
+
+        var invoiceIds = invoices.Select(i => i.Id).Distinct().ToList();
+        var serviceRows = new List<ServiceSalesReportRowDto>();
+        if (invoiceIds.Count > 0)
+        {
+            var lineItems = await _context.InvoiceLineItems
+                .Where(li => li.TenantId == tenantId && !li.IsDeleted && invoiceIds.Contains(li.InvoiceId))
+                .ToListAsync();
+
+            serviceRows = lineItems
+                .GroupBy(li => string.IsNullOrWhiteSpace(li.ItemName) ? "Unspecified Service" : li.ItemName.Trim())
+                .Select(group => new ServiceSalesReportRowDto
+                {
+                    ServiceName = group.Key,
+                    Quantity = group.Sum(x => x.Quantity),
+                    GrossAmount = group.Sum(x => x.TotalPrice),
+                    InvoicesCount = group.Select(x => x.InvoiceId).Distinct().Count()
+                })
+                .OrderByDescending(row => row.Quantity)
+                .ThenByDescending(row => row.GrossAmount)
+                .ToList();
+        }
+
+        var topSoldService = serviceRows.FirstOrDefault();
 
         var report = new ClinicOverviewReportDto
         {
@@ -104,11 +144,14 @@ public class ReportsService : IReportsService
             WalkInVisits = visits.Count(v => v.Source == VisitSource.WalkInTicket),
             SelfServiceVisits = visits.Count(v => IsSelfServiceSource(v.Source)),
             TotalInvoiced = invoices.Sum(i => i.Amount),
-            TotalCollected = invoiceSnapshots.Sum(x => x.Value.PaidAmount),
+            TotalCollected = totalCollectedAmount,
             TotalRefunded = invoiceSnapshots.Sum(x => x.Value.RefundedAmount),
             TotalExpenses = expenses.Sum(e => e.Amount),
-            NetCashflow = invoiceSnapshots.Sum(x => x.Value.PaidAmount) - expenses.Sum(e => e.Amount),
-            Doctors = doctorRows
+            NetCashflow = totalCollectedAmount - expenses.Sum(e => e.Amount),
+            Doctors = doctorRows,
+            DoctorsPercentages = doctorPercentages,
+            ServicesSold = serviceRows,
+            TopSoldService = topSoldService
         };
 
         return ApiResponse<ClinicOverviewReportDto>.Ok(report, "Overview report generated");

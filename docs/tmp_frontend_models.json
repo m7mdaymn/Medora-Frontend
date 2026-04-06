@@ -293,6 +293,92 @@
                            "exportCount":  5
                        },
                        {
+                           "file":  "Frontend/types/inventory.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "InventoryItemType"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInventoryItemImage"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInventoryItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInventoryItemsQuery"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInventoryItemPayload"
+                                           }
+                                       ],
+                           "exportCount":  5
+                       },
+                       {
+                           "file":  "Frontend/types/marketplace.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MarketplaceOrderStatus"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicMarketplaceItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IMarketplaceOrderItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISalesInvoiceLineItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISalesInvoice"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IMarketplaceOrder"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IMarketplaceOrdersQuery"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IUpdateMarketplaceOrderStatusPayload"
+                                           }
+                                       ],
+                           "exportCount":  8
+                       },
+                       {
+                           "file":  "Frontend/types/messages.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MessageChannel"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MessageStatus"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IMessageLog"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISendMessagePayload"
+                                           }
+                                       ],
+                           "exportCount":  4
+                       },
+                       {
                            "file":  "Frontend/types/notes.ts",
                            "exports":  [
                                            {
@@ -301,6 +387,32 @@
                                            }
                                        ],
                            "exportCount":  1
+                       },
+                       {
+                           "file":  "Frontend/types/notifications.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "InAppNotificationType"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "INotificationSubscription"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IInAppNotification"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "INotificationSubscriptionPayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISendNotificationPayload"
+                                           }
+                                       ],
+                           "exportCount":  5
                        },
                        {
                            "file":  "Frontend/types/partner.ts",
@@ -318,6 +430,10 @@
                                                "name":  "PartnerSettlementTarget"
                                            },
                                            {
+                                               "kind":  "type",
+                                               "name":  "IUpdatePartnerPayload"
+                                           },
+                                           {
                                                "kind":  "interface",
                                                "name":  "IPartnerOrderStatusHistory"
                                            },
@@ -331,6 +447,14 @@
                                            },
                                            {
                                                "kind":  "interface",
+                                               "name":  "ICreatePartnerServicePayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IUpdatePartnerServicePayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
                                                "name":  "IPartnerUser"
                                            },
                                            {
@@ -339,10 +463,26 @@
                                            },
                                            {
                                                "kind":  "interface",
+                                               "name":  "IPartnerContract"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreatePartnerPayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ICreatePartnerContractPayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IUpdatePartnerContractPayload"
+                                           },
+                                           {
+                                               "kind":  "interface",
                                                "name":  "IPartnerTimelineItem"
                                            }
                                        ],
-                           "exportCount":  9
+                           "exportCount":  16
                        },
                        {
                            "file":  "Frontend/types/patient.ts",
@@ -375,18 +515,40 @@
                                            },
                                            {
                                                "kind":  "interface",
-                                               "name":  "ICreditBalance"
-                                           },
-                                           {
-                                               "kind":  "interface",
-                                               "name":  "ICreditHistoryItem"
-                                           },
-                                           {
-                                               "kind":  "interface",
                                                "name":  "IPatientPartnerOrderTimelineItem"
                                            }
                                        ],
-                           "exportCount":  4
+                           "exportCount":  2
+                       },
+                       {
+                           "file":  "Frontend/types/patient-medical.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DocumentCategory"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "MedicalDocumentThreadStatus"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientMedicalDocument"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientMedicalDocumentThreadReply"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientMedicalDocumentThread"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPatientChronicProfile"
+                                           }
+                                       ],
+                           "exportCount":  6
                        },
                        {
                            "file":  "Frontend/types/platform.ts",
@@ -416,9 +578,25 @@
                                            {
                                                "kind":  "interface",
                                                "name":  "IPublicWorkingHour"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicPaymentMethod"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicPaymentOptions"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicMarketplaceItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IPublicLanding"
                                            }
                                        ],
-                           "exportCount":  4
+                           "exportCount":  8
                        },
                        {
                            "file":  "Frontend/types/queue.ts",
@@ -426,6 +604,14 @@
                                            {
                                                "kind":  "type",
                                                "name":  "TicketStatus"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "QueueVisitType"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "QueueVisitSource"
                                            },
                                            {
                                                "kind":  "interface",
@@ -448,7 +634,67 @@
                                                "name":  "ICreateTicketResponse"
                                            }
                                        ],
-                           "exportCount":  6
+                           "exportCount":  8
+                       },
+                       {
+                           "file":  "Frontend/types/reporting.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorCompensationMode"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorOverviewReportRow"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IClinicOverviewReport"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IServiceSalesReportRow"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IServicesSalesReport"
+                                           }
+                                       ],
+                           "exportCount":  5
+                       },
+                       {
+                           "file":  "Frontend/types/self-service.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "SelfServiceRequestType"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "SelfServiceRequestStatus"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISelfServiceRequestListItem"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISelfServiceRequestDocument"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISelfServicePaymentProof"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISelfServiceRequest"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISelfServiceRequestsQuery"
+                                           }
+                                       ],
+                           "exportCount":  7
                        },
                        {
                            "file":  "Frontend/types/services.ts",
@@ -511,6 +757,10 @@
                                            },
                                            {
                                                "kind":  "type",
+                                               "name":  "VisitSource"
+                                           },
+                                           {
+                                               "kind":  "type",
                                                "name":  "LifecycleState"
                                            },
                                            {
@@ -520,6 +770,14 @@
                                            {
                                                "kind":  "type",
                                                "name":  "LabRequestType"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorCompensationMode"
+                                           },
+                                           {
+                                               "kind":  "type",
+                                               "name":  "TicketStatus"
                                            },
                                            {
                                                "kind":  "interface",
@@ -554,7 +812,37 @@
                                                "name":  "DoctorVisitFieldConfig"
                                            }
                                        ],
-                           "exportCount":  13
+                           "exportCount":  16
+                       },
+                       {
+                           "file":  "Frontend/types/workforce.ts",
+                           "exports":  [
+                                           {
+                                               "kind":  "type",
+                                               "name":  "DoctorCompensationMode"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDoctorCompensationRule"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IAttendanceRecord"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IAbsenceRecord"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "ISalaryPayoutExpense"
+                                           },
+                                           {
+                                               "kind":  "interface",
+                                               "name":  "IDailyClosingSnapshot"
+                                           }
+                                       ],
+                           "exportCount":  6
                        },
                        {
                            "file":  "Frontend/validation/booking.ts",
@@ -768,7 +1056,7 @@
                        }
                    ],
     "summary":  {
-                    "modelTypeFileCount":  37,
-                    "modelTypeExportCount":  136
+                    "modelTypeFileCount":  45,
+                    "modelTypeExportCount":  196
                 }
 }

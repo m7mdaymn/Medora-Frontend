@@ -22,7 +22,6 @@ public class ClinicSettingsDto
     public Dictionary<string, string> SocialLinks { get; set; } = new();
     public bool BookingEnabled { get; set; }
     public int CancellationWindowHours { get; set; }
-    public bool RetainCreditOnNoShow { get; set; }
     public PatientSelfServicePaymentPolicy SelfServicePaymentPolicy { get; set; }
     public int SelfServiceRequestExpiryHours { get; set; }
     public List<WorkingHourDto> WorkingHours { get; set; } = new();
@@ -55,7 +54,6 @@ public class UpdateClinicSettingsRequest
     public string? Description { get; set; }
     public Dictionary<string, string>? SocialLinks { get; set; }
     public bool BookingEnabled { get; set; }
-    public bool RetainCreditOnNoShow { get; set; }
     public PatientSelfServicePaymentPolicy SelfServicePaymentPolicy { get; set; } = PatientSelfServicePaymentPolicy.FullOnly;
 
     [Range(0, 168, ErrorMessage = "CancellationWindowHours must be between 0 and 168")]
@@ -80,7 +78,6 @@ public class PatchClinicSettingsRequest
     public string? Description { get; set; }
     public Dictionary<string, string>? SocialLinks { get; set; }
     public bool? BookingEnabled { get; set; }
-    public bool? RetainCreditOnNoShow { get; set; }
     public PatientSelfServicePaymentPolicy? SelfServicePaymentPolicy { get; set; }
     [Range(0, 168)] public int? CancellationWindowHours { get; set; }
     [Range(1, 168)] public int? SelfServiceRequestExpiryHours { get; set; }

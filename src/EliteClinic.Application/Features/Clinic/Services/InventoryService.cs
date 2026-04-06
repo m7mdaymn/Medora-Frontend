@@ -11,11 +11,16 @@ public class InventoryService : IInventoryService
 {
     private readonly EliteClinicDbContext _context;
     private readonly IInvoiceService _invoiceService;
+    private readonly IBranchAccessService _branchAccessService;
 
-    public InventoryService(EliteClinicDbContext context, IInvoiceService invoiceService)
+    public InventoryService(
+        EliteClinicDbContext context,
+        IInvoiceService invoiceService,
+        IBranchAccessService branchAccessService)
     {
         _context = context;
         _invoiceService = invoiceService;
+        _branchAccessService = branchAccessService;
     }
 
     public async Task<ApiResponse<InventoryItemDto>> CreateItemAsync(Guid tenantId, CreateInventoryItemRequest request)
@@ -155,7 +160,7 @@ public class InventoryService : IInventoryService
         return ApiResponse<InventoryItemDto>.Ok(MapItem(updated), "Inventory item updated successfully");
     }
 
-    public async Task<ApiResponse<InventoryItemDto>> GetItemByIdAsync(Guid tenantId, Guid itemId)
+    public async Task<ApiResponse<InventoryItemDto>> GetItemByIdAsync(Guid tenantId, Guid callerUserId, Guid itemId)
     {
         var entity = await _context.InventoryItems
             .Include(i => i.Branch)
@@ -165,16 +170,55 @@ public class InventoryService : IInventoryService
         if (entity == null)
             return ApiResponse<InventoryItemDto>.Error("Inventory item not found");
 
+        var scopedBranchIds = await _branchAccessService.GetScopedBranchIdsAsync(tenantId, callerUserId);
+        if (scopedBranchIds != null && !scopedBranchIds.Contains(entity.BranchId))
+            return ApiResponse<InventoryItemDto>.Error("Inventory item not found");
+
         return ApiResponse<InventoryItemDto>.Ok(MapItem(entity), "Inventory item retrieved successfully");
     }
 
-    public async Task<ApiResponse<PagedResult<InventoryItemDto>>> ListItemsAsync(Guid tenantId, InventoryItemsQuery query)
+    public async Task<ApiResponse<PagedResult<InventoryItemDto>>> ListItemsAsync(Guid tenantId, Guid callerUserId, InventoryItemsQuery query)
     {
+        var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+        var pageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 200);
+
+        var scopedBranchIds = await _branchAccessService.GetScopedBranchIdsAsync(tenantId, callerUserId);
+        if (scopedBranchIds != null)
+        {
+            if (query.BranchId.HasValue && !scopedBranchIds.Contains(query.BranchId.Value))
+            {
+                return ApiResponse<PagedResult<InventoryItemDto>>.Ok(new PagedResult<InventoryItemDto>
+                {
+                    Items = new List<InventoryItemDto>(),
+                    TotalCount = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                }, "No accessible inventory items for requested branch");
+            }
+
+            if (scopedBranchIds.Count == 0)
+            {
+                return ApiResponse<PagedResult<InventoryItemDto>>.Ok(new PagedResult<InventoryItemDto>
+                {
+                    Items = new List<InventoryItemDto>(),
+                    TotalCount = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                }, "No accessible branches for current user");
+            }
+        }
+
         var q = _context.InventoryItems
             .Include(i => i.Branch)
             .Include(i => i.Images.Where(img => !img.IsDeleted))
             .Where(i => i.TenantId == tenantId && !i.IsDeleted)
             .AsQueryable();
+
+        if (scopedBranchIds != null)
+        {
+            var branchIds = scopedBranchIds.ToList();
+            q = q.Where(i => branchIds.Contains(i.BranchId));
+        }
 
         if (query.ActiveOnly)
             q = q.Where(i => i.Active);
@@ -201,9 +245,6 @@ public class InventoryService : IInventoryService
                 || i.SkuCode.ToLower().Contains(search)
                 || (i.Description != null && i.Description.ToLower().Contains(search)));
         }
-
-        var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
-        var pageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 200);
 
         var total = await q.CountAsync();
         var rows = await q

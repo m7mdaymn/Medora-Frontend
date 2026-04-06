@@ -45,7 +45,10 @@ public class Phase3InventoryMarketplaceTests
         Assert.True(created.Success);
         Assert.Equal("Amoxicillin", created.Data!.Name);
 
-        var list = await inventoryService.ListItemsAsync(tenantId, new InventoryItemsQuery { BranchId = seed.BranchId });
+        var list = await inventoryService.ListItemsAsync(
+            tenantId,
+            seed.OwnerUserId,
+            new InventoryItemsQuery { BranchId = seed.BranchId });
         Assert.True(list.Success);
         Assert.Contains(list.Data!.Items, i => i.Id == created.Data.Id);
 
@@ -591,7 +594,8 @@ public class Phase3InventoryMarketplaceTests
     private static InventoryService BuildInventoryService(EliteClinicDbContext ctx)
     {
         var invoiceService = new InvoiceService(ctx, new SequentialInvoiceNumberService());
-        return new InventoryService(ctx, invoiceService);
+        var branchAccessService = new BranchAccessService(ctx);
+        return new InventoryService(ctx, invoiceService, branchAccessService);
     }
 
     private static async Task<string> GetTenantSlugAsync(EliteClinicDbContext ctx, Guid tenantId)

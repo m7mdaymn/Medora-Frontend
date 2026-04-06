@@ -630,6 +630,109 @@ public class QueueWithPaymentCompatibilityTests
         await conn.DisposeAsync();
     }
 
+    [Fact]
+    public async Task QueueTicket_IsFromBooking_ShouldBeTrue_ForAllBookingSources()
+    {
+        var tenantId = Guid.NewGuid();
+        var (ctx, conn) = DbContextFactory.Create(tenantId);
+
+        var seeded = await SeedCoreAsync(ctx, tenantId);
+        var patient2User = new ApplicationUser("pat-booking-2", "Patient B2") { TenantId = tenantId };
+        var patient3User = new ApplicationUser("pat-booking-3", "Patient B3") { TenantId = tenantId };
+        var patient2 = new Patient { TenantId = tenantId, UserId = patient2User.Id, Name = "Patient B2", Phone = "222" };
+        var patient3 = new Patient { TenantId = tenantId, UserId = patient3User.Id, Name = "Patient B3", Phone = "333" };
+
+        ctx.Users.AddRange(patient2User, patient3User);
+        ctx.Patients.AddRange(patient2, patient3);
+        await ctx.SaveChangesAsync();
+
+        var bookingTicket = new QueueTicket
+        {
+            TenantId = tenantId,
+            SessionId = seeded.Session.Id,
+            PatientId = seeded.Patient.Id,
+            DoctorId = seeded.Doctor.Id,
+            Source = VisitSource.Booking,
+            TicketNumber = 1,
+            Status = TicketStatus.Waiting,
+            IssuedAt = DateTime.UtcNow.AddMinutes(-3)
+        };
+        var consultationBookingTicket = new QueueTicket
+        {
+            TenantId = tenantId,
+            SessionId = seeded.Session.Id,
+            PatientId = patient2.Id,
+            DoctorId = seeded.Doctor.Id,
+            Source = VisitSource.ConsultationBooking,
+            TicketNumber = 2,
+            Status = TicketStatus.Waiting,
+            IssuedAt = DateTime.UtcNow.AddMinutes(-2)
+        };
+        var selfServiceBookingTicket = new QueueTicket
+        {
+            TenantId = tenantId,
+            SessionId = seeded.Session.Id,
+            PatientId = patient3.Id,
+            DoctorId = seeded.Doctor.Id,
+            Source = VisitSource.PatientSelfServiceBooking,
+            TicketNumber = 3,
+            Status = TicketStatus.Waiting,
+            IssuedAt = DateTime.UtcNow.AddMinutes(-1)
+        };
+
+        ctx.QueueTickets.AddRange(bookingTicket, consultationBookingTicket, selfServiceBookingTicket);
+        ctx.Visits.AddRange(
+            new Visit
+            {
+                TenantId = tenantId,
+                QueueTicketId = bookingTicket.Id,
+                DoctorId = seeded.Doctor.Id,
+                PatientId = seeded.Patient.Id,
+                VisitType = VisitType.Exam,
+                Source = VisitSource.Booking,
+                Status = VisitStatus.Open,
+                StartedAt = DateTime.UtcNow.AddMinutes(-3)
+            },
+            new Visit
+            {
+                TenantId = tenantId,
+                QueueTicketId = consultationBookingTicket.Id,
+                DoctorId = seeded.Doctor.Id,
+                PatientId = patient2.Id,
+                VisitType = VisitType.Consultation,
+                Source = VisitSource.ConsultationBooking,
+                Status = VisitStatus.Open,
+                StartedAt = DateTime.UtcNow.AddMinutes(-2)
+            },
+            new Visit
+            {
+                TenantId = tenantId,
+                QueueTicketId = selfServiceBookingTicket.Id,
+                DoctorId = seeded.Doctor.Id,
+                PatientId = patient3.Id,
+                VisitType = VisitType.Consultation,
+                Source = VisitSource.PatientSelfServiceBooking,
+                Status = VisitStatus.Open,
+                StartedAt = DateTime.UtcNow.AddMinutes(-1)
+            });
+        await ctx.SaveChangesAsync();
+
+        var queueService = BuildQueueService(ctx);
+        var board = await queueService.GetBoardAsync(tenantId);
+
+        Assert.True(board.Success);
+        var waitingTickets = board.Data!.Sessions
+            .SelectMany(s => s.WaitingTickets)
+            .ToDictionary(t => t.Id);
+
+        Assert.True(waitingTickets[bookingTicket.Id].IsFromBooking);
+        Assert.True(waitingTickets[consultationBookingTicket.Id].IsFromBooking);
+        Assert.True(waitingTickets[selfServiceBookingTicket.Id].IsFromBooking);
+
+        await ctx.DisposeAsync();
+        await conn.DisposeAsync();
+    }
+
     private static QueueService BuildQueueService(EliteClinic.Infrastructure.Data.EliteClinicDbContext ctx)
     {
         return new QueueService(ctx, new FakeMessageService(), new FakeInvoiceNumberService());

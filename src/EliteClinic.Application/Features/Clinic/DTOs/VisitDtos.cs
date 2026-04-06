@@ -10,6 +10,7 @@ public class VisitDto
     public Guid? BranchId { get; set; }
     public VisitType VisitType { get; set; }
     public VisitSource Source { get; set; }
+    public bool IsBookingSource { get; set; }
     public Guid? QueueTicketId { get; set; }
     public Guid DoctorId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
@@ -19,6 +20,10 @@ public class VisitDto
     public DateTime? PatientDateOfBirth { get; set; }
     public string PatientGender { get; set; } = string.Empty;
     public string? ServiceName { get; set; }
+    public decimal? ServicePrice { get; set; }
+    public DoctorCompensationMode? DoctorCompensationMode { get; set; }
+    public decimal? DoctorCompensationValue { get; set; }
+    public decimal? EstimatedDoctorCompensationAmount { get; set; }
     public TicketStatus? TicketStatus { get; set; }
     public DateTime? TicketCancelledAt { get; set; }
     public bool IsCancelled { get; set; }

@@ -4,6 +4,8 @@ export enum UrgentCaseMode {
   UrgentFront = 2,
 }
 
+export type DoctorCompensationMode = 'Salary' | 'Percentage' | 'FixedPerVisit'
+
 export interface IDoctorService {
   id?: string
   serviceName: string
@@ -38,6 +40,9 @@ export interface IDoctor {
   urgentInsertAfterCount: number
   supportsUrgent: boolean // <-- جديد
   avgVisitDurationMinutes: number
+  compensationMode: DoctorCompensationMode
+  compensationValue: number
+  compensationEffectiveFrom: string
   services: IDoctorService[]
   visitFieldConfig: IDoctorVisitConfig
   createdAt: string

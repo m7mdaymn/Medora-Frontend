@@ -70,6 +70,7 @@ public class StaffController : ControllerBase
     /// List all staff members (paginated)
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = "ClinicOwner,ClinicManager,SuperAdmin")]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<StaffDto>>), 200)]
     public async Task<ActionResult<ApiResponse<PagedResult<StaffDto>>>> GetAllStaff(
         [FromQuery] int pageNumber = 1,

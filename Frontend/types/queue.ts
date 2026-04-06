@@ -7,15 +7,36 @@ export type TicketStatus =
   | 'NoShow'
   | 'Cancelled'
 
+export type QueueVisitType = 'Exam' | 'Consultation' | string
+export type QueueVisitSource =
+  | 'WalkInTicket'
+  | 'Booking'
+  | 'ConsultationBooking'
+  | 'PatientSelfServiceTicket'
+  | 'PatientSelfServiceBooking'
+  | string
+
 export interface IQueueTicket {
   id: string
   sessionId: string
+  branchId?: string | null
+  visitId?: string | null
+  invoiceId?: string | null
   patientId: string
   patientName: string
   doctorId: string
   doctorName: string
+  source: QueueVisitSource
+  visitType?: QueueVisitType | null
+  isFromBooking?: boolean
+  isFromWalkIn?: boolean
+  isFromSelfService?: boolean
   doctorServiceId?: string | null
   serviceName?: string | null
+  invoiceAmount?: number | null
+  paidAmount?: number | null
+  remainingAmount?: number | null
+  invoiceStatus?: string | null
   ticketNumber: number
   status: TicketStatus
   isUrgent: boolean

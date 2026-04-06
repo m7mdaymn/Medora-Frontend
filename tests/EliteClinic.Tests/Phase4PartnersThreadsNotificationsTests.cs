@@ -263,7 +263,7 @@ public class Phase4PartnersThreadsNotificationsTests
         var timeline = await partnerService.GetPatientTimelineAsync(tenantId, seed.PatientUserId, seed.PatientId);
         Assert.True(timeline.Success);
         Assert.NotEmpty(timeline.Data!);
-        var timelineItem = Assert.Single(timeline.Data!.Where(i => i.Id == orderId));
+        var timelineItem = Assert.Single(timeline.Data!, i => i.Id == orderId);
         Assert.Equal(PartnerOrderStatus.Completed, timelineItem.Status);
         Assert.Equal("All markers within normal range", timelineItem.ResultSummary);
 

@@ -674,8 +674,6 @@ public class QueueService : IQueueService
             if (invoice != null)
             {
                 invoice.IsServiceRendered = true;
-                invoice.CreditAmount = 0;
-                invoice.CreditIssuedAt = null;
             }
         }
 
@@ -765,8 +763,6 @@ public class QueueService : IQueueService
                 invoice.Amount = 0;
                 invoice.PaidAmount = 0;
                 invoice.RemainingAmount = 0;
-                invoice.CreditAmount = 0;
-                invoice.CreditIssuedAt = null;
                 invoice.HasPendingSettlement = false;
                 invoice.PendingSettlementAmount = 0;
                 invoice.Status = InvoiceStatus.Refunded;
@@ -1032,7 +1028,7 @@ public class QueueService : IQueueService
             DoctorId = t.DoctorId,
             DoctorName = t.Doctor?.Name ?? string.Empty,
             Source = t.Source,
-            IsFromBooking = t.Source == VisitSource.Booking,
+            IsFromBooking = IsBookingSource(t.Source),
             IsFromWalkIn = t.Source == VisitSource.WalkInTicket,
             IsFromSelfService = IsSelfServiceSource(t.Source),
             DoctorServiceId = t.DoctorServiceId,
@@ -1105,7 +1101,17 @@ public class QueueService : IQueueService
             .GroupBy(v => v.QueueTicketId!.Value)
             .ToDictionary(g => g.Key, g => g.First());
 
-        if (!visitByTicketId.Any())
+        var bookings = await _context.Bookings
+            .Where(b => b.TenantId == tenantId && !b.IsDeleted && b.QueueTicketId.HasValue && ticketIds.Contains(b.QueueTicketId.Value))
+            .Select(b => new { b.QueueTicketId, b.VisitType, b.Source })
+            .ToListAsync();
+
+        var bookingByTicketId = bookings
+            .Where(b => b.QueueTicketId.HasValue)
+            .GroupBy(b => b.QueueTicketId!.Value)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        if (!visitByTicketId.Any() && !bookingByTicketId.Any())
             return;
 
         var visitIds = visitByTicketId.Values.Select(v => v.Id).ToList();
@@ -1121,17 +1127,31 @@ public class QueueService : IQueueService
 
         foreach (var ticket in tickets)
         {
-            if (!visitByTicketId.TryGetValue(ticket.Id, out var visitInfo))
+            var hasVisit = visitByTicketId.TryGetValue(ticket.Id, out var visitInfo);
+            if (hasVisit)
+            {
+                var visitId = visitInfo!.Id;
+                ticket.VisitId = visitId;
+                ticket.VisitType = visitInfo.VisitType;
+                ticket.Source = visitInfo.Source;
+                ticket.IsFromBooking = IsBookingSource(visitInfo.Source);
+                ticket.IsFromWalkIn = visitInfo.Source == VisitSource.WalkInTicket;
+                ticket.IsFromSelfService = IsSelfServiceSource(visitInfo.Source);
+            }
+            else if (bookingByTicketId.TryGetValue(ticket.Id, out var bookingInfo))
+            {
+                ticket.VisitType = bookingInfo.VisitType;
+                ticket.Source = bookingInfo.Source;
+                ticket.IsFromBooking = IsBookingSource(bookingInfo.Source);
+                ticket.IsFromWalkIn = bookingInfo.Source == VisitSource.WalkInTicket;
+                ticket.IsFromSelfService = IsSelfServiceSource(bookingInfo.Source);
+            }
+
+            if (!hasVisit || visitInfo == null)
                 continue;
 
-            var visitId = visitInfo.Id;
-            ticket.VisitId = visitId;
-            ticket.VisitType = visitInfo.VisitType;
-            ticket.Source = visitInfo.Source;
-            ticket.IsFromBooking = visitInfo.Source == VisitSource.Booking;
-            ticket.IsFromWalkIn = visitInfo.Source == VisitSource.WalkInTicket;
-            ticket.IsFromSelfService = IsSelfServiceSource(visitInfo.Source);
-            if (!invoiceByVisitId.TryGetValue(visitId, out var invoice))
+            var visitIdForInvoice = visitInfo.Id;
+            if (!invoiceByVisitId.TryGetValue(visitIdForInvoice, out var invoice))
                 continue;
             ticket.InvoiceId = invoice.Id;
 
@@ -1221,6 +1241,13 @@ public class QueueService : IQueueService
     private static bool IsSelfServiceSource(VisitSource source)
     {
         return source == VisitSource.PatientSelfServiceTicket
+            || source == VisitSource.PatientSelfServiceBooking;
+    }
+
+    private static bool IsBookingSource(VisitSource source)
+    {
+        return source == VisitSource.Booking
+            || source == VisitSource.ConsultationBooking
             || source == VisitSource.PatientSelfServiceBooking;
     }
 
@@ -1333,8 +1360,6 @@ public class QueueService : IQueueService
         invoice.Amount = 0;
         invoice.PaidAmount = 0;
         invoice.RemainingAmount = 0;
-        invoice.CreditAmount = 0;
-        invoice.CreditIssuedAt = null;
         invoice.HasPendingSettlement = false;
         invoice.PendingSettlementAmount = 0;
         invoice.Status = InvoiceStatus.Refunded;
