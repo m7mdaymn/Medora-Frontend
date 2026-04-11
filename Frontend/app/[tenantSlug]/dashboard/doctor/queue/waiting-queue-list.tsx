@@ -9,22 +9,24 @@ interface Props {
   waitingCount: number
 }
 
-function getVisitTypeLabel(type?: string | null): string {
-  if (!type) return 'غير محدد'
-  if (type === 'Exam') return 'كشف'
-  if (type === 'Consultation') return 'استشارة'
-  return type
-}
-
-function getSourceLabel(ticket: IQueueTicket): string {
-  if (ticket.isFromBooking) return 'حجز'
-  if (ticket.isFromWalkIn) return 'تذكرة'
-  if (ticket.isFromSelfService) return 'ذاتي'
-  return ticket.source || 'غير محدد'
-}
-
 export function WaitingQueueList({ waitingTickets, waitingCount }: Props) {
-  if (waitingTickets.length === 0) return null // لو مفيش مرضى، مفيش داعي نعرض مساحة فاضية كبيرة تحت
+  if (waitingTickets.length === 0) return null
+
+  const getVisitTypeLabel = (value?: string | null) => {
+    if (value === 'Consultation') return 'استشارة'
+    if (value === 'Exam') return 'كشف'
+    return null
+  }
+
+  const getSourceLabel = (value?: string | null) => {
+    if (!value) return null
+    if (value === 'Booking' || value === 'ConsultationBooking') return 'حجز'
+    if (value === 'PatientSelfServiceTicket' || value === 'PatientSelfServiceBooking') {
+      return 'خدمة ذاتية'
+    }
+    if (value === 'WalkInTicket') return 'حضور مباشر'
+    return null
+  }
 
   return (
     <div className='mt-8'>
@@ -69,22 +71,21 @@ export function WaitingQueueList({ waitingTickets, waitingCount }: Props) {
                       {ticket.serviceName}
                     </span>
                   )}
-                  <Badge variant='outline' className='px-1.5 py-0 text-[10px]'>
-                    {getVisitTypeLabel(ticket.visitType)}
-                  </Badge>
-                  <Badge variant='outline' className='px-1.5 py-0 text-[10px]'>
-                    {getSourceLabel(ticket)}
-                  </Badge>
                   <span className='flex items-center gap-1'>
                     <Clock className='w-3.5 h-3.5' />
-                    {ticket.calledAt
-                      ? new Date(ticket.calledAt).toLocaleTimeString('ar-EG', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : '--'}
+                    {/* 🔥 التعديل هنا: استخدمنا issuedAt بدل calledAt لأن المريض لسه في الانتظار */}
+                    {new Date(ticket.issuedAt).toLocaleTimeString('ar-EG', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </span>
                 </div>
+                {(getVisitTypeLabel(ticket.visitType) || getSourceLabel(ticket.source)) && (
+                  <div className='mt-2 text-[11px] text-muted-foreground'>
+                    {getVisitTypeLabel(ticket.visitType) || 'زيارة'}
+                    {getSourceLabel(ticket.source) ? ` • ${getSourceLabel(ticket.source)}` : ''}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )

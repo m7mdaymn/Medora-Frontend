@@ -9,7 +9,10 @@ import { ILogin } from '../../types/auth'
 export async function superAdminLoginAction(data: LoginInput): Promise<BaseApiResponse<ILogin>> {
   const res = await fetchApi<ILogin>('/api/Auth/login', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      portalType: 'Platform',
+    }),
   })
 
   if (!res.success || !res.data) {

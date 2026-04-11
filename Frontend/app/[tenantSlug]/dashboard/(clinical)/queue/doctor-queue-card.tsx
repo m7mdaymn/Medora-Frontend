@@ -1,14 +1,7 @@
 'use client'
 
 import { closeQueueSession } from '@/actions/queue/sessions'
-import {
-  callTicketAction,
-  cancelTicket,
-  finishTicketAction,
-  markTicketUrgent,
-  skipTicketAction,
-  startVisitAction,
-} from '@/actions/queue/tickets'
+import { cancelTicket, markTicketUrgent } from '@/actions/queue/tickets'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { BaseApiResponse } from '@/types/api'
-import { ICreateTicketResponse, IQueueBoardSession, IQueueTicket } from '@/types/queue'
-import { ArrowUp, CheckCircle2, FastForward, MoreHorizontal, PlayCircle, Power, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { IQueueBoardSession } from '@/types/queue'
+import { ArrowUp, MoreHorizontal, Power, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { mutate } from 'swr'
 
@@ -44,101 +34,65 @@ interface DoctorQueueCardProps {
 }
 
 export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
-  const router = useRouter()
-  const [isPendingAction, setIsPendingAction] = useState(false)
-
-  // 1. الداتا بتتعرض زي ما الباك إند باعتها بدون أي تلاعب في الترتيب
   const waitlist = session.waitingTickets || []
-  // 2. متغيرات حالة الطابور عشان الـ Force Close
+
+  const getVisitTypeLabel = (value?: string | null) => {
+    if (value === 'Consultation') return 'استشارة'
+    if (value === 'Exam') return 'كشف'
+    return null
+  }
+
+  const getSourceLabel = (value?: string | null) => {
+    if (!value) return null
+    if (value === 'Booking' || value === 'ConsultationBooking') return 'حجز'
+    if (value === 'PatientSelfServiceTicket' || value === 'PatientSelfServiceBooking') {
+      return 'خدمة ذاتية'
+    }
+    if (value === 'WalkInTicket') return 'حضور مباشر'
+    return null
+  }
+
   const isPatientInVisit = !!session.currentTicket
   const hasWaitingPatients = waitlist.length > 0
 
-  const handleQueueLifecycleAction = async (
-    action: (
-      tenantSlug: string,
-      ticketId: string,
-    ) => Promise<BaseApiResponse<IQueueTicket | ICreateTicketResponse>>,
-    ticketId: string,
-    successMessage: string,
-  ) => {
-    setIsPendingAction(true)
-    try {
-      const res = await action(tenantSlug, ticketId)
-      if (!res.success) {
-        toast.error(res.message || 'لا يمكن تنفيذ الإجراء حالياً')
-        return
-      }
-
-      await mutate(['queueBoard', tenantSlug])
-
-      if (res.data && typeof res.data === 'object' && 'visitId' in res.data && res.data.visitId) {
-        router.push(`/${tenantSlug}/dashboard/doctor/visits/${res.data.visitId}`)
-        return
-      }
-
-      toast.success(res.message || successMessage)
-    } finally {
-      setIsPendingAction(false)
-    }
-  }
-  
   const handleCloseSession = async () => {
-    setIsPendingAction(true)
-    try {
-      // الإنهاء الإجباري بيتبعت بس لو فيه مريض لسه بيكشف جوه الأوضة
-      const res = await closeQueueSession(tenantSlug, session.sessionId, isPatientInVisit)
-      if (res.success) {
-        toast.success(`تم إنهاء شفت د. ${session.doctorName}`)
-        await mutate(['queueBoard', tenantSlug])
-      } else {
-        toast.error(res.message)
-      }
-    } finally {
-      setIsPendingAction(false)
+    // الإنهاء الإجباري بيتبعت بس لو فيه مريض لسه بيكشف جوه الأوضة
+    const res = await closeQueueSession(tenantSlug, session.sessionId)
+    if (res.success) {
+      toast.success(`تم إنهاء شفت د. ${session.doctorName}`)
+      await mutate(['queueBoard', tenantSlug])
+    } else {
+      toast.error(res.message)
     }
   }
 
   const handleUrgent = async (ticketId: string) => {
-    setIsPendingAction(true)
-    try {
-      const res = await markTicketUrgent(tenantSlug, ticketId)
-      if (res.success) {
-        toast.success('تم رفع الحالة لطوارئ')
-        await mutate(['queueBoard', tenantSlug])
-      } else {
-        toast.error(res.message)
-      }
-    } finally {
-      setIsPendingAction(false)
+    const res = await markTicketUrgent(tenantSlug, ticketId)
+    if (res.success) {
+      toast.success('تم رفع الحالة للاستعجال')
+      await mutate(['queueBoard', tenantSlug])
+    } else {
+      toast.error(res.message)
     }
   }
 
   const handleCancel = async (ticketId: string) => {
-    setIsPendingAction(true)
-    try {
-      const res = await cancelTicket(tenantSlug, ticketId)
-      if (res.success) {
-        toast.success('تم إلغاء التذكرة')
-        await mutate(['queueBoard', tenantSlug])
-      } else {
-        toast.error(res.message)
-      }
-    } finally {
-      setIsPendingAction(false)
+    const res = await cancelTicket(tenantSlug, ticketId)
+    if (res.success) {
+      toast.success('تم إلغاء التذكرة')
+      await mutate(['queueBoard', tenantSlug])
+    } else {
+      toast.error(res.message)
     }
   }
-
 
   return (
     <div className='flex flex-col h-full'>
       {/* Header */}
       <div className='flex items-center justify-between p-4 border-b bg-card'>
         <div className='flex items-center gap-3'>
-          <div className='h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold'>
-            {session.doctorName?.charAt(0) || '?'}
-          </div>
           <div>
-            <h2 className='font-semibold'>
+            <h2 className='font-black px-5'>
               {session.doctorName ? `د. ${session.doctorName}` : 'طبيب غير محدد'}
             </h2>
           </div>
@@ -168,11 +122,7 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>إلغاء</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleCloseSession}
-                disabled={isPendingAction}
-                variant={isPatientInVisit ? 'destructive' : 'default'}
-              >
+              <AlertDialogAction onClick={handleCloseSession} variant={'destructive'}>
                 {isPatientInVisit ? 'تأكيد الإنهاء الإجباري' : 'تأكيد الإغلاق'}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -194,77 +144,27 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                 </span>
                 <span>•</span>
                 <span>{session.currentTicket.serviceName || 'كشف'}</span>
+                {getVisitTypeLabel(session.currentTicket.visitType) && (
+                  <>
+                    <span>•</span>
+                    <span>{getVisitTypeLabel(session.currentTicket.visitType)}</span>
+                  </>
+                )}
+                {getSourceLabel(session.currentTicket.source) && (
+                  <>
+                    <span>•</span>
+                    <span>{getSourceLabel(session.currentTicket.source)}</span>
+                  </>
+                )}
               </div>
               {session.currentTicket.isUrgent && (
                 <Badge variant='destructive' className='mt-2'>
                   حالة طارئة
                 </Badge>
               )}
-
-              <div className='flex flex-wrap justify-center gap-2 pt-2'>
-                {session.currentTicket.status === 'Called' && (
-                  <>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      disabled={isPendingAction}
-                      onClick={() =>
-                        handleQueueLifecycleAction(
-                          skipTicketAction,
-                          session.currentTicket!.id,
-                          'تم تخطي المريض',
-                        )
-                      }
-                    >
-                      <FastForward className='h-4 w-4 ml-1' /> تخطي
-                    </Button>
-                    <Button
-                      size='sm'
-                      disabled={isPendingAction}
-                      onClick={() =>
-                        handleQueueLifecycleAction(
-                          startVisitAction,
-                          session.currentTicket!.id,
-                          'تم بدء الكشف',
-                        )
-                      }
-                    >
-                      <PlayCircle className='h-4 w-4 ml-1' /> بدء الكشف
-                    </Button>
-                  </>
-                )}
-
-                {session.currentTicket.status === 'InVisit' && (
-                  <Button
-                    size='sm'
-                    disabled={isPendingAction}
-                    onClick={() =>
-                      handleQueueLifecycleAction(
-                        finishTicketAction,
-                        session.currentTicket!.id,
-                        'تم إنهاء الزيارة',
-                      )
-                    }
-                  >
-                    <CheckCircle2 className='h-4 w-4 ml-1' /> إنهاء الزيارة
-                  </Button>
-                )}
-              </div>
             </>
           ) : (
-            <>
-              <p className='text-muted-foreground py-1'>بانتظار دخول المريض التالي...</p>
-              <Button
-                size='sm'
-                disabled={isPendingAction || waitlist.length === 0}
-                onClick={() =>
-                  handleQueueLifecycleAction(callTicketAction, waitlist[0].id, 'تم نداء المريض التالي')
-                }
-              >
-                <PlayCircle className='h-4 w-4 ml-1' />
-                {waitlist.length > 0 ? 'نداء المريض التالي' : 'قائمة الانتظار فارغة'}
-              </Button>
-            </>
+            <p className='text-muted-foreground py-4'>بانتظار دخول المريض التالي...</p>
           )}
         </div>
 
@@ -293,12 +193,16 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                         {ticket.patientName}
                         {ticket.isUrgent && (
                           <Badge variant='destructive' className='mr-2 text-[10px] h-4 px-1'>
-                            طوارئ
+                            استعجال
                           </Badge>
                         )}
                       </p>
                       <p className='text-xs text-muted-foreground mt-1'>
                         {ticket.serviceName || 'كشف عام'}
+                        {getVisitTypeLabel(ticket.visitType)
+                          ? ` • ${getVisitTypeLabel(ticket.visitType)}`
+                          : ''}
+                        {getSourceLabel(ticket.source) ? ` • ${getSourceLabel(ticket.source)}` : ''}
                       </p>
                     </div>
                   </div>
@@ -313,16 +217,12 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                     <DropdownMenuContent align='end'>
                       <DropdownMenuLabel>إجراءات</DropdownMenuLabel>
                       {!ticket.isUrgent && (
-                        <DropdownMenuItem
-                          disabled={isPendingAction}
-                          onClick={() => handleUrgent(ticket.id)}
-                        >
+                        <DropdownMenuItem onClick={() => handleUrgent(ticket.id)}>
                           <ArrowUp className='ml-2 h-4 w-4' /> استعجال
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        disabled={isPendingAction}
                         onClick={() => handleCancel(ticket.id)}
                         className='text-destructive focus:text-destructive'
                       >

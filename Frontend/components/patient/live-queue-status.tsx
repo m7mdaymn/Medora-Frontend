@@ -25,10 +25,8 @@ export function LiveQueueStatus({ tenantSlug }: { tenantSlug: string }) {
   }
 
   const ticket = response?.data
-
-  // TODO: هنستبدل دول لما الباك إند يبعتهم في الـ API زي ما اتفقنا
-  const mockedCurrentServing = ticket ? Math.max(1, ticket.ticketNumber - 2) : 0
-  const mockedPeopleAhead = ticket ? Math.max(0, ticket.ticketNumber - mockedCurrentServing - 1) : 0
+  const currentServingNumber = ticket?.currentServingNumber ?? null
+  const peopleAhead = ticket?.patientsAheadCount ?? null
 
   // 2. Empty State (Vercel Style: Dashed border, completely muted)
   if (!response?.success || !ticket) {
@@ -106,7 +104,7 @@ export function LiveQueueStatus({ tenantSlug }: { tenantSlug: string }) {
               يكشف الآن
             </span>
             <span className='text-xl font-mono font-medium text-foreground'>
-              {mockedCurrentServing > 0 ? `#${mockedCurrentServing}` : '--'}
+              {currentServingNumber !== null ? `#${currentServingNumber}` : '--'}
             </span>
           </div>
           <div className='p-4 flex flex-col items-center justify-center space-y-1'>
@@ -114,7 +112,7 @@ export function LiveQueueStatus({ tenantSlug }: { tenantSlug: string }) {
               أمامك
             </span>
             <span className='text-xl font-mono font-medium text-foreground'>
-              {mockedPeopleAhead > 0 ? `${mockedPeopleAhead}` : '0'}
+              {peopleAhead !== null ? `${peopleAhead}` : '0'}
             </span>
           </div>
         </div>

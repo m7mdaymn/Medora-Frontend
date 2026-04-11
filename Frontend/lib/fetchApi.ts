@@ -1,10 +1,11 @@
-import { getToken } from '../actions/auth/getToken'
+import { getAuthContext } from '../actions/auth/getToken'
 import { BaseApiResponse } from '../types/api'
 import { buildApiUrl } from './apiBaseUrl'
 
 interface FetchOptions extends RequestInit {
   tenantSlug?: string
   authType?: 'staff' | 'patient'
+  skipBranchSelection?: boolean
 }
 
 const FETCH_TIMEOUT_MS = 15000
@@ -56,12 +57,14 @@ export async function fetchApi<T>(
   const {
     tenantSlug,
     authType = 'staff',
+    skipBranchSelection = false,
     headers: customHeaders,
     signal: externalSignal,
     ...restOptions
   } = options
 
-  const token = await getToken(authType, tenantSlug)
+  const authContext = await getAuthContext(authType, tenantSlug)
+  const token = authContext.token
   const headers = new Headers(customHeaders)
 
   // هندلة الـ Content-Type بناءً على نوع الـ Body (عشان رفع الصور يشتغل)
@@ -76,8 +79,8 @@ export async function fetchApi<T>(
   if (tenantSlug) {
     headers.set('X-Tenant', tenantSlug)
 
-    if (authType === 'staff' && !headers.has('X-Branch')) {
-      const selectedBranchId = getSelectedBranchCookie(tenantSlug, headers)
+    if (authType === 'staff' && !skipBranchSelection && !headers.has('X-Branch')) {
+      const selectedBranchId = authContext.selectedBranchId || getSelectedBranchCookie(tenantSlug, headers)
       if (selectedBranchId) {
         headers.set('X-Branch', selectedBranchId)
       }

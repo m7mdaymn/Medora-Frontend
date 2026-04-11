@@ -1,7 +1,9 @@
 'use client'
 
 import { getBranchesAction } from '@/actions/branch/branches'
+import { GlobalSupportDrawer } from '@/components/support/global-support-drawer'
 import { useBranchSelectionStore } from '@/store/useBranchSelectionStore'
+import { useTenantStore } from '@/store/useTenantStore'
 import { IBranch } from '@/types/branch'
 import { Building2, User } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
@@ -29,6 +31,7 @@ export function AppHeader() {
   const router = useRouter()
   const params = useParams()
   const { user } = useAuthStore()
+  const tenantConfig = useTenantStore((state) => state.config)
   const [branches, setBranches] = useState<IBranch[]>([])
   const [isLoadingBranches, setIsLoadingBranches] = useState(false)
 
@@ -39,17 +42,45 @@ export function AppHeader() {
   const tenantSlugParam = params.tenantSlug
   const tenantSlug = Array.isArray(tenantSlugParam) ? tenantSlugParam[0] : tenantSlugParam
   const selectedBranchId = tenantSlug ? selectedBranchByTenant[tenantSlug] : undefined
+  const isAdminArea = pathname.startsWith('/admin')
 
   const isNotDoctor = user?.role !== 'Doctor'
-  const canManageBranches =
-    user?.role === 'ClinicOwner' ||
-    user?.role === 'BranchManager' ||
-    Boolean(user?.permissions?.includes('branch.manage'))
+  const canManageBranches = user?.role === 'ClinicOwner' || user?.role === 'SuperAdmin'
 
   const canSelectBranch = useMemo(() => {
     if (!user || !tenantSlug) return false
     return user.role !== 'SuperAdmin' && user.role !== 'Worker'
   }, [tenantSlug, user])
+
+  const supportLinks = useMemo(() => {
+    if (isAdminArea) {
+      if (user?.role === 'Worker') {
+        return [{ label: 'إدارة العيادات', href: '/admin/tenants' }]
+      }
+
+      return [
+        { label: 'دعم المنصة', href: '/admin/support' },
+        { label: 'إدارة العيادات', href: '/admin/tenants' },
+        { label: 'صحة النظام', href: '/admin/health' },
+      ]
+    }
+
+    if (!tenantSlug) return []
+
+    if (user?.role === 'Contractor') {
+      return [
+        { label: 'مركز الدعم', href: `/${tenantSlug}/dashboard/contractor/support` },
+        { label: 'الطلبات الجديدة', href: `/${tenantSlug}/dashboard/contractor/requests` },
+        { label: 'سجل الطلبات', href: `/${tenantSlug}/dashboard/contractor/orders` },
+      ]
+    }
+
+    return [
+      { label: 'مركز الدعم', href: `/${tenantSlug}/dashboard/support` },
+      { label: 'الرسائل', href: `/${tenantSlug}/dashboard/messages` },
+      { label: 'الإشعارات', href: `/${tenantSlug}/dashboard/notifications` },
+    ]
+  }, [isAdminArea, tenantSlug, user?.role])
 
   const syncBranchCookie = useCallback((branchId?: string) => {
     if (!tenantSlug || typeof document === 'undefined') return
@@ -193,6 +224,12 @@ export function AppHeader() {
         ) : null}
 
         {isNotDoctor && user?.tenantSlug && <DoctorNotesBell tenantSlug={user.tenantSlug} />}
+
+        <GlobalSupportDrawer
+          links={supportLinks}
+          supportPhone={isAdminArea ? null : tenantConfig?.supportPhoneNumber || tenantConfig?.phone || null}
+          supportWhatsApp={isAdminArea ? null : tenantConfig?.supportWhatsAppNumber || null}
+        />
 
         <ModeToggle />
 

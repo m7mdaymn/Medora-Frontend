@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import { Eye, Stethoscope, Clock } from 'lucide-react'
@@ -27,6 +28,8 @@ export function HistoryTab({ summary, tenantSlug, currentVisitId }: HistoryTabPr
 
   return (
     <div className='space-y-6'>
+
+
       {previousVisits.length === 0 ? (
         <div className='flex flex-col items-center justify-center py-10 text-muted-foreground opacity-60'>
           <Clock className='w-8 h-8 mb-3' />

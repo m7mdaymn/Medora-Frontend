@@ -52,6 +52,7 @@ export function PaymentDialog({ invoice, tenantSlug, open, setOpen }: Props) {
       invoiceId: invoice.id,
       amount: numericAmount,
       paymentMethod: method,
+      referenceNumber: referenceNumber.trim() || undefined,
       notes: 'دفعة من لوحة التحكم',
     })
     setLoading(false)

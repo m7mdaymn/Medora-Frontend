@@ -14,7 +14,7 @@ export async function addSubProfileAction(
   // تحويل التاريخ لـ ISO String عشان الباك-إند
   const formattedData = {
     ...values,
-    dateOfBirth: new Date(values.dateOfBirth).toISOString(),
+    dateOfBirth: values.dateOfBirth ? new Date(values.dateOfBirth).toISOString() : undefined,
   }
 
   const res = await fetchApi<ISubProfile>(`/api/clinic/patients/${parentId}/profiles`, {

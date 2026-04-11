@@ -1,4 +1,4 @@
-import { getMyVisitsAction } from '@/actions/doctor/get-my-today-visits'
+import { getMyTodayVisitsAction } from '@/actions/doctor/get-my-today-visits'
 import { DashboardHeader, DashboardShell } from '@/components/shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,158 +14,45 @@ import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import { ArrowLeft, CalendarX2, CheckCircle2, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { IVisit } from '@/types/visit'
 
 interface Props {
   params: Promise<{ tenantSlug: string }>
   searchParams: Promise<{
-    period?: 'all' | 'today' | 'week' | 'month'
-    fromDate?: string
-    toDate?: string
-    visitType?: 'all' | 'Exam' | 'Consultation'
-    source?: 'all' | 'booking' | 'ticket' | 'self'
+    from?: string
+    to?: string
+    source?: string
+    visitType?: string
+    status?: string
   }>
-}
-
-function getVisitTypeLabel(type: string): string {
-  if (type === 'Exam') return 'كشف'
-  if (type === 'Consultation') return 'استشارة'
-  return type
-}
-
-function getSourceLabel(source: string): string {
-  if (source === 'WalkInTicket') return 'تذكرة عيادة'
-  if (source === 'Booking') return 'حجز'
-  if (source === 'ConsultationBooking') return 'حجز استشارة'
-  if (source === 'PatientSelfServiceTicket') return 'تذكرة ذاتية'
-  if (source === 'PatientSelfServiceBooking') return 'حجز ذاتي'
-  return source
-}
-
-function getDefaultDateRange(period: 'all' | 'today' | 'week' | 'month'): { from?: string; to?: string } {
-  const now = new Date()
-  const today = now.toISOString().slice(0, 10)
-  if (period === 'today') {
-    return { from: today, to: today }
-  }
-  if (period === 'week') {
-    const from = new Date(now)
-    from.setDate(now.getDate() - 6)
-    return { from: from.toISOString().slice(0, 10), to: today }
-  }
-  if (period === 'month') {
-    const from = new Date(now.getFullYear(), now.getMonth(), 1)
-    return { from: from.toISOString().slice(0, 10), to: today }
-  }
-  return {}
 }
 
 export default async function DoctorVisitsPage({ params, searchParams }: Props) {
   const { tenantSlug } = await params
-  const qs = await searchParams
+  const { from, to, source, visitType, status } = await searchParams
 
-  const period = qs.period || 'all'
-  const visitType = qs.visitType || 'all'
-  const source = qs.source || 'all'
-  const fromDate = qs.fromDate
-  const toDate = qs.toDate
+  const today = new Date().toISOString().split('T')[0]
+  const fromDate = from || today
+  const toDate = to || today
 
-  const defaultRange = getDefaultDateRange(period)
-  const effectiveFrom = fromDate || defaultRange.from || ''
-  const effectiveTo = toDate || defaultRange.to || ''
-
-  const res = await getMyVisitsAction(tenantSlug, {
+  const res = await getMyTodayVisitsAction(tenantSlug, {
+    fromDate,
+    toDate,
+    source,
+    visitType,
+    status,
     pageNumber: 1,
-    pageSize: 1000,
-    fromDate: effectiveFrom || undefined,
-    toDate: effectiveTo || undefined,
-    visitType: visitType !== 'all' ? visitType : undefined,
-    isBooking: source === 'booking' ? true : undefined,
-    source: source === 'ticket' ? 'WalkInTicket' : undefined,
-    isSelfService: source === 'self' ? true : undefined,
+    pageSize: 100,
   })
-  const visits: IVisit[] = res.success && res.data ? res.data : []
+  const visits = res.success && res.data ? res.data.items : []
 
   return (
     <DashboardShell>
       <DashboardHeader
         heading='زياراتي'
-        text={`عرض كل الزيارات مع فلاتر الوقت والنوع والمصدر - ${format(new Date(), 'dd MMMM yyyy', {
+        text={`قائمة الحالات التي قمت بالكشف عليها - ${format(new Date(fromDate), 'dd MMMM yyyy', {
           locale: ar,
         })}`}
       />
-
-      <div className='rounded-2xl border p-4 mb-4'>
-        <form method='GET' className='grid grid-cols-1 md:grid-cols-6 gap-3'>
-          <div>
-            <label className='text-xs text-muted-foreground'>الفترة</label>
-            <select
-              name='period'
-              defaultValue={period}
-              className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-            >
-              <option value='all'>الكل</option>
-              <option value='today'>اليوم</option>
-              <option value='week'>آخر 7 أيام</option>
-              <option value='month'>هذا الشهر</option>
-            </select>
-          </div>
-
-          <div>
-            <label className='text-xs text-muted-foreground'>النوع</label>
-            <select
-              name='visitType'
-              defaultValue={visitType}
-              className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-            >
-              <option value='all'>الكل</option>
-              <option value='Exam'>كشف</option>
-              <option value='Consultation'>استشارة</option>
-            </select>
-          </div>
-
-          <div>
-            <label className='text-xs text-muted-foreground'>المصدر</label>
-            <select
-              name='source'
-              defaultValue={source}
-              className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-            >
-              <option value='all'>الكل</option>
-              <option value='booking'>حجز</option>
-              <option value='ticket'>تذكرة</option>
-              <option value='self'>ذاتي</option>
-            </select>
-          </div>
-
-          <div>
-            <label className='text-xs text-muted-foreground'>من تاريخ</label>
-            <input
-              name='fromDate'
-              type='date'
-              defaultValue={effectiveFrom}
-              className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-            />
-          </div>
-
-          <div>
-            <label className='text-xs text-muted-foreground'>إلى تاريخ</label>
-            <input
-              name='toDate'
-              type='date'
-              defaultValue={effectiveTo}
-              className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-            />
-          </div>
-
-          <div className='flex items-end gap-2'>
-            <Button className='h-10 px-4'>تطبيق</Button>
-            <Button variant='outline' asChild className='h-10 px-4'>
-              <Link href={`/${tenantSlug}/dashboard/doctor/visits`}>إعادة ضبط</Link>
-            </Button>
-          </div>
-        </form>
-      </div>
 
       <div className='rounded-2xl overflow-hidden border '>
         {visits.length === 0 ? (
@@ -186,11 +73,6 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
             <TableHeader className='bg-muted/50'>
               <TableRow>
                 <TableHead className='text-right'>المريض</TableHead>
-                  <TableHead className='text-right'>النوع</TableHead>
-                  <TableHead className='text-right'>المصدر</TableHead>
-                  <TableHead className='text-right'>الخدمة</TableHead>
-                  <TableHead className='text-right'>السعر</TableHead>
-                  <TableHead className='text-right'>نصيب الطبيب</TableHead>
                 <TableHead className='text-right'>وقت البدء</TableHead>
                 <TableHead className='text-right'>الحالة</TableHead>
                 <TableHead className='text-left w-37.5'>الإجراء</TableHead>
@@ -200,21 +82,6 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
               {visits.map((visit) => (
                 <TableRow key={visit.id} className='hover:bg-muted/30 transition-colors'>
                   <TableCell className='font-bold text-foreground'>{visit.patientName}</TableCell>
-                  <TableCell>
-                    <Badge variant='outline'>{getVisitTypeLabel(visit.visitType)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant='outline'>{getSourceLabel(visit.source)}</Badge>
-                  </TableCell>
-                  <TableCell className='text-sm text-muted-foreground'>
-                    {visit.serviceName || 'غير محدد'}
-                  </TableCell>
-                  <TableCell className='text-sm text-muted-foreground'>
-                    {visit.invoice?.amount?.toLocaleString('ar-EG') || '0'} ج.م
-                  </TableCell>
-                  <TableCell className='text-sm text-muted-foreground'>
-                    {visit.estimatedDoctorCompensationAmount?.toLocaleString('ar-EG') || '0'} ج.م
-                  </TableCell>
                   <TableCell className='text-sm text-muted-foreground'>
                     <div className='flex items-center gap-1.5'>
                       <Clock className='w-3.5 h-3.5' />
@@ -222,11 +89,7 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
                     </div>
                   </TableCell>
                   <TableCell>
-                    {visit.effectiveStatus === 'Cancelled' ? (
-                      <Badge variant='destructive' className='gap-1 px-2 py-0.5'>
-                        ملغية
-                      </Badge>
-                    ) : visit.status === 'Completed' || visit.completedAt ? (
+                    {visit.status === 'Completed' || visit.completedAt ? (
                       <Badge
                         variant='outline'
                       >
@@ -242,13 +105,13 @@ export default async function DoctorVisitsPage({ params, searchParams }: Props) 
                   </TableCell>
                   <TableCell className='text-left'>
                     <Button
-                      variant={visit.status === 'Completed' || visit.effectiveStatus === 'Cancelled' ? 'ghost' : 'default'}
+                      variant={visit.status === 'Completed' ? 'ghost' : 'default'}
                       size='sm'
                       asChild
                       className='w-full justify-between'
                     >
                       <Link href={`/${tenantSlug}/dashboard/doctor/visits/${visit.id}`}>
-                        {visit.status === 'Completed' || visit.effectiveStatus === 'Cancelled' ? 'عرض التفاصيل' : 'متابعة الكشف'}
+                        {visit.status === 'Completed' ? 'عرض الروشتة' : 'متابعة الكشف'}
                         <ArrowLeft className='w-4 h-4 ml-1' />
                       </Link>
                     </Button>

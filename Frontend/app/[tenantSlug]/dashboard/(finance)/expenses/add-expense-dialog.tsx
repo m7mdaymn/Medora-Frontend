@@ -2,7 +2,7 @@
 
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { Loader2, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -23,17 +23,29 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-import { ExpenseInput, ExpenseSchema } from '../../../../../validation/expense'
+import { getBranchesAction } from '@/actions/branch/branches'
+import { IBranch } from '@/types/branch'
 import { addExpenseAction } from '../../../../../actions/finance/expenses'
+import { CreateExpenseInput, CreateExpenseSchema } from '../../../../../validation/expense'
 
 export function AddExpenseDialog({ tenantSlug }: { tenantSlug: string }) {
   const [open, setOpen] = useState(false)
+  const [branches, setBranches] = useState<IBranch[]>([])
+  const [isBranchesLoading, setIsBranchesLoading] = useState(false)
 
   // 1. ربطنا RHF بـ Valibot Schema
-  const form = useForm<ExpenseInput>({
-    resolver: valibotResolver(ExpenseSchema),
+  const form = useForm<CreateExpenseInput>({
+    resolver: valibotResolver(CreateExpenseSchema),
     defaultValues: {
+      branchId: '',
       category: '',
       amount: 0,
       expenseDate: new Date().toISOString().split('T')[0], // تاريخ النهاردة كـ Default
@@ -41,8 +53,55 @@ export function AddExpenseDialog({ tenantSlug }: { tenantSlug: string }) {
     },
   })
 
+  useEffect(() => {
+    if (!open) return
+
+    let active = true
+
+    const loadBranches = async () => {
+      setIsBranchesLoading(true)
+      try {
+        const response = await getBranchesAction(tenantSlug, false)
+
+        if (!active) return
+
+        if (!response.success) {
+          setBranches([])
+          return
+        }
+
+        const activeBranches = (response.data ?? []).filter((branch) => branch.isActive)
+        setBranches(activeBranches)
+
+        const currentBranchId = form.getValues('branchId')
+        const hasCurrentBranch = currentBranchId
+          ? activeBranches.some((branch) => branch.id === currentBranchId)
+          : false
+
+        if (!hasCurrentBranch) {
+          form.setValue('branchId', activeBranches[0]?.id ?? '', { shouldDirty: false })
+        }
+      } finally {
+        if (active) {
+          setIsBranchesLoading(false)
+        }
+      }
+    }
+
+    void loadBranches()
+
+    return () => {
+      active = false
+    }
+  }, [open, tenantSlug, form])
+
   // 2. دالة الـ Submit (التايب بتاع data مستنتج أوتوماتيك من الـ Schema)
-  const onSubmit = async (data: ExpenseInput) => {
+  const onSubmit = async (data: CreateExpenseInput) => {
+    if (!data.branchId?.trim()) {
+      toast.error('برجاء اختيار الفرع')
+      return
+    }
+
     const res = await addExpenseAction(tenantSlug, data)
 
     if (res.success) {
@@ -76,6 +135,37 @@ export function AddExpenseDialog({ tenantSlug }: { tenantSlug: string }) {
         {/* 3. تغليف الفورم بـ Shadcn Form Component */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 py-4'>
+            <FormField
+              control={form.control}
+              name='branchId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='font-bold'>الفرع</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                    disabled={isBranchesLoading || branches.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={isBranchesLoading ? 'جاري تحميل الفروع...' : 'اختر الفرع'}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name='category'

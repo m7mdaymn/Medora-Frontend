@@ -9,20 +9,25 @@ import {
   toWhatsAppLink,
 } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { Facebook, Instagram, MapPin, Music2, Phone, Twitter, Youtube } from 'lucide-react'
+import { Facebook, Globe, Instagram, MapPin, Music2, Phone, Twitter, Youtube } from 'lucide-react'
 import { IPublicClinic } from '../../types/public'
 
 export default function AboutClinicSection({ clinic }: { clinic: IPublicClinic }) {
   if (!clinic) return null
+
   const displayAddress = [clinic.city, clinic.address].filter(Boolean).join('، ')
   const displayPhone = clinic.phone || clinic.supportWhatsAppNumber
   const formattedDisplayPhone = formatEgyptPhoneForDisplay(displayPhone)
   const formattedWhatsAppPhone = formatEgyptPhoneForDisplay(clinic.supportWhatsAppNumber)
   const socialLinks = clinic.socialLinks || {}
 
-  const mapUrl = socialLinks.address
-
   const socialItems = [
+    {
+      key: 'website',
+      href: normalizeSocialUrl(socialLinks.website),
+      label: 'Website',
+      Icon: Globe,
+    },
     {
       key: 'instagram',
       href: normalizeSocialUrl(socialLinks.instagram),
@@ -83,6 +88,7 @@ export default function AboutClinicSection({ clinic }: { clinic: IPublicClinic }
           </motion.div>
         </div>
 
+        {/* شبكة التواصل - موحدة الألوان */}
         <div className='w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8'>
           {displayPhone && (
             <motion.a
@@ -128,7 +134,8 @@ export default function AboutClinicSection({ clinic }: { clinic: IPublicClinic }
 
           {displayAddress && (
             <motion.a
-              href={``}
+              href={`https://maps.google.com/?q=${encodeURIComponent(displayAddress)}`}
+              target='_blank'
               rel='noopener noreferrer'
               variants={fadeInUp}
               whileHover={{ y: -5 }}
@@ -146,28 +153,6 @@ export default function AboutClinicSection({ clinic }: { clinic: IPublicClinic }
             </motion.a>
           )}
         </div>
-
-        {mapUrl && (
-          <motion.div
-            variants={fadeInUp}
-            className='mt-20 w-full max-w-5xl h-100 md:h-125 rounded-2xl overflow-hidden shadow-lg border border-border/50 relative bg-muted'
-          >
-            <iframe
-              src={mapUrl}
-              width='100%'
-              height='100%'
-              style={{ border: 0 }}
-              allowFullScreen={true}
-              loading='lazy'
-              className='absolute inset-0 z-10'
-            ></iframe>
-            {/* Fallback Loader */}
-            <div className='absolute inset-0 flex flex-col items-center justify-center text-muted-foreground z-0'>
-              <MapPin className='h-10 w-10 mb-4 opacity-50 animate-pulse' />
-              <p className='text-sm font-medium'>جاري تحميل الخريطة...</p>
-            </div>
-          </motion.div>
-        )}
 
         {/* السوشيال ميديا */}
         {socialItems.length > 0 && (

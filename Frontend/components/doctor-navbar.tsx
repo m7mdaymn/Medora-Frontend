@@ -2,6 +2,7 @@
 
 import { getBranchesAction } from '@/actions/branch/branches'
 import { ClinicImage } from '@/components/shared/clinic-image' // 👈 تأكد من المسار
+import { GlobalSupportDrawer } from '@/components/support/global-support-drawer'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useBranchSelectionStore } from '@/store/useBranchSelectionStore'
 import { useTenantStore } from '@/store/useTenantStore'
@@ -43,6 +44,15 @@ export function DoctorNavbar({ tenantSlug }: DoctorNavbarProps) {
     if (!tenantSlug || !user) return false
     return user.role !== 'SuperAdmin' && user.role !== 'Worker'
   }, [tenantSlug, user])
+
+  const supportLinks = useMemo(
+    () => [
+      { label: 'مركز الدعم', href: `/${tenantSlug}/dashboard/support` },
+      { label: 'تقارير الطبيب', href: `/${tenantSlug}/dashboard/doctor/reports` },
+      { label: 'زيارة المرضى', href: `/${tenantSlug}/dashboard/doctor/visits` },
+    ],
+    [tenantSlug],
+  )
 
   const syncBranchCookie = useCallback((branchId?: string) => {
     if (!tenantSlug || typeof document === 'undefined') return
@@ -150,6 +160,12 @@ export function DoctorNavbar({ tenantSlug }: DoctorNavbarProps) {
             </SelectContent>
           </Select>
         ) : null}
+
+        <GlobalSupportDrawer
+          links={supportLinks}
+          supportPhone={tenantConfig?.supportPhoneNumber || tenantConfig?.phone || null}
+          supportWhatsApp={tenantConfig?.supportWhatsAppNumber || null}
+        />
 
         <ModeToggle />
         <DropdownMenu>

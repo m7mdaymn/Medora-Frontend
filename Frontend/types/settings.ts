@@ -6,27 +6,6 @@ export interface IWorkingHour {
   isActive: boolean
 }
 
-export interface IClinicPaymentMethod {
-  id: string
-  branchId: string | null
-  branchName: string | null
-  methodName: string
-  providerName: string | null
-  accountName: string | null
-  accountNumber: string | null
-  iban: string | null
-  walletNumber: string | null
-  instructions: string | null
-  isActive: boolean
-  displayOrder: number
-}
-
-export interface IClinicPaymentOptions {
-  selfServicePaymentPolicy: string
-  selfServiceRequestExpiryHours: number
-  methods: IClinicPaymentMethod[]
-}
-
 export interface IClinicSettings {
   id: string
   tenantId: string
@@ -43,6 +22,6 @@ export interface IClinicSettings {
   socialLinks: Record<string, string> | null
   bookingEnabled: boolean
   cancellationWindowHours: number
-  galleryImages?: Array<{ id: string; publicUrl: string; createdAt: string }>
+  retainCreditOnNoShow: boolean
   workingHours: IWorkingHour[]
 }

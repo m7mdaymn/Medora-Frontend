@@ -2,6 +2,7 @@ import { fetchApi } from '@/lib/fetchApi'
 import { ClinicImage } from '@/components/shared/clinic-image'
 import { IPublicClinic } from '../../../../types/public'
 import { PatientLoginForm } from './patient-login-form'
+import { redirect } from 'next/navigation'
 
 export default async function PatientLoginPage({
   params,
@@ -17,6 +18,10 @@ export default async function PatientLoginPage({
     })
     clinic = response?.data || null
   } catch {}
+
+  if (clinic?.tenantType && clinic.tenantType !== 'Clinic') {
+    redirect(`/${tenantSlug}/partner/login`)
+  }
 
   return (
     <div className='min-h-screen w-full grid grid-cols-1 lg:grid-cols-2' dir='rtl'>

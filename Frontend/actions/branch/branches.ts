@@ -3,7 +3,6 @@
 import { fetchApi } from '@/lib/fetchApi'
 import { BaseApiResponse } from '@/types/api'
 import { IBranch } from '@/types/branch'
-import { IDoctor } from '@/types/doctor'
 import { IClinicPaymentMethod, IClinicPaymentOptions } from '@/types/settings'
 import { IStaff } from '@/types/staff'
 import { revalidatePath } from 'next/cache'
@@ -27,6 +26,15 @@ interface IReplaceClinicPaymentMethodPayload {
   instructions?: string
   isActive: boolean
   displayOrder: number
+}
+
+interface IAssignDoctorsToBranchResult {
+  branchId: string
+  requestedCount: number
+  assignedCount: number
+  skippedCount: number
+  createdScheduleRows: number
+  missingDoctorIds: string[]
 }
 
 export interface ICreateBranchWithSetupPayload extends IUpsertBranchPayload {
@@ -245,25 +253,31 @@ export async function createBranchWithSetupAction(
   }
 
   const doctorIds = toUniqueIds(payload.assignDoctorIds)
+  let doctorAssignmentsRequested = doctorIds.length
+
   if (doctorIds.length > 0) {
-    const doctorProbe = await fetchApi<{ items: IDoctor[]; totalCount: number }>(
-      '/api/clinic/doctors?pageNumber=1&pageSize=1000',
+    const assignDoctorsResult = await fetchApi<IAssignDoctorsToBranchResult>(
+      `/api/clinic/branches/${createdBranch.id}/doctors`,
       {
-        method: 'GET',
+        method: 'POST',
         tenantSlug,
-        cache: 'no-store',
+        body: JSON.stringify({ doctorIds }),
       },
     )
 
-    const knownDoctorIds = new Set((doctorProbe.data?.items || []).map((doctor) => doctor.id))
-    const unknownDoctors = doctorIds.filter((doctorId) => !knownDoctorIds.has(doctorId))
-    if (unknownDoctors.length > 0) {
-      warnings.push('بعض الأطباء المحددين غير متاحين حالياً في قائمة الأطباء النشطين.')
-    }
+    if (!assignDoctorsResult.success || !assignDoctorsResult.data) {
+      warnings.push(assignDoctorsResult.message || 'تعذر ربط الأطباء بالفرع الجديد.')
+    } else {
+      doctorAssignmentsRequested = assignDoctorsResult.data.requestedCount
 
-    warnings.push(
-      'تم تسجيل اختيار الأطباء في خطوة الإعداد، لكن الربط التلقائي للطبيب بفرع محدد يحتاج نقطة API مخصصة غير متوفرة حالياً.',
-    )
+      if (assignDoctorsResult.data.missingDoctorIds.length > 0) {
+        warnings.push('بعض الأطباء المحددين غير موجودين أو غير مفعلين وتم تخطيهم.')
+      }
+
+      if (assignDoctorsResult.data.skippedCount > 0) {
+        warnings.push('بعض الأطباء كانوا مرتبطين بالفرع مسبقاً ولم يتم تكرار الربط.')
+      }
+    }
   }
 
   revalidatePath(`/${tenantSlug}/dashboard/branches`)
@@ -278,7 +292,7 @@ export async function createBranchWithSetupAction(
     paymentMethodsCopied,
     staffAssigned,
     staffFailed,
-    doctorAssignmentsRequested: doctorIds.length,
+    doctorAssignmentsRequested,
     warnings,
   }
 

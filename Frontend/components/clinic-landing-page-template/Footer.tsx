@@ -1,11 +1,27 @@
 'use client'
 
 import { Typography } from '@/components/ui/typography'
-import { MapPin, MessageCircle, Phone } from 'lucide-react'
+import {
+  formatEgyptPhoneForDisplay,
+  normalizeSocialUrl,
+  toTelLink,
+  toWhatsAppLink,
+} from '@/lib/utils'
+import {
+  Facebook,
+  Globe,
+  Instagram,
+  MapPin,
+  MessageCircle,
+  Music2,
+  Phone,
+  Twitter,
+  Youtube,
+} from 'lucide-react'
 import Link from 'next/link'
 import { IPublicClinic } from '../../types/public'
-import { publicRoutes } from './navbar'
 import { ClinicImage } from '../shared/clinic-image' // 👈 استيراد المكون الموحد
+import { publicRoutes } from './navbar'
 
 interface FooterProps {
   clinic: IPublicClinic
@@ -14,12 +30,43 @@ interface FooterProps {
 
 export default function Footer({ clinic, tenantSlug }: FooterProps) {
   const displayAddress = [clinic.city, clinic.address].filter(Boolean).join('، ')
+  const socialLinks = clinic.socialLinks || {}
+  const socialItems = [
+    {
+      key: 'website',
+      href: normalizeSocialUrl(socialLinks.website),
+      label: 'Website',
+      Icon: Globe,
+    },
+    {
+      key: 'instagram',
+      href: normalizeSocialUrl(socialLinks.instagram),
+      label: 'Instagram',
+      Icon: Instagram,
+    },
+    {
+      key: 'facebook',
+      href: normalizeSocialUrl(socialLinks.facebook),
+      label: 'Facebook',
+      Icon: Facebook,
+    },
+    { key: 'x', href: normalizeSocialUrl(socialLinks.x), label: 'X', Icon: Twitter },
+    {
+      key: 'youtube',
+      href: normalizeSocialUrl(socialLinks.youtube),
+      label: 'YouTube',
+      Icon: Youtube,
+    },
+    { key: 'tiktok', href: normalizeSocialUrl(socialLinks.tiktok), label: 'TikTok', Icon: Music2 },
+  ].filter((item) => item.href)
 
   return (
-    <footer id='contact' className='w-full bg-muted border-t-2 border-border/50 pt-16 pb-8 mt-20' dir='rtl'>
-      <div className='container mx-auto px-4 md:px-8 max-w-7xl'>
-        {/* شبكة الفوتر الرئيسية */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16'>
+    <footer
+      className='w-full mt-20 border-t border-border/50 bg-background/80 backdrop-blur-md'
+      dir='rtl'
+    >
+      <div className='container mx-auto px-4 md:px-8 max-w-7xl py-14 md:py-16'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-14'>
           {/* العمود الأول: البراند والنبذة */}
           <div className='space-y-6'>
             <Link
@@ -43,15 +90,14 @@ export default function Footer({ clinic, tenantSlug }: FooterProps) {
               </Typography>
             </Link>
             <Typography variant='muted' className='text-sm leading-relaxed max-w-xs'>
-              نلتزم بتقديم رعاية طبية استثنائية تعتمد على أحدث التقنيات وأفضل الكفاءات لضمان تجربة
-              علاجية آمنة ومريحة.
+              تجربة طبية متكاملة تبدأ من حجز الموعد وتنتهي برعاية دقيقة واهتمام بكل التفاصيل.
             </Typography>
           </div>
 
           {/* العمود الثاني: روابط سريعة */}
           <div className='space-y-6'>
             <Typography variant='h4' className='font-bold text-foreground text-lg'>
-              روابط سريعة
+              الوصول السريع
             </Typography>
             <nav className='flex flex-col gap-3'>
               {publicRoutes.map((route) => (
@@ -71,7 +117,7 @@ export default function Footer({ clinic, tenantSlug }: FooterProps) {
           {/* العمود الثالث: تواصل معنا */}
           <div className='space-y-6'>
             <Typography variant='h4' className='font-bold text-foreground text-lg'>
-              تواصل معنا
+              بيانات التواصل
             </Typography>
             <div className='flex flex-col gap-4'>
               {displayAddress && (
@@ -83,33 +129,59 @@ export default function Footer({ clinic, tenantSlug }: FooterProps) {
                 </div>
               )}
               {clinic.phone && (
-                <div className='flex items-center gap-3'>
+                <a
+                  href={toTelLink(clinic.phone)}
+                  className='flex items-center gap-3 hover:opacity-80'
+                >
                   <Phone className='w-5 h-5 text-primary shrink-0' />
                   <span className='text-sm text-muted-foreground' dir='ltr'>
-                    {clinic.phone}
+                    {formatEgyptPhoneForDisplay(clinic.phone)}
                   </span>
-                </div>
+                </a>
               )}
               {clinic.supportWhatsAppNumber && (
-                <div className='flex items-center gap-3 group cursor-pointer'>
+                <a
+                  href={toWhatsAppLink(clinic.supportWhatsAppNumber)}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='flex items-center gap-3 group cursor-pointer'
+                >
                   <MessageCircle className='w-5 h-5 text-[#25D366] shrink-0' />
                   <span
                     className='text-sm text-muted-foreground group-hover:text-[#25D366] transition-colors'
                     dir='ltr'
                   >
-                    {clinic.supportWhatsAppNumber}
+                    {formatEgyptPhoneForDisplay(clinic.supportWhatsAppNumber)}
                   </span>
-                </div>
+                </a>
               )}
             </div>
           </div>
 
-          {/* العمود الرابع: معلومات هامة */}
+          {/* العمود الرابع */}
           <div className='space-y-6'>
             <Typography variant='h4' className='font-bold text-foreground text-lg'>
-              معلومات هامة
+              قنواتنا الرسمية
             </Typography>
-            <div className='p-5 rounded-2xl bg-primary/5 border border-primary/10 space-y-3'>
+
+            {socialItems.length > 0 ? (
+              <div className='grid grid-cols-3 gap-2.5'>
+                {socialItems.slice(0, 6).map((item) => (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={item.label}
+                    className='h-10 rounded-xl border border-border/60 bg-card hover:bg-accent transition-colors flex items-center justify-center'
+                  >
+                    <item.Icon className='w-4 h-4 text-primary' />
+                  </a>
+                ))}
+              </div>
+            ) : null}
+
+            <div className='p-5 rounded-2xl bg-linear-to-br from-primary/10 to-cyan-500/10 border border-primary/20 space-y-3'>
               <Typography variant='small' className='font-bold text-primary block'>
                 حالات الطوارئ
               </Typography>
@@ -121,7 +193,6 @@ export default function Footer({ clinic, tenantSlug }: FooterProps) {
           </div>
         </div>
 
-        {/* الشريط السفلي: حقوق النشر */}
         <div className='pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4'>
           <Typography variant='muted' className='text-xs text-center md:text-start font-medium'>
             &copy; {new Date().getFullYear()} {clinic.clinicName}. جميع الحقوق محفوظة.

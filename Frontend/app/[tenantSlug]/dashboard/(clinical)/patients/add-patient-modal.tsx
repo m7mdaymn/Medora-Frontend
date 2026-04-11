@@ -3,7 +3,7 @@
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
-import { CalendarIcon, CheckCircle2, Loader2, MessageCircle, UserPlus } from 'lucide-react'
+import { CalendarIcon, CheckCircle2, Loader2, UserPlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Path, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -39,10 +39,13 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch' // أو Switch لليوزبيليتي
 import { Textarea } from '@/components/ui/textarea'
+import { useBranchSelectionStore } from '@/store/useBranchSelectionStore'
 
 import { cn } from '@/lib/utils'
+import { getBranchesAction } from '../../../../../actions/branch/branches'
 import { createPatientAction } from '../../../../../actions/patient/createPatient'
 import { updateChronicConditionsAction } from '../../../../../actions/patient/updateChronicConditions'
+import { IBranch } from '../../../../../types/branch'
 import { CreatePatientInput, CreatePatientSchema } from '../../../../../validation/patient'
 
 interface AddPatientModalProps {
@@ -52,6 +55,21 @@ interface AddPatientModalProps {
   onSuccess?: (patientId: string, patientName: string) => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
+}
+
+function getSelectedBranchFromCookie(tenantSlug: string): string | undefined {
+  if (typeof document === 'undefined') return undefined
+
+  const cookieName = `selected_branch_${tenantSlug}`
+  const cookieEntry = document.cookie
+    .split(';')
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(`${cookieName}=`))
+
+  if (!cookieEntry) return undefined
+
+  const value = cookieEntry.slice(cookieName.length + 1)
+  return value ? decodeURIComponent(value) : undefined
 }
 
 export function AddPatientModal({
@@ -84,16 +102,20 @@ export function AddPatientModal({
 
   // 🔴 State لإظهار أو إخفاء قسم الأمراض المزمنة في الـ UI
   const [showChronicFields, setShowChronicFields] = useState(false)
+  const [branches, setBranches] = useState<IBranch[]>([])
+  const [isLoadingBranches, setIsLoadingBranches] = useState(false)
+  const selectedBranchByTenant = useBranchSelectionStore((state) => state.selectedBranchByTenant)
+  const selectedBranchId = selectedBranchByTenant[tenantSlug]
 
-  const form = useForm({
+  const form = useForm<CreatePatientInput>({
     resolver: valibotResolver(CreatePatientSchema),
     defaultValues: {
       name: '',
       phone: initialPhone || '',
+      branchId: '',
       address: '',
       notes: '',
       gender: 'Male',
-      // القيم الافتراضية للتايبس الجديدة
       diabetes: false,
       hypertension: false,
       cardiacDisease: false,
@@ -106,15 +128,82 @@ export function AddPatientModal({
     if (initialPhone) form.setValue('phone', initialPhone)
   }, [initialPhone, form])
 
+  useEffect(() => {
+    if (!open || credentials) return
+
+    let cancelled = false
+
+    const loadBranches = async () => {
+      setIsLoadingBranches(true)
+
+      try {
+        const result = await getBranchesAction(tenantSlug, false)
+        if (cancelled) return
+
+        if (!result.success) {
+          setBranches([])
+          toast.error(result.message || 'تعذر تحميل الفروع')
+          return
+        }
+
+        const activeBranches = (result.data || []).filter((branch) => branch.isActive)
+        setBranches(activeBranches)
+
+        const preferredBranchId = selectedBranchId || getSelectedBranchFromCookie(tenantSlug)
+        if (preferredBranchId && activeBranches.some((branch) => branch.id === preferredBranchId)) {
+          form.setValue('branchId', preferredBranchId, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+          return
+        }
+
+        const currentBranchId = form.getValues('branchId')
+        if (!currentBranchId && activeBranches.length === 1) {
+          form.setValue('branchId', activeBranches[0].id, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingBranches(false)
+        }
+      }
+    }
+
+    void loadBranches()
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, credentials, tenantSlug, form, selectedBranchId])
+
+  useEffect(() => {
+    if (!open || !selectedBranchId) return
+
+    const isAvailable = branches.some((branch) => branch.id === selectedBranchId)
+    if (!isAvailable) return
+
+    const currentBranchId = form.getValues('branchId')
+    if (currentBranchId === selectedBranchId) return
+
+    form.setValue('branchId', selectedBranchId, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }, [open, selectedBranchId, branches, form])
+
   const onSubmit = async (values: CreatePatientInput) => {
     try {
-      // 1. إنشاء المريض الأساسي
-      const result = await createPatientAction(values, tenantSlug)
+      const branchIdFromNavbar = selectedBranchId?.trim()
+      const submitValues = branchIdFromNavbar ? { ...values, branchId: branchIdFromNavbar } : values
+
+      const result = await createPatientAction(submitValues, tenantSlug)
 
       if (result.success && result.data) {
         const patientId = result.data.patient.id
 
-        // 🛑 المنطق الذكي: لو اختار أمراض، اضرب الريكوست التاني
         const hasChronicData =
           values.diabetes ||
           values.hypertension ||
@@ -153,8 +242,8 @@ export function AddPatientModal({
       } else {
         toast.error(result.message)
       }
-    } catch {
-      toast.error('حدث خطأ في الاتصال بالخادم')
+    } catch (error) {
+      if (error instanceof Error) toast.error('حدث خطأ أثناء حفظ البيانات')
     }
   }
 
@@ -184,52 +273,70 @@ export function AddPatientModal({
       {controlledOpen === undefined && (
         <DialogTrigger asChild>
           {trigger || (
-            <Button>
+            <Button size={'lg'} type='button'>
               <UserPlus className='mr-2 h-4 w-4' /> مريض جديد
             </Button>
           )}
         </DialogTrigger>
       )}
 
-      <DialogContent className='sm:max-w-137.5 max-h-[90vh] overflow-y-auto'>
+      <DialogContent
+        className='sm:max-w-137.5 max-h-[90vh] overflow-y-auto'
+        onInteractOutside={(e) => {
+          if (form.formState.isSubmitting || credentials) e.preventDefault()
+        }}
+        onEscapeKeyDown={(e) => {
+          if (form.formState.isSubmitting || credentials) e.preventDefault()
+        }}
+      >
         {credentials ? (
-          <div className='flex flex-col items-center justify-center py-6 space-y-6'>
-            <div className='flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100'>
-              <CheckCircle2 className='h-10 w-10 text-emerald-600' />
-            </div>
-            <DialogTitle>تم التسجيل بنجاح</DialogTitle>
-            <div className='w-full bg-muted/50 p-4 rounded-lg space-y-3 border'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>اسم المستخدم:</span>
+          <>
+            <DialogHeader className='flex flex-col items-center justify-center gap-3 pt-6'>
+              <div className='flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100/50 dark:bg-emerald-100/10'>
+                <CheckCircle2 className='h-8 w-8 text-emerald-600 dark:text-emerald-400' />
+              </div>
+              <DialogTitle className='text-xl'>تم التسجيل بنجاح</DialogTitle>
+            </DialogHeader>
+
+            <div className='w-full bg-muted/30 p-4 rounded-lg space-y-3 border my-2 '>
+              <div className='flex justify-between items-center flex-wrap'>
+                <span className='text-sm text-muted-foreground'>اسم المستخدم:</span>
                 <b>{credentials.username}</b>
               </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>كلمة المرور:</span>
+              <div className='flex justify-between items-center flex-wrap'>
+                <span className='text-sm text-muted-foreground'>كلمة المرور:</span>
                 <b>{credentials.password}</b>
               </div>
             </div>
-            <div className='flex w-full gap-3'>
-              <Button onClick={handleClose} variant='outline' className='flex-1'>
+
+            <DialogFooter>
+              <Button onClick={handleClose} variant='outline' type='button'>
                 إغلاق
               </Button>
               <Button
                 onClick={handleSendWhatsApp}
-                className='flex-1 bg-green-600 hover:bg-green-500'
+                type='button'
+                className=' bg-green-600 hover:bg-green-700 text-white'
               >
-                <MessageCircle className='mr-2 h-4 w-4' /> واتساب
+                إرسال واتساب
               </Button>
-            </div>
-          </div>
+            </DialogFooter>
+          </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className='flex items-center gap-2'>
-                <UserPlus className='h-5 w-5 text-primary' /> إضافة مريض
-              </DialogTitle>
+              <DialogTitle className='flex items-center gap-2'>إضافة مريض</DialogTitle>
             </DialogHeader>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-5'>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation() // To Prevent Access Ticket Form
+                  form.handleSubmit(onSubmit)(e)
+                }}
+                className='space-y-5'
+              >
                 <div className='grid grid-cols-2 gap-4'>
                   <FormField
                     control={form.control}
@@ -238,7 +345,7 @@ export function AddPatientModal({
                       <FormItem>
                         <FormLabel>الاسم</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder='أحمد محمود' />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -251,13 +358,59 @@ export function AddPatientModal({
                       <FormItem>
                         <FormLabel>الهاتف</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder='010' />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name='branchId'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الفرع</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={
+                          isLoadingBranches ||
+                          (Boolean(selectedBranchId) &&
+                            branches.some((branch) => branch.id === selectedBranchId))
+                        }
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                isLoadingBranches ? 'جاري تحميل الفروع...' : 'اختر الفرع'
+                              }
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {branches.length > 0 ? (
+                            branches.map((branch) => (
+                              <SelectItem key={branch.id} value={branch.id}>
+                                {branch.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <p className='p-2 text-sm text-center text-muted-foreground'>
+                              لا توجد فروع متاحة
+                            </p>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {selectedBranchId && branches.some((branch) => branch.id === selectedBranchId) ? (
+                        <FormDescription>الفرع مرتبط بالاختيار الحالي من الشريط العلوي.</FormDescription>
+                      ) : null}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className='grid grid-cols-2 gap-4'>
                   <FormField
@@ -306,8 +459,7 @@ export function AddPatientModal({
                               mode='single'
                               selected={field.value}
                               onSelect={field.onChange}
-                              // 🔴 السطرين دول هم السحر
-                              captionLayout='dropdown' 
+                              captionLayout='dropdown'
                               fromYear={1900}
                               toYear={new Date().getFullYear()}
                               // ---------------------------
@@ -339,7 +491,7 @@ export function AddPatientModal({
                   </div>
 
                   {showChronicFields && (
-                    <div className='grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300'>
+                    <div className='grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300'>
                       {chronicItems.map((item) => (
                         <FormField
                           key={item.id}
@@ -403,11 +555,12 @@ export function AddPatientModal({
                   <Button
                     type='submit'
                     disabled={form.formState.isSubmitting}
-                    className='w-full sm:w-auto'
+                    className='w-full'
+                    size={'xl'}
                   >
                     {form.formState.isSubmitting && (
                       <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    )}{' '}
+                    )}
                     حفظ البيانات
                   </Button>
                 </DialogFooter>

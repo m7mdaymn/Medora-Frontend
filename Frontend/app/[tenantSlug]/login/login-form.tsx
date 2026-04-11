@@ -27,10 +27,22 @@ export function LoginForm({
   tenantSlug,
   clinicName,
   logoUrl,
+  portalType,
+  heading,
+  description,
+  backHref,
+  backLabel,
+  submitLabel,
 }: {
   tenantSlug: string
   clinicName?: string
   logoUrl?: string
+  portalType?: 'Staff' | 'Partner'
+  heading?: string
+  description?: string
+  backHref?: string
+  backLabel?: string
+  submitLabel?: string
 }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -43,7 +55,7 @@ export function LoginForm({
   const onSubmit = async (values: LoginInput) => {
     setIsLoading(true)
     try {
-      const result = await loginAction(values, tenantSlug)
+      const result = await loginAction(values, tenantSlug, portalType || 'Staff')
       if (!result.success || !result.data) throw new Error(result.message)
 
       useAuthStore.getState().setAuth(result.data)
@@ -58,12 +70,12 @@ export function LoginForm({
   return (
     <div className='flex flex-col w-full animate-in fade-in slide-in-from-bottom-4 duration-700'>
       <button
-        onClick={() => router.push(`/${tenantSlug}`)}
+        onClick={() => router.push(backHref || `/${tenantSlug}`)}
         type='button'
         className='self-start flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors mb-10'
       >
         <ArrowRight className='size-4' />
-        <span>العودة للرئيسية</span>
+        <span>{backLabel || 'العودة للرئيسية'}</span>
       </button>
 
       <div className='flex flex-col space-y-8'>
@@ -85,10 +97,10 @@ export function LoginForm({
             )}
           </div>
           <h2 className='text-2xl sm:text-3xl font-black tracking-tight text-foreground'>
-            تسجيل الدخول
+            {heading || 'تسجيل الدخول'}
           </h2>
           <p className='text-sm font-medium text-muted-foreground'>
-            مرحباً بك في {clinicName || 'النظام'}، أدخل بياناتك للمتابعة.
+            {description || `مرحباً بك في ${clinicName || 'النظام'}، أدخل بياناتك للمتابعة.`}
           </p>
         </div>
 
@@ -161,7 +173,7 @@ export function LoginForm({
                   جاري التحقق...
                 </>
               ) : (
-                'دخول'
+                submitLabel || 'دخول'
               )}
             </Button>
           </form>

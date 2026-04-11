@@ -66,6 +66,12 @@ export default function PatientSelfServiceRequestPage() {
 
   const authData = usePatientAuthStore((state) => state.tenants[tenantSlug])
   const activeProfileId = authData?.activeProfileId
+  const profiles = useMemo(() => authData?.user?.profiles ?? [], [authData?.user?.profiles])
+
+  const activeProfile = useMemo(
+    () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? null,
+    [profiles, activeProfileId],
+  )
 
   const today = useMemo(() => formatDateInput(new Date()), [])
   const tomorrow = useMemo(() => {
@@ -130,6 +136,20 @@ export default function PatientSelfServiceRequestPage() {
   )
 
   const branches = useMemo(() => landingRes?.data?.branches ?? [], [landingRes?.data?.branches])
+  const activeProfileBranchId = activeProfile?.branchId ?? null
+  const activeProfileBranchName = useMemo(() => {
+    if (activeProfile?.branchName) {
+      return activeProfile.branchName
+    }
+
+    if (!activeProfileBranchId) {
+      return null
+    }
+
+    return branches.find((branch) => branch.id === activeProfileBranchId)?.name ?? null
+  }, [activeProfile?.branchName, activeProfileBranchId, branches])
+
+  const isBranchLockedToProfile = Boolean(activeProfileBranchId)
   const supportWhatsAppNumber = landingRes?.data?.clinic?.supportWhatsAppNumber ?? null
   const paymentOptions = paymentOptionsRes?.data
   const paymentMethods = useMemo(
@@ -173,10 +193,17 @@ export default function PatientSelfServiceRequestPage() {
   const parsedPaidAmount = paidAmount.trim() ? Number(paidAmount) : NaN
 
   useEffect(() => {
+    if (activeProfileBranchId) {
+      if (branchId !== activeProfileBranchId) {
+        setBranchId(activeProfileBranchId)
+      }
+      return
+    }
+
     if (!branchId && branches.length > 0) {
       setBranchId(branches[0].id)
     }
-  }, [branchId, branches])
+  }, [branchId, branches, activeProfileBranchId])
 
   useEffect(() => {
     if (paymentMethods.length === 0) {
@@ -466,6 +493,10 @@ export default function PatientSelfServiceRequestPage() {
               <Label className='text-xs font-bold text-muted-foreground'>فرع العيادة</Label>
               {isReferenceDataLoading ? (
                 <Skeleton className='h-10 w-full rounded-md' />
+              ) : isBranchLockedToProfile ? (
+                <div className='h-10 w-full rounded-md border border-input bg-muted/30 px-3 text-sm flex items-center'>
+                  {activeProfileBranchName || 'الفرع المرتبط بالبروفايل الحالي'}
+                </div>
               ) : (
                 <select
                   value={branchId}

@@ -4,7 +4,21 @@ export enum UrgentCaseMode {
   UrgentFront = 2,
 }
 
-export type DoctorCompensationMode = 'Salary' | 'Percentage' | 'FixedPerVisit'
+export enum DoctorCompensationMode {
+  Salary = 0,
+  Percentage = 1,
+  FixedPerVisit = 2,
+}
+
+export interface IDoctorCompensationHistoryItem {
+  id: string
+  mode: DoctorCompensationMode
+  value: number
+  effectiveFrom: string
+  changedByUserId: string
+  notes?: string | null
+  createdAt: string
+}
 
 export interface IDoctorService {
   id?: string
@@ -44,6 +58,7 @@ export interface IDoctor {
   compensationValue: number
   compensationEffectiveFrom: string
   services: IDoctorService[]
+  compensationHistory?: IDoctorCompensationHistoryItem[]
   visitFieldConfig: IDoctorVisitConfig
   createdAt: string
 }

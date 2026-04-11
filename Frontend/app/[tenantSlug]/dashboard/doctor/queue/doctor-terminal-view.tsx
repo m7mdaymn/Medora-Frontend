@@ -93,7 +93,7 @@ export function DoctorTerminalView({ initialData, tenantSlug }: Props) {
           // 🔥 هنا السر: الباك إند هيقولك ليه رافض ينهي الزيارة!
           toast.error(result.message || 'لا يمكن إتمام هذا الإجراء الآن')
         }
-      } catch {
+      } catch (error) {
         toast.error('حدث خطأ أثناء الاتصال')
       }
     })

@@ -22,7 +22,13 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { IVisit } from '@/types/visit'
-import { ExternalLink, MessageSquareText, SendHorizontal, Stethoscope } from 'lucide-react'
+import {
+  Building2,
+  ExternalLink,
+  MessageSquareText,
+  SendHorizontal,
+  Stethoscope,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -78,6 +84,16 @@ function partnerTypeLabel(value: string): string {
     default:
       return value
   }
+}
+
+function settlementTargetLabel(value?: string | null): string {
+  if (value === 'Doctor') return 'الطبيب مباشرة'
+  return 'العيادة'
+}
+
+function formatMoney(value?: number | null): string {
+  if (value == null || Number.isNaN(value)) return 'غير محدد'
+  return `${value.toLocaleString('ar-EG')} ج.م`
 }
 
 export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerReferralsTabProps) {
@@ -143,6 +159,15 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
     () => services.find((service) => service.id === selectedServiceId) ?? null,
     [services, selectedServiceId],
   )
+
+  const selectedServiceEstimatedPatientCost = useMemo(() => {
+    if (!selectedService) return null
+
+    const discount = selectedService.patientDiscountPercentage ?? 0
+    const safeDiscount = Math.min(Math.max(discount, 0), 100)
+
+    return Number(((selectedService.price * (100 - safeDiscount)) / 100).toFixed(2))
+  }, [selectedService])
 
   const servicesForSelectedPartner = useMemo(() => {
     if (!selectedPartnerId) return []
@@ -254,22 +279,33 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
   }
 
   return (
-    <div className='w-full mt-2 print:hidden space-y-3'>
-      <div className='flex items-center justify-between gap-2 border-b pb-2'>
-        <div className='flex items-center gap-2'>
-          <Stethoscope className='w-4 h-4 text-muted-foreground' />
-          <h3 className='text-sm font-semibold text-foreground'>إحالات وخدمات خارجية مباشرة</h3>
+    <div className='w-full mt-2 print:hidden space-y-4'>
+      <Card className='relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-sky-50 via-background to-emerald-50 p-4'>
+        <div className='absolute -top-16 -right-10 h-36 w-36 rounded-full bg-sky-200/30 blur-3xl' />
+        <div className='absolute -bottom-10 -left-6 h-32 w-32 rounded-full bg-emerald-200/30 blur-3xl' />
+
+        <div className='relative flex flex-wrap items-center justify-between gap-3'>
+          <div className='flex items-center gap-2'>
+            <Stethoscope className='w-4 h-4 text-primary' />
+            <h3 className='text-sm font-semibold text-foreground'>إحالات وخدمات خارجية مباشرة</h3>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <Badge variant='outline' className='rounded-full bg-background/80'>
+              <Building2 className='h-3.5 w-3.5 ml-1' />
+              {visitOrders.length} طلب مرتبط
+            </Badge>
+            <Button asChild size='sm' variant='outline' className='h-8 bg-background/80'>
+              <Link href={`/${tenantSlug}/dashboard/partner-orders`}>
+                <ExternalLink className='w-3.5 h-3.5 ml-1' />
+                إدارة كل الطلبات
+              </Link>
+            </Button>
+          </div>
         </div>
+      </Card>
 
-        <Button asChild size='sm' variant='outline' className='h-8'>
-          <Link href={`/${tenantSlug}/dashboard/partner-orders`}>
-            <ExternalLink className='w-3.5 h-3.5 ml-1' />
-            إدارة كل الطلبات
-          </Link>
-        </Button>
-      </div>
-
-      <Card className='rounded-2xl border-border/50 p-4 space-y-3'>
+      <Card className='rounded-3xl border border-border/60 p-4 space-y-3'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
           <div className='space-y-2'>
             <Label>نوع الشريك</Label>
@@ -367,6 +403,37 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
             </div>
           )}
 
+          {selectedService && (
+            <div className='space-y-2 md:col-span-2 lg:col-span-3 rounded-xl border border-emerald-200 bg-emerald-50/40 p-3'>
+              <p className='text-xs font-semibold text-emerald-700'>
+                تفاصيل التسعير والتسوية للخدمة المختارة
+              </p>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs'>
+                <p className='rounded-md bg-white/80 px-2 py-1'>السعر الأساسي: {formatMoney(selectedService.price)}</p>
+                <p className='rounded-md bg-white/80 px-2 py-1'>
+                  خصم المريض: {selectedService.patientDiscountPercentage ?? 0}%
+                </p>
+                <p className='rounded-md bg-white/80 px-2 py-1'>
+                  سعر المريض المتوقع: {formatMoney(selectedServiceEstimatedPatientCost)}
+                </p>
+                <p className='rounded-md bg-white/80 px-2 py-1'>
+                  جهة التسوية: {settlementTargetLabel(selectedService.settlementTarget)}
+                </p>
+                <p className='rounded-md bg-white/80 px-2 py-1'>
+                  نسبة التسوية: {selectedService.settlementPercentage}%
+                </p>
+                <p className='rounded-md bg-white/80 px-2 py-1'>
+                  مبلغ ثابت للطبيب: {formatMoney(selectedService.doctorFixedPayoutAmount)}
+                </p>
+                {selectedService.settlementTarget === 'Clinic' && (
+                  <p className='rounded-md bg-white/80 px-2 py-1'>
+                    نسبة الطبيب من حصة العيادة: {selectedService.clinicDoctorSharePercentage ?? 0}%
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {!selectedServiceId && (
             <div className='space-y-2 md:col-span-2 lg:col-span-3'>
               <Label>خدمة/عنصر مخصص (إذا غير موجود بالقائمة)</Label>
@@ -430,7 +497,7 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
         </div>
       </Card>
 
-      <Card className='rounded-2xl border-border/50 p-4 space-y-3'>
+      <Card className='rounded-3xl border border-border/60 p-4 space-y-3'>
         <div className='flex items-center gap-2'>
           <MessageSquareText className='w-4 h-4 text-muted-foreground' />
           <h4 className='text-sm font-semibold'>طلبات الشركاء المرتبطة بهذه الزيارة</h4>
@@ -443,7 +510,7 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
         ) : (
           <div className='space-y-2'>
             {visitOrders.map((order) => (
-              <div key={order.id} className='rounded-xl border border-border/50 bg-muted/10 p-3 space-y-2'>
+              <div key={order.id} className='rounded-2xl border border-border/60 bg-background/70 p-3 space-y-2'>
                 <div className='flex items-start justify-between gap-2'>
                   <div>
                     <p className='text-sm font-bold text-foreground'>
@@ -456,18 +523,20 @@ export function PartnerReferralsTab({ visit, tenantSlug, isClosed }: PartnerRefe
                   <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-1.5 text-[11px] text-muted-foreground'>
-                  <p>الطبيب: {order.doctorName || 'غير محدد'}</p>
-                  <p>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-1.5 text-[11px]'>
+                  <p className='rounded-lg border border-border/50 bg-muted/20 px-2 py-1 text-muted-foreground'>
+                    الطبيب: {order.doctorName || 'غير محدد'}
+                  </p>
+                  <p className='rounded-lg border border-border/50 bg-muted/20 px-2 py-1 text-muted-foreground'>
                     الموعد:{' '}
                     {order.scheduledAt
                       ? new Date(order.scheduledAt).toLocaleString('ar-EG')
                       : 'لم يحدد بعد'}
                   </p>
-                  <p>
+                  <p className='rounded-lg border border-border/50 bg-muted/20 px-2 py-1 text-muted-foreground'>
                     التكلفة: {order.finalCost ?? order.estimatedCost ?? order.servicePrice ?? 'غير محددة'}
                   </p>
-                  <p>
+                  <p className='rounded-lg border border-border/50 bg-muted/20 px-2 py-1 text-muted-foreground'>
                     الرفع: {order.resultUploadedAt ? new Date(order.resultUploadedAt).toLocaleString('ar-EG') : 'لم تُرفع نتيجة'}
                   </p>
                 </div>

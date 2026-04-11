@@ -37,6 +37,36 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
 
+type PartnerComment = {
+  actorLabel: string
+  message: string
+}
+
+const COMMENT_PREFIXES: Array<{ prefix: string; actorLabel: string }> = [
+  { prefix: 'Doctor comment:', actorLabel: 'تعليق الطبيب' },
+  { prefix: 'Contractor comment:', actorLabel: 'تعليق المتعاقد' },
+  { prefix: 'Patient comment:', actorLabel: 'تعليق المريض' },
+  { prefix: 'Team comment:', actorLabel: 'تعليق الفريق' },
+]
+
+function extractPartnerComments(notes: string | null | undefined): PartnerComment[] {
+  if (!notes) return []
+
+  return notes
+    .split('|')
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .flatMap((token) => {
+      const matched = COMMENT_PREFIXES.find((entry) => token.startsWith(entry.prefix))
+      if (!matched) return []
+
+      const message = token.slice(matched.prefix.length).trim()
+      if (!message) return []
+
+      return [{ actorLabel: matched.actorLabel, message }]
+    })
+}
+
 export default function PatientHistoryPage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
@@ -330,6 +360,11 @@ export default function PatientHistoryPage() {
                 key={item.id}
                 className='rounded-2xl border border-border/40 bg-background p-3 shadow-sm space-y-2'
               >
+                {(() => {
+                  const comments = extractPartnerComments(item.notes)
+
+                  return (
+                    <>
                 <div className='flex items-start justify-between gap-2'>
                   <div>
                     <p className='text-sm font-bold text-foreground'>{item.partnerName}</p>
@@ -403,6 +438,18 @@ export default function PatientHistoryPage() {
                   {item.notes && <div>{item.notes}</div>}
                 </div>
 
+                {comments.length > 0 && (
+                  <div className='rounded-xl border border-primary/20 bg-primary/5 p-2.5 space-y-1'>
+                    <p className='text-[10px] font-bold text-primary'>تعليقات المتابعة</p>
+                    {comments.map((comment, index) => (
+                      <p key={`${item.id}-comment-${index}`} className='text-[10px] text-foreground'>
+                        <span className='font-semibold'>{comment.actorLabel}: </span>
+                        {comment.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
                 <div className='pt-1 flex flex-wrap gap-2'>
                   {(item.status === 'Sent' || item.status === 'Accepted') && !item.patientArrivedAt && (
                     <Button
@@ -469,6 +516,9 @@ export default function PatientHistoryPage() {
                     </Button>
                   </div>
                 )}
+                    </>
+                  )
+                })()}
               </div>
             ))}
           </div>

@@ -7,8 +7,15 @@ export interface UserProfile {
   role: UserRole
   tenantId: string | null
   tenantSlug: string | null
+  tenantType?: 'Clinic' | 'Partner' | null
   permissions: string[]
-  profiles: Array<{ id: string; name: string; isDefault: boolean }> 
+  profiles: Array<{
+    id: string
+    name: string
+    isDefault: boolean
+    branchId?: string | null
+    branchName?: string | null
+  }>
 }
 
 export interface ILogin {

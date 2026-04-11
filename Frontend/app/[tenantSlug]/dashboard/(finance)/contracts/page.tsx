@@ -1,10 +1,15 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
+import { Handshake, Loader2, Percent } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import useSWR from 'swr'
+import { toast } from 'sonner'
+
 import {
-  createPartnerServiceAction,
-  createPartnerUserAction,
   listPartnerServicesAction,
   listPartnersAction,
+  updatePartnerServiceAction,
 } from '@/actions/partner/workflow'
 import { DashboardHeader, DashboardShell } from '@/components/shell'
 import { Badge } from '@/components/ui/badge'
@@ -12,20 +17,19 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IPartnerServiceCatalogItem } from '@/types/partner'
-import { Handshake, Plus, UserPlus } from 'lucide-react'
-import { useParams } from 'next/navigation'
-import { FormEvent, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import useSWR from 'swr'
 
 export default function ContractsPage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
 
-  const { data: partnersRes, isLoading: partnersLoading } = useSWR(['partners', tenantSlug], () =>
+  const [search, setSearch] = useState('')
+  const [selectedServiceId, setSelectedServiceId] = useState<string>('')
+  const [doctorShare, setDoctorShare] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const { data: partnersRes } = useSWR(['partners', tenantSlug], () =>
     listPartnersAction(tenantSlug, {
       activeOnly: true,
       pageNumber: 1,
@@ -35,347 +39,222 @@ export default function ContractsPage() {
 
   const {
     data: servicesRes,
-    isLoading: servicesLoading,
-    mutate: mutateServices,
-  } = useSWR(['partner-services', tenantSlug], () => listPartnerServicesAction(tenantSlug, { activeOnly: false }))
+    isLoading,
+    mutate,
+  } = useSWR(['partner-services', tenantSlug], () => listPartnerServicesAction(tenantSlug, { activeOnly: true }))
 
   const partners = useMemo(() => partnersRes?.data?.items ?? [], [partnersRes?.data?.items])
-  const services = servicesRes?.data || []
-  const defaultPartnerId = useMemo(() => partners[0]?.id || '', [partners])
+  const services = useMemo(() => servicesRes?.data ?? [], [servicesRes?.data])
 
-  const [selectedPartnerId, setSelectedPartnerId] = useState('')
-  const [serviceName, setServiceName] = useState('')
-  const [price, setPrice] = useState('')
-  const [settlementTarget, setSettlementTarget] = useState<'Doctor' | 'Clinic'>('Clinic')
-  const [settlementPercentage, setSettlementPercentage] = useState('')
-  const [clinicDoctorShare, setClinicDoctorShare] = useState('')
-  const [patientDiscount, setPatientDiscount] = useState('')
-  const [doctorFixedPayout, setDoctorFixedPayout] = useState('')
-  const [serviceSaving, setServiceSaving] = useState(false)
+  const filteredServices = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    if (!term) return services
 
-  const [userPartnerId, setUserPartnerId] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [userSaving, setUserSaving] = useState(false)
+    return services.filter((item) => {
+      return (
+        item.serviceName.toLowerCase().includes(term) ||
+        item.partnerName.toLowerCase().includes(term) ||
+        item.settlementTarget.toLowerCase().includes(term)
+      )
+    })
+  }, [search, services])
 
-  const targetPartnerForService = selectedPartnerId || defaultPartnerId
-  const targetPartnerForUser = userPartnerId || defaultPartnerId
+  const selectedService = useMemo(
+    () => services.find((item) => item.id === selectedServiceId) ?? null,
+    [selectedServiceId, services],
+  )
 
-  const onCreateService = async (e: FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (!selectedServiceId && filteredServices.length > 0) {
+      setSelectedServiceId(filteredServices[0].id)
+    }
+  }, [filteredServices, selectedServiceId])
 
-    const parsedPrice = Number(price)
-    const parsedSettlementPercentage = Number(settlementPercentage)
-    const parsedDoctorShare = clinicDoctorShare.trim() ? Number(clinicDoctorShare) : undefined
-    const parsedPatientDiscount = patientDiscount.trim() ? Number(patientDiscount) : undefined
-    const parsedDoctorFixedPayout = doctorFixedPayout.trim() ? Number(doctorFixedPayout) : undefined
-
-    if (!targetPartnerForService) {
-      toast.error('لا يوجد شريك متاح للاختيار')
+  useEffect(() => {
+    if (!selectedService) {
+      setDoctorShare('')
       return
     }
 
-    if (!serviceName.trim() || Number.isNaN(parsedPrice) || parsedPrice <= 0) {
-      toast.error('تأكد من اسم الخدمة والسعر')
+    const currentShare = selectedService.clinicDoctorSharePercentage
+    setDoctorShare(currentShare === null ? '' : String(currentShare))
+  }, [selectedService])
+
+  const onSaveDoctorShare = async () => {
+    if (!selectedService) {
+      toast.error('اختر خدمة أولاً')
       return
     }
 
-    if (Number.isNaN(parsedSettlementPercentage) || parsedSettlementPercentage <= 0) {
-      toast.error('نسبة التسوية غير صحيحة')
+    if (selectedService.settlementTarget !== 'Clinic') {
+      toast.error('يمكن تعديل نسبة الطبيب فقط عندما تكون التسوية لصالح العيادة')
       return
     }
 
-    if (parsedDoctorShare !== undefined && Number.isNaN(parsedDoctorShare)) {
-      toast.error('نسبة الطبيب من حصة العيادة غير صحيحة')
+    const parsedShare = doctorShare.trim() ? Number(doctorShare) : undefined
+
+    if (parsedShare !== undefined && (Number.isNaN(parsedShare) || parsedShare < 0 || parsedShare > 100)) {
+      toast.error('نسبة الطبيب يجب أن تكون بين 0 و100')
       return
     }
 
-    if (
-      parsedPatientDiscount !== undefined &&
-      (Number.isNaN(parsedPatientDiscount) || parsedPatientDiscount < 0 || parsedPatientDiscount > 100)
-    ) {
-      toast.error('نسبة خصم المريض يجب أن تكون بين 0 و100')
-      return
-    }
-
-    if (parsedDoctorFixedPayout !== undefined && (Number.isNaN(parsedDoctorFixedPayout) || parsedDoctorFixedPayout < 0)) {
-      toast.error('قيمة المبلغ الثابت للطبيب غير صحيحة')
-      return
-    }
-
-    setServiceSaving(true)
+    setIsSaving(true)
     try {
-      const partnerIdForRequest =
-        targetPartnerForService || '00000000-0000-0000-0000-000000000000'
-
-      const response = await createPartnerServiceAction(tenantSlug, {
-        partnerId: partnerIdForRequest,
-        serviceName: serviceName.trim(),
-        price: parsedPrice,
-        settlementTarget,
-        settlementPercentage: parsedSettlementPercentage,
-        clinicDoctorSharePercentage: settlementTarget === 'Clinic' ? parsedDoctorShare : undefined,
-        patientDiscountPercentage: parsedPatientDiscount,
-        doctorFixedPayoutAmount: parsedDoctorFixedPayout,
+      const response = await updatePartnerServiceAction(tenantSlug, selectedService.id, {
+        branchId: selectedService.branchId || undefined,
+        serviceName: selectedService.serviceName,
+        price: selectedService.price,
+        settlementTarget: selectedService.settlementTarget,
+        settlementPercentage: selectedService.settlementPercentage,
+        clinicDoctorSharePercentage: parsedShare,
+        patientDiscountPercentage: selectedService.patientDiscountPercentage ?? undefined,
+        doctorFixedPayoutAmount: selectedService.doctorFixedPayoutAmount ?? undefined,
+        isActive: selectedService.isActive,
+        notes: selectedService.notes || undefined,
       })
 
       if (!response.success) {
-        toast.error(response.message || 'فشل إنشاء الخدمة')
+        toast.error(response.message || 'تعذر حفظ نسبة الطبيب')
         return
       }
 
-      toast.success('تم إنشاء خدمة الشريك بنجاح')
-      setServiceName('')
-      setPrice('')
-      setSettlementPercentage('')
-      setClinicDoctorShare('')
-      setPatientDiscount('')
-      setDoctorFixedPayout('')
-      await mutateServices()
+      toast.success('تم تحديث نسبة الطبيب بنجاح')
+      await mutate()
     } finally {
-      setServiceSaving(false)
-    }
-  }
-
-  const onCreateContractorUser = async (e: FormEvent) => {
-    e.preventDefault()
-
-    if (!targetPartnerForUser) {
-      toast.error('اختر شريكاً لإنشاء حساب المتعاقد')
-      return
-    }
-
-    if (!username.trim() || !password.trim() || !displayName.trim()) {
-      toast.error('الاسم واسم المستخدم وكلمة المرور مطلوبة')
-      return
-    }
-
-    setUserSaving(true)
-    try {
-      const response = await createPartnerUserAction(tenantSlug, targetPartnerForUser, {
-        username: username.trim(),
-        password: password.trim(),
-        displayName: displayName.trim(),
-        phone: phone.trim() || undefined,
-        isPrimary: true,
-      })
-
-      if (!response.success) {
-        toast.error(response.message || 'فشل إنشاء حساب المتعاقد')
-        return
-      }
-
-      toast.success('تم إنشاء حساب المتعاقد بنجاح')
-      setUsername('')
-      setPassword('')
-      setDisplayName('')
-      setPhone('')
-    } finally {
-      setUserSaving(false)
+      setIsSaving(false)
     }
   }
 
   return (
     <DashboardShell>
       <DashboardHeader
-        heading='تعاقدات الشركاء'
-        text='إدارة خدمات الشريك وربط حسابات المتعاقدين الخارجيين'
+        heading='سوق خدمات الشركاء'
+        text='عرض موحد لكل خدمات الشركاء مع تحديد نسبة الطبيب من النسبة المتفق عليها.'
       />
 
-      <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
         <Card className='rounded-2xl border-border/50 p-4'>
-          <div className='flex items-center gap-2 mb-4'>
-            <Handshake className='w-4 h-4 text-primary' />
-            <h3 className='font-bold'>إضافة خدمة شريك</h3>
-          </div>
-
-          <form onSubmit={onCreateService} className='space-y-3'>
-            <div className='space-y-2'>
-              <Label>الشريك</Label>
-              <select
-                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={selectedPartnerId}
-                onChange={(e) => setSelectedPartnerId(e.target.value)}
-              >
-                <option value=''>اختر الشريك</option>
-                {partners.map((partner) => (
-                  <option key={partner.id} value={partner.id}>
-                    {partner.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>اسم الخدمة</Label>
-              <Input value={serviceName} onChange={(e) => setServiceName(e.target.value)} />
-            </div>
-
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              <div className='space-y-2'>
-                <Label>السعر</Label>
-                <Input value={price} onChange={(e) => setPrice(e.target.value)} />
-              </div>
-
-              <div className='space-y-2'>
-                <Label>النسبة (%)</Label>
-                <Input
-                  value={settlementPercentage}
-                  onChange={(e) => setSettlementPercentage(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>التسوية تذهب إلى</Label>
-              <select
-                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={settlementTarget}
-                onChange={(e) => setSettlementTarget(e.target.value as 'Doctor' | 'Clinic')}
-              >
-                <option value='Clinic'>العيادة</option>
-                <option value='Doctor'>الطبيب</option>
-              </select>
-            </div>
-
-            {settlementTarget === 'Clinic' && (
-              <div className='space-y-2'>
-                <Label>نسبة الطبيب من حصة العيادة (%)</Label>
-                <Input
-                  value={clinicDoctorShare}
-                  onChange={(e) => setClinicDoctorShare(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              <div className='space-y-2'>
-                <Label>خصم المريض (%)</Label>
-                <Input
-                  value={patientDiscount}
-                  onChange={(e) => setPatientDiscount(e.target.value)}
-                  placeholder='مثال: 10'
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label>مبلغ ثابت للطبيب (اختياري)</Label>
-                <Input
-                  value={doctorFixedPayout}
-                  onChange={(e) => setDoctorFixedPayout(e.target.value)}
-                  placeholder='مثال: 50'
-                />
-              </div>
-            </div>
-
-            <Button type='submit' disabled={serviceSaving} className='gap-2'>
-              <Plus className='w-4 h-4' />
-              إضافة خدمة
-            </Button>
-          </form>
+          <p className='text-xs text-muted-foreground'>إجمالي الشركاء النشطين</p>
+          <p className='text-2xl font-bold mt-1'>{partners.length}</p>
         </Card>
 
         <Card className='rounded-2xl border-border/50 p-4'>
-          <div className='flex items-center gap-2 mb-4'>
-            <UserPlus className='w-4 h-4 text-primary' />
-            <h3 className='font-bold'>إنشاء حساب متعاقد</h3>
-          </div>
+          <p className='text-xs text-muted-foreground'>الخدمات النشطة</p>
+          <p className='text-2xl font-bold mt-1'>{services.length}</p>
+        </Card>
 
-          <form onSubmit={onCreateContractorUser} className='space-y-3'>
-            <div className='space-y-2'>
-              <Label>الشريك</Label>
-              <select
-                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
-                value={userPartnerId}
-                onChange={(e) => setUserPartnerId(e.target.value)}
-              >
-                <option value=''>اختر الشريك</option>
-                {partners.map((partner) => (
-                  <option key={partner.id} value={partner.id}>
-                    {partner.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>الاسم الظاهر</Label>
-              <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            </div>
-
-            <div className='space-y-2'>
-              <Label>اسم المستخدم</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} />
-            </div>
-
-            <div className='space-y-2'>
-              <Label>كلمة المرور</Label>
-              <Input
-                type='password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label>رقم الهاتف (اختياري)</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-
-            <Button type='submit' disabled={userSaving} className='gap-2'>
-              <UserPlus className='w-4 h-4' />
-              إنشاء الحساب
-            </Button>
-          </form>
+        <Card className='rounded-2xl border-border/50 p-4'>
+          <p className='text-xs text-muted-foreground'>خدمات بتسوية لصالح العيادة</p>
+          <p className='text-2xl font-bold mt-1'>
+            {services.filter((item) => item.settlementTarget === 'Clinic').length}
+          </p>
         </Card>
       </div>
 
-      <Separator />
-
-      <div className='space-y-3'>
-        <h3 className='font-bold'>الخدمات المسجلة</h3>
-
-        {partnersLoading || servicesLoading ? (
-          <div className='space-y-2'>
-            <Skeleton className='h-20 w-full rounded-xl' />
-            <Skeleton className='h-20 w-full rounded-xl' />
+      <div className='grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-4'>
+        <Card className='rounded-2xl border-border/50 p-4 space-y-3'>
+          <div className='flex items-center gap-2'>
+            <Handshake className='w-4 h-4 text-primary' />
+            <h3 className='font-bold'>كل خدمات الشركاء</h3>
           </div>
-        ) : services.length === 0 ? (
-          <Card className='rounded-2xl p-8 text-center text-muted-foreground'>
-            لا توجد خدمات شركاء حتى الآن.
-          </Card>
-        ) : (
-          <div className='grid gap-2'>
-            {services.map((service: IPartnerServiceCatalogItem) => (
-              <Card key={service.id} className='rounded-xl p-3 border-border/40'>
-                <div className='flex items-center justify-between gap-2'>
-                  <div>
-                    <p className='text-sm font-bold'>{service.serviceName}</p>
-                    <p className='text-xs text-muted-foreground'>{service.partnerName}</p>
+
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder='ابحث باسم الخدمة أو الشريك'
+          />
+
+          {isLoading ? (
+            <div className='space-y-2'>
+              <Skeleton className='h-20 w-full rounded-xl' />
+              <Skeleton className='h-20 w-full rounded-xl' />
+            </div>
+          ) : filteredServices.length === 0 ? (
+            <div className='rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground'>
+              لا توجد خدمات مطابقة للبحث.
+            </div>
+          ) : (
+            <div className='space-y-2 max-h-[70vh] overflow-y-auto'>
+              {filteredServices.map((item: IPartnerServiceCatalogItem) => (
+                <button
+                  key={item.id}
+                  type='button'
+                  onClick={() => setSelectedServiceId(item.id)}
+                  className={`w-full rounded-xl border p-3 text-right transition ${
+                    selectedServiceId === item.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border/50 hover:border-primary/50'
+                  }`}
+                >
+                  <div className='flex items-center justify-between gap-2'>
+                    <p className='text-sm font-bold'>{item.serviceName}</p>
+                    <Badge variant='outline'>{item.partnerName}</Badge>
                   </div>
-                  <Badge variant={service.isActive ? 'default' : 'outline'}>
-                    {service.isActive ? 'نشط' : 'موقوف'}
-                  </Badge>
-                </div>
-                <div className='mt-2 text-xs text-muted-foreground space-y-1'>
-                  <p>السعر: {service.price} ج.م</p>
-                  <p>
-                    التوزيع: {service.settlementTarget === 'Doctor' ? 'إلى الطبيب' : 'إلى العيادة'} ({' '}
-                    {service.settlementPercentage}% )
-                  </p>
-                  {service.patientDiscountPercentage !== null && (
-                    <p>خصم المريض: {service.patientDiscountPercentage}%</p>
-                  )}
-                  {service.doctorFixedPayoutAmount !== null && (
-                    <p>مبلغ ثابت للطبيب: {service.doctorFixedPayoutAmount} ج.م</p>
-                  )}
-                </div>
-              </Card>
-            ))}
+
+                  <div className='mt-2 text-xs text-muted-foreground space-y-1'>
+                    <p>السعر: {item.price} ج.م</p>
+                    <p>
+                      النسبة الأساسية: {item.settlementPercentage}% ({' '}
+                      {item.settlementTarget === 'Clinic' ? 'لصالح العيادة' : 'لصالح الطبيب'})
+                    </p>
+                    <p>
+                      نسبة الطبيب الحالية: {item.clinicDoctorSharePercentage ?? 0}%
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card className='rounded-2xl border-border/50 p-4 space-y-4'>
+          <div className='flex items-center gap-2'>
+            <Percent className='w-4 h-4 text-primary' />
+            <h3 className='font-bold'>تحديد نسبة الطبيب</h3>
           </div>
-        )}
+
+          {!selectedService ? (
+            <div className='rounded-xl border border-dashed p-6 text-sm text-muted-foreground'>
+              اختر خدمة من القائمة لعرض تفاصيل النسبة.
+            </div>
+          ) : (
+            <>
+              <div className='rounded-xl border border-border/60 p-3 space-y-1'>
+                <p className='text-sm font-bold'>{selectedService.serviceName}</p>
+                <p className='text-xs text-muted-foreground'>الشريك: {selectedService.partnerName}</p>
+                <p className='text-xs text-muted-foreground'>
+                  النسبة الأساسية من الشريك: {selectedService.settlementPercentage}%
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  نوع التسوية: {selectedService.settlementTarget === 'Clinic' ? 'لصالح العيادة' : 'لصالح الطبيب'}
+                </p>
+              </div>
+
+              <div className='space-y-2'>
+                <Label>نسبة الطبيب من حصة العيادة (%)</Label>
+                <Input
+                  value={doctorShare}
+                  onChange={(event) => setDoctorShare(event.target.value)}
+                  placeholder='مثال: 30'
+                  disabled={selectedService.settlementTarget !== 'Clinic'}
+                />
+                {selectedService.settlementTarget !== 'Clinic' && (
+                  <p className='text-xs text-muted-foreground'>
+                    هذه الخدمة مضبوطة على تسوية مباشرة للطبيب، لذلك لا يوجد نسبة فرعية للعيادة.
+                  </p>
+                )}
+              </div>
+
+              <Button
+                onClick={onSaveDoctorShare}
+                disabled={isSaving || selectedService.settlementTarget !== 'Clinic'}
+                className='w-full'
+              >
+                {isSaving ? <Loader2 className='w-4 h-4 animate-spin' /> : 'حفظ نسبة الطبيب'}
+              </Button>
+            </>
+          )}
+        </Card>
       </div>
     </DashboardShell>
   )

@@ -10,6 +10,7 @@ import {
   ICreatePartnerPayload,
   IPartner,
   IPartnerContract,
+  IPartnerOrderKpiSummary,
   IPartnerOrder,
   IPartnerServiceCatalogItem,
   IPartnerUser,
@@ -185,6 +186,19 @@ export async function listPartnerOrdersAction(
   const query = toQueryString(params)
 
   return await fetchApi<IPaginatedData<IPartnerOrder>>(`/api/clinic/partner-orders${query}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+}
+
+export async function getPartnerOrdersKpiAction(
+  tenantSlug: string,
+  params: Omit<PartnerOrderListParams, 'pageNumber' | 'pageSize'> = {},
+) {
+  const query = toQueryString(params)
+
+  return await fetchApi<IPartnerOrderKpiSummary>(`/api/clinic/partner-orders/kpis${query}`, {
     method: 'GET',
     tenantSlug,
     cache: 'no-store',

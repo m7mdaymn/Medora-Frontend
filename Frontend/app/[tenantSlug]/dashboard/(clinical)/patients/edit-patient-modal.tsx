@@ -116,6 +116,7 @@ export function EditPatientModal({ patient }: { patient: IPatient }) {
 
   const onSubmit = async (values: UpdatePatientInput) => {
     try {
+      // 1. تحديث البيانات الأساسية
       const result = await updatePatientAction(patient.id, values, tenantSlug as string)
 
       if (result.success) {
@@ -147,7 +148,7 @@ export function EditPatientModal({ patient }: { patient: IPatient }) {
       } else {
         toast.error(result.message)
       }
-    } catch {
+    } catch (error) {
       toast.error('حدث خطأ غير متوقع أثناء التعديل')
     }
   }

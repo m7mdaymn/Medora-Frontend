@@ -16,6 +16,22 @@ export interface IPatientSummary {
   }[]
 }
 
+export interface IPatientCreditBalance {
+  patientId: string
+  balance: number
+  updatedAt: string
+}
+
+export interface IPatientCreditHistoryItem {
+  id: string
+  type: string
+  reason: string
+  amount: number
+  balanceAfter: number
+  notes: string | null
+  createdAt: string
+}
+
 export interface IPatientPartnerOrderTimelineItem {
   id: string
   visitId: string

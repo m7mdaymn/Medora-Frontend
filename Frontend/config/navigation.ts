@@ -1,21 +1,15 @@
 import {
   Activity,
-  BadgeCheck,
   Banknote,
-  Bell,
-  Building2,
-  Briefcase,
   CalendarDays,
   ClipboardList,
   Clock,
   Handshake,
   LayoutDashboard,
   MessageSquare,
-  Package,
   PieChart,
   Receipt,
   Settings,
-  ShoppingCart,
   Stethoscope,
   Users,
   type LucideIcon,
@@ -40,7 +34,7 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
     label: 'شاشة الطبيب', // بدل مساحة عمل الطبيب
     items: [
       {
-        title: 'كشوفات اليوم', // بدل طابور الكشف (لأن الطابور كلمة مش احترافية للمرضى)
+        title: 'إجراء كشف',
         href: '/doctor/queue',
         icon: Activity,
         roles: ['Doctor'],
@@ -58,15 +52,27 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         roles: ['Doctor'],
       },
       {
-        title: 'تقارير الطبيب',
+        title: 'تقارير الأرباح',
         href: '/doctor/reports',
-        icon: PieChart,
+        icon: Banknote,
+        roles: ['Doctor'],
+      },
+      {
+        title: 'التعاقدات',
+        href: '/doctor/contracts',
+        icon: Handshake,
         roles: ['Doctor'],
       },
       {
         title: 'إعدادات الكشف', // مخصصة أكتر للدكتور
         href: '/doctor/settings',
         icon: Settings,
+        roles: ['Doctor'],
+      },
+      {
+        title: 'الدعم الفني',
+        href: '/support',
+        icon: MessageSquare,
         roles: ['Doctor'],
       },
     ],
@@ -80,7 +86,7 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         title: 'الرئيسية', // أسهل وأسرع للعين
         href: '/',
         icon: LayoutDashboard,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
+        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
       },
       {
         title: 'العيادة الآن', // بتدي انطباع إن دي شاشة الـ Live للمرضى اللي حاضرين
@@ -101,34 +107,10 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
       },
       {
-        title: 'المخزون',
-        href: '/inventory',
-        icon: Package,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
-      },
-      {
-        title: 'طلبات المتجر',
-        href: '/marketplace-orders',
-        icon: ShoppingCart,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
-      },
-      {
-        title: 'طلبات الخدمة الذاتية',
-        href: '/self-service-requests',
-        icon: BadgeCheck,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'SuperAdmin'],
-      },
-      {
-        title: 'الرسائل',
-        href: '/messages',
+        title: 'الدعم الفني',
+        href: '/support',
         icon: MessageSquare,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'Doctor', 'Nurse', 'SuperAdmin'],
-      },
-      {
-        title: 'الإشعارات',
-        href: '/notifications',
-        icon: Bell,
-        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'Doctor', 'Nurse', 'SuperAdmin'],
+        roles: ['ClinicOwner', 'ClinicManager', 'Receptionist', 'Nurse', 'SuperAdmin'],
       },
     ],
   },
@@ -147,37 +129,13 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         title: 'المصروفات والعهد', // مصطلح مالي أصح
         href: '/expenses',
         icon: Banknote,
-        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
+        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin','Receptionist'],
       },
       {
-        title: 'حركة الخزنة والتقارير', // بيفهم صاحب العيادة إن هنا الفلوس
+        title: 'حركة الخزنة والتقارير',
         href: '/reports',
         icon: PieChart,
         roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
-      },
-      {
-        title: 'تعاقدات الشركاء',
-        href: '/contracts',
-        icon: Handshake,
-        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
-      },
-    ],
-  },
-
-  {
-    label: 'بوابة المتعاقد',
-    items: [
-      {
-        title: 'طلبات الخدمات',
-        href: '/contractor/orders',
-        icon: Handshake,
-        roles: ['Contractor'],
-      },
-      {
-        title: 'دليل الخدمات',
-        href: '/contractor/services',
-        icon: ClipboardList,
-        roles: ['Contractor'],
       },
     ],
   },
@@ -199,28 +157,64 @@ export const SIDEBAR_NAVIGATION: NavCategory[] = [
         roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
       },
       {
-        title: 'إدارة الفروع',
-        href: '/branches',
-        icon: Building2,
-        roles: ['ClinicOwner', 'BranchManager', 'SuperAdmin'],
-      },
-      {
-        title: 'إدارة القوى العاملة',
-        href: '/workforce',
-        icon: Briefcase,
-        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
-      },
-      {
         title: 'لائحة الأسعار', // الكلمة السحرية في أي عيادة للخدمات
         href: '/services',
         icon: Banknote,
         roles: ['ClinicOwner', 'SuperAdmin'],
       },
       {
+        title: 'تعاقدات الشركات', // أوضح من كلمة تعاقدات مبهمة
+        href: '/contracts',
+        icon: Handshake,
+        roles: ['ClinicOwner', 'ClinicManager', 'SuperAdmin'],
+      },
+      {
         title: 'بيانات المنشأة', // أشيك من "إعدادات العيادة"
         href: '/settings',
         icon: Settings,
         roles: ['ClinicOwner', 'SuperAdmin'],
+      },
+    ],
+  },
+
+  {
+    label: 'لوحة الشريك',
+    items: [
+      {
+        title: 'الطلبات الجديدة',
+        href: '/contractor/requests',
+        icon: ClipboardList,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'سجل الطلبات',
+        href: '/contractor/orders',
+        icon: Receipt,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'التقارير',
+        href: '/contractor/reports',
+        icon: PieChart,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'روابط التعاقد',
+        href: '/contractor/links',
+        icon: Handshake,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'مركز الدعم',
+        href: '/contractor/support',
+        icon: MessageSquare,
+        roles: ['Contractor'],
+      },
+      {
+        title: 'الإعدادات',
+        href: '/contractor/settings',
+        icon: Settings,
+        roles: ['Contractor'],
       },
     ],
   },

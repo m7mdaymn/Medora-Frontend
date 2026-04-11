@@ -46,17 +46,7 @@ export async function YearlyFinanceTab({
       </div>
     )
   }
-
-  const report = {
-    ...originalReport,
-    totalRevenue: originalReport.totalPaid,
-    totalPaid: originalReport.totalRevenue,
-    months: originalReport.months.map((m: IMonthlyFinance) => ({
-      ...m,
-      totalRevenue: m.totalPaid,
-      totalPaid: m.totalRevenue,
-    })),
-  }
+  const report = originalReport
 
   return (
     <div className='space-y-10 animate-in fade-in duration-500'>

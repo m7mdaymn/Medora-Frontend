@@ -1,13 +1,11 @@
 import {
   Activity,
-  BarChart3,
   Building2,
   ClipboardList,
   CreditCard,
   Gauge,
   LayoutDashboard,
-  ShieldCheck,
-  Sparkles,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -29,12 +27,12 @@ export const SUPER_ADMIN_NAV_ITEMS: PlatformNavItem[] = [
     icon: Gauge,
   },
   {
-    title: 'إدارة العيادات (Tenants)',
+    title: 'إدارة الكيانات (Tenants)',
     href: '/admin/tenants',
     icon: Building2,
   },
   {
-    title: 'حالة العيادات',
+    title: 'حالة الكيانات',
     href: '/admin/tenant-status',
     icon: ClipboardList,
   },
@@ -49,38 +47,31 @@ export const SUPER_ADMIN_NAV_ITEMS: PlatformNavItem[] = [
     icon: Activity,
   },
   {
+    title: 'دعم المنصة',
+    href: '/admin/support',
+    icon: MessageSquare,
+  },
+  {
     title: 'الفواتير والتحصيل',
     href: '/admin/billing',
     icon: CreditCard,
   },
   {
-    title: 'تحليلات المنصة',
-    href: '/admin/analytics',
-    icon: BarChart3,
-  },
-  {
-    title: 'إدارة الخطط',
-    href: '/admin/plans',
-    icon: Sparkles,
-  },
-  {
-    title: 'إدارة الخواص',
-    href: '/admin/feature-flags',
-    icon: ShieldCheck,
-  },
-  {
-    title: 'سجل العمليات',
-    href: '/admin/audit-log',
-    icon: ClipboardList,
-  },
-  {
-    title: 'صلاحيات المنصة',
-    href: '/admin/access-control',
-    icon: ShieldCheck,
-  },
-  {
     title: 'صحة النظام',
     href: '/admin/health',
     icon: Activity,
+  },
+]
+
+export const WORKER_NAV_ITEMS: PlatformNavItem[] = [
+  {
+    title: 'إدارة الكيانات (Tenants)',
+    href: '/admin/tenants',
+    icon: Building2,
+  },
+  {
+    title: 'دعم المنصة',
+    href: '/admin/support',
+    icon: MessageSquare,
   },
 ]

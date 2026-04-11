@@ -1,5 +1,15 @@
 export type MessageChannel = 'WhatsApp' | 'PWA' | string
 
+export type MessageScenario =
+  | 'PatientAccountCreated'
+  | 'QueueTicketIssued'
+  | 'QueueTurnReady'
+  | 'MedicationReminder'
+  | 'Manual'
+  | 'BookingConfirmed'
+  | 'BookingCancelled'
+  | string
+
 export type MessageStatus =
   | 'Pending'
   | 'Sending'
@@ -32,7 +42,7 @@ export interface IMessageLog {
 }
 
 export interface ISendMessagePayload {
-  templateName: string
+  templateName: MessageScenario
   recipientPhone?: string
   recipientUserId?: string
   channel: MessageChannel

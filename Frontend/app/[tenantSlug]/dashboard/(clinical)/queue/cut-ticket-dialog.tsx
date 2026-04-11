@@ -63,6 +63,7 @@ export function CutTicketDialog({ tenantSlug, activeSessions, doctors }: CutTick
       // تأكدنا إن الـ doctorServiceId بيبدأ فاضي عشان نجبره يختار
       doctorServiceId: '',
       visitType: 'Exam',
+      source: 'WalkInTicket',
       paidAmount: undefined,
     },
   })

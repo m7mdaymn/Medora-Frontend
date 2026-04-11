@@ -9,6 +9,7 @@ import { useTenantStore } from '../../../../../../store/useTenantStore'
 import { IDoctor } from '../../../../../../types/doctor'
 import { IPatientSummary } from '../../../../../../types/patient-app'
 import { IVisit } from '../../../../../../types/visit'
+import { VisitBillingTab } from './billing-tab'
 import { ClinicalTab } from './clinical-tab'
 import { LabsTab } from './lab-tab'
 import { PartnerReferralsTab } from './partner-referrals-tab'
@@ -85,6 +86,7 @@ export function VisitTerminalClient({
 
         <div className='flex flex-col gap-6 w-full pb-10'>
           <ClinicalTab visit={visit} tenantSlug={tenantSlug} doctor={doctor} isClosed={isClosed} />
+          <VisitBillingTab visit={visit} tenantSlug={tenantSlug} isClosed={isClosed} />
           <PrescriptionTab visit={visit} tenantSlug={tenantSlug} isClosed={isClosed} />
           <LabsTab visit={visit} tenantSlug={tenantSlug} isClosed={isClosed} />
           <PartnerReferralsTab visit={visit} tenantSlug={tenantSlug} isClosed={isClosed} />

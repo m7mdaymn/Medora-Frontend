@@ -1,25 +1,8 @@
 export type VisitStatus = 'Open' | 'Completed'
 export type VisitType = 'Exam' | 'Consultation' | string
-export type VisitSource =
-  | 'WalkInTicket'
-  | 'Booking'
-  | 'ConsultationBooking'
-  | 'PatientSelfServiceTicket'
-  | 'PatientSelfServiceBooking'
-  | string
 export type LifecycleState = 'Draft' | string
 export type FinancialState = 'NotStarted' | string
 export type LabRequestType = 'Lab' | 'Imaging'
-export type DoctorCompensationMode = 'Salary' | 'Percentage' | 'FixedPerVisit' | string
-export type TicketStatus =
-  | 'Waiting'
-  | 'Called'
-  | 'InVisit'
-  | 'Completed'
-  | 'Skipped'
-  | 'NoShow'
-  | 'Cancelled'
-  | string
 
 export interface IPrescription {
   id: string
@@ -83,9 +66,13 @@ export interface IInvoice {
   remainingAmount: number
   status: 'Unpaid' | 'PartiallyPaid' | 'Paid' | 'Refunded' | string
   isServiceRendered: boolean
+
+  // <-- جديد: تفاصيل مالية دقيقة -->
+  creditAmount: number
   hasPendingSettlement: boolean
   pendingSettlementAmount: number
   totalRefunded: number
+  creditIssuedAt: string | null
   notes: string | null
 
   lineItems: IInvoiceLineItem[] // <-- جديد
@@ -109,28 +96,18 @@ export interface IChronicProfile {
 
 export interface IVisit {
   id: string
-  visitType: VisitType // <-- جديد
-  source: VisitSource
-  isBookingSource: boolean
+  visitType: VisitType 
   queueTicketId: string | null
   doctorId: string
   doctorName: string
   patientId: string
   patientName: string
-  patientPhone: string | null // <-- جديد
-  patientDateOfBirth: string | null // <-- جديد
-  patientGender: string | null // <-- جديد
-  serviceName?: string | null
-  servicePrice?: number | null
-  doctorCompensationMode?: DoctorCompensationMode | null
-  doctorCompensationValue?: number | null
-  estimatedDoctorCompensationAmount?: number | null
-  ticketStatus?: TicketStatus | null
-  isCancelled?: boolean
-  effectiveStatus?: string
+  patientPhone: string | null 
+  patientDateOfBirth: string | null 
+  patientGender: string | null 
   status: VisitStatus
-  lifecycleState: LifecycleState // <-- جديد
-  financialState: FinancialState // <-- جديد
+  lifecycleState: LifecycleState 
+  financialState: FinancialState
   complaint: string | null
   diagnosis: string | null
   notes: string
@@ -159,17 +136,8 @@ export interface IVisit {
   prescriptions: IPrescription[]
   labRequests: ILabRequest[]
   invoice: IInvoice | null
-  chronicProfile: IChronicProfile | null // <-- جديد
+  chronicProfile: IChronicProfile | null 
   createdAt: string
-}
-
-export interface IStaleVisit {
-  visitId: string
-  patientName: string
-  doctorName: string
-  startedAt: string
-  ageHours: number
-  queueTicketId?: string | null
 }
 
 export interface DoctorVisitFieldConfig {
@@ -182,4 +150,17 @@ export interface DoctorVisitFieldConfig {
   bloodSugar?: boolean
   oxygenSaturation?: boolean
   respiratoryRate?: boolean
+}
+
+export interface IStaleVisit {
+  visitId: string
+  patientId: string
+  patientName: string
+  doctorId: string
+  doctorName: string
+  queueTicketId: string
+  complaint: string
+  startedAt: string
+  ageHours: number
+  hasActiveQueueTicket: boolean
 }

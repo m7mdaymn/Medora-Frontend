@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { useAuthStore } from '@/store/useAuthStore'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { IBranch } from '@/types/branch'
@@ -82,6 +83,9 @@ function findDefaultTemplateSource(branches: IBranch[]): string {
 }
 
 export function BranchesManager({ tenantSlug, initialBranches }: BranchesManagerProps) {
+  const currentRole = useAuthStore((state) => state.user?.role)
+  const canMutateBranches = currentRole === 'ClinicOwner' || currentRole === 'SuperAdmin'
+
   const [branches, setBranches] = useState<IBranch[]>(initialBranches)
   const [showInactive, setShowInactive] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -210,6 +214,11 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
   }
 
   function openCreateDialog() {
+    if (!canMutateBranches) {
+      toast.error('إدارة الفروع متاحة لمالك العيادة فقط')
+      return
+    }
+
     const templateSource = findDefaultTemplateSource(branches)
     const defaultStaffTemplateSource =
       templateSource === GLOBAL_PAYMENT_TEMPLATE ? NO_STAFF_TEMPLATE : templateSource
@@ -230,6 +239,11 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
   }
 
   function openEditDialog(branch: IBranch) {
+    if (!canMutateBranches) {
+      toast.error('إدارة الفروع متاحة لمالك العيادة فقط')
+      return
+    }
+
     setEditingBranch(branch)
     form.reset({
       name: branch.name,
@@ -283,6 +297,11 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
   }
 
   async function onSubmit(values: UpsertBranchInput) {
+    if (!canMutateBranches) {
+      toast.error('إدارة الفروع متاحة لمالك العيادة فقط')
+      return
+    }
+
     setIsSubmitting(true)
 
     const payload = {
@@ -349,6 +368,11 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
   }
 
   async function onToggleStatus(branch: IBranch) {
+    if (!canMutateBranches) {
+      toast.error('إدارة الفروع متاحة لمالك العيادة فقط')
+      return
+    }
+
     const nextStatus = !branch.isActive
 
     if (!nextStatus) {
@@ -396,10 +420,12 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
             {isRefreshing ? <Loader2 className='h-4 w-4 animate-spin' /> : <RefreshCw className='h-4 w-4' />}
             تحديث
           </Button>
-          <Button type='button' onClick={openCreateDialog}>
-            <Plus className='h-4 w-4' />
-            إضافة فرع
-          </Button>
+          {canMutateBranches ? (
+            <Button type='button' onClick={openCreateDialog}>
+              <Plus className='h-4 w-4' />
+              إضافة فرع
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -439,25 +465,31 @@ export function BranchesManager({ tenantSlug, initialBranches }: BranchesManager
                     </TableCell>
                     <TableCell>
                       <div className='flex items-center justify-end gap-2'>
-                        <Button type='button' variant='outline' size='sm' onClick={() => openEditDialog(branch)}>
-                          <Pencil className='h-3.5 w-3.5' />
-                          تعديل
-                        </Button>
-                        <Button
-                          type='button'
-                          variant={branch.isActive ? 'destructive' : 'default'}
-                          size='sm'
-                          disabled={processingBranchId === branch.id}
-                          onClick={() => void onToggleStatus(branch)}
-                        >
-                          {processingBranchId === branch.id ? (
-                            <Loader2 className='h-4 w-4 animate-spin' />
-                          ) : branch.isActive ? (
-                            'إيقاف'
-                          ) : (
-                            'تفعيل'
-                          )}
-                        </Button>
+                        {canMutateBranches ? (
+                          <>
+                            <Button type='button' variant='outline' size='sm' onClick={() => openEditDialog(branch)}>
+                              <Pencil className='h-3.5 w-3.5' />
+                              تعديل
+                            </Button>
+                            <Button
+                              type='button'
+                              variant={branch.isActive ? 'destructive' : 'default'}
+                              size='sm'
+                              disabled={processingBranchId === branch.id}
+                              onClick={() => void onToggleStatus(branch)}
+                            >
+                              {processingBranchId === branch.id ? (
+                                <Loader2 className='h-4 w-4 animate-spin' />
+                              ) : branch.isActive ? (
+                                'إيقاف'
+                              ) : (
+                                'تفعيل'
+                              )}
+                            </Button>
+                          </>
+                        ) : (
+                          <Badge variant='outline'>قراءة فقط</Badge>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

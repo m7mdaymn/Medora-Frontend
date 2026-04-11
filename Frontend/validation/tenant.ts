@@ -12,6 +12,10 @@ export const CreateTenantSchema = v.object({
   contactPhone: v.optional(v.string()),
   address: v.optional(v.string()),
   logoUrl: v.optional(v.string()),
+  tenantKind: v.picklist(['Clinic', 'Laboratory', 'Radiology', 'Pharmacy'], 'نوع الكيان مطلوب'),
+  hasBranches: v.boolean(),
+  initialBranchNames: v.optional(v.string()),
+  linkedTenantIds: v.optional(v.array(v.string())),
 
   // بيانات المالك
   ownerName: v.pipe(v.string(), v.nonEmpty('اسم المالك مطلوب'), v.maxLength(200)),

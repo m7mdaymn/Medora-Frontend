@@ -6,6 +6,7 @@ import {
   setInventoryItemActivationAction,
   updateInventoryItemAction,
 } from '@/actions/inventory/items'
+import { getBranchesAction as getClinicBranchesAction } from '@/actions/branch/branches'
 import { DashboardHeader, DashboardShell } from '@/components/shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,10 +14,11 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useBranchSelectionStore } from '@/store/useBranchSelectionStore'
 import { IInventoryItem, IInventoryItemPayload, InventoryItemType } from '@/types/inventory'
 import { Search } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
 
@@ -29,17 +31,33 @@ function statusColor(active: boolean): 'default' | 'outline' {
 export default function InventoryPage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
+  const selectedBranchByTenant = useBranchSelectionStore((state) => state.selectedBranchByTenant)
+  const selectedBranchId = tenantSlug ? selectedBranchByTenant[tenantSlug] : undefined
 
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  const { data: branchesRes } = useSWR(['clinic-branches', tenantSlug], () =>
+    getClinicBranchesAction(tenantSlug, false),
+  )
+
+  const branches = useMemo(
+    () => (branchesRes?.data ?? []).filter((branch) => branch.isActive),
+    [branchesRes?.data],
+  )
+  const defaultBranchId = useMemo(
+    () => selectedBranchId || branches[0]?.id || '',
+    [branches, selectedBranchId],
+  )
+
   const {
     data: itemsRes,
     isLoading,
     mutate,
-  } = useSWR(['inventory-items', tenantSlug, search], () =>
+  } = useSWR(['inventory-items', tenantSlug, search, defaultBranchId], () =>
     listInventoryItemsAction(tenantSlug, {
+      branchId: defaultBranchId || undefined,
       search: search || undefined,
       pageNumber: 1,
       pageSize: 100,
@@ -48,8 +66,6 @@ export default function InventoryPage() {
   )
 
   const items = useMemo(() => itemsRes?.data?.items ?? [], [itemsRes?.data?.items])
-
-  const defaultBranchId = useMemo(() => items[0]?.branchId || '', [items])
 
   const [form, setForm] = useState<IInventoryItemPayload>({
     name: '',
@@ -70,6 +86,16 @@ export default function InventoryPage() {
     showInLanding: false,
     images: [],
   })
+
+  useEffect(() => {
+    if (editingId) {
+      return
+    }
+
+    if (!form.branchId && defaultBranchId) {
+      setForm((current) => ({ ...current, branchId: defaultBranchId }))
+    }
+  }, [defaultBranchId, editingId, form.branchId])
 
   const resetForm = () => {
     setEditingId(null)
@@ -127,7 +153,7 @@ export default function InventoryPage() {
     }
 
     if (!form.branchId.trim()) {
-      toast.error('رقم الفرع مطلوب قبل الحفظ')
+      toast.error('اختيار الفرع مطلوب قبل الحفظ')
       return
     }
 
@@ -279,14 +305,21 @@ export default function InventoryPage() {
             </div>
 
             <div className='space-y-2 md:col-span-2'>
-              <Label>Branch Id</Label>
-              <Input
+              <Label>الفرع</Label>
+              <select
+                className='w-full h-10 rounded-md border border-input bg-background px-3 text-sm'
                 value={form.branchId || defaultBranchId}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, branchId: event.target.value }))
                 }
-                placeholder='GUID للفرع'
-              />
+              >
+                <option value=''>اختر الفرع</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className='space-y-2 md:col-span-2'>

@@ -28,7 +28,13 @@ export async function getInvoicesAction(
 
 export async function addPaymentAction(
   tenantSlug: string,
-  payload: { invoiceId: string; amount: number; paymentMethod: string; notes?: string },
+  payload: {
+    invoiceId: string
+    amount: number
+    paymentMethod: string
+    referenceNumber?: string
+    notes?: string
+  },
 ): Promise<BaseApiResponse<IPayment>> {
   const result = await fetchApi<IPayment>('/api/clinic/payments', {
     method: 'POST',
@@ -73,7 +79,7 @@ export async function addInvoiceLineItemAction(
   tenantSlug: string,
   invoiceId: string,
   payload: {
-    clinicServiceId: string
+    clinicServiceId?: string
     itemName: string
     unitPrice: number
     quantity: number

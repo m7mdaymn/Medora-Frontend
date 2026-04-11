@@ -58,6 +58,60 @@ export interface IPartnerOrder {
   createdAt: string
 }
 
+export interface IPartnerOrderTypeKpi {
+  partnerType: PartnerType
+  totalOrders: number
+  completedOrders: number
+  completionRate: number
+  totalSettledAmount: number
+  clinicRevenueAmount: number
+}
+
+export interface IPartnerOrderKpiSummary {
+  totalOrders: number
+  sentOrders: number
+  acceptedOrders: number
+  inProgressOrders: number
+  completedOrders: number
+  cancelledOrders: number
+  completionRate: number
+  totalEstimatedAmount: number
+  totalSettledAmount: number
+  totalClinicRevenue: number
+  totalDoctorPayout: number
+  averageCompletionHours: number | null
+  periodFrom: string | null
+  periodTo: string | null
+  byPartnerType: IPartnerOrderTypeKpi[]
+}
+
+export interface IPartnerOrderTypeKpi {
+  partnerType: PartnerType
+  totalOrders: number
+  completedOrders: number
+  completionRate: number
+  totalSettledAmount: number
+  clinicRevenueAmount: number
+}
+
+export interface IPartnerOrderKpiSummary {
+  totalOrders: number
+  sentOrders: number
+  acceptedOrders: number
+  inProgressOrders: number
+  completedOrders: number
+  cancelledOrders: number
+  completionRate: number
+  totalEstimatedAmount: number
+  totalSettledAmount: number
+  totalClinicRevenue: number
+  totalDoctorPayout: number
+  averageCompletionHours: number | null
+  periodFrom: string | null
+  periodTo: string | null
+  byPartnerType: IPartnerOrderTypeKpi[]
+}
+
 export interface IPartnerServiceCatalogItem {
   id: string
   partnerId: string

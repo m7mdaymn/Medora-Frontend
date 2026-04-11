@@ -4,8 +4,6 @@ import { fetchApi } from '@/lib/fetchApi'
 import { BaseApiResponse } from '@/types/api'
 import { IPatientSummary } from '../../types/patient-app'
 
-export type { IPatientSummary } from '../../types/patient-app'
-
 export interface IRecentVisit {
   id: string
   doctorName: string

@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils'
 const tabs = [
   { id: 'overview', label: 'نظرة عامة' },
   { id: 'doctors', label: 'حسابات ونسب الأطباء' },
-  { id: 'monthly', label: 'التقارير السنوية' }, // عدلت الاسم عشان يتوافق مع Yearly
+  { id: 'services', label: 'مبيعات الخدمات' },
+  { id: 'yearly', label: 'التقارير السنوية' },
 ]
 
 export function FinanceTabsNavigation() {

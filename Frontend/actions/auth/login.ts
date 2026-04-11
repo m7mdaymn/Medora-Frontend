@@ -5,11 +5,20 @@ import { fetchApi } from '../../lib/fetchApi'
 import { ILogin } from '../../types/auth' // تأكد من مسار الـ Interface بتاعك
 import { LoginInput } from '../../validation/login'
 
-export async function loginAction(values: LoginInput, tenantSlug: string) {
+type StaffPortalType = 'Staff' | 'Partner'
+
+export async function loginAction(
+  values: LoginInput,
+  tenantSlug: string,
+  portalType: StaffPortalType = 'Staff',
+) {
   // 1. استخدام الـ Wrapper الموحد
   const result = await fetchApi<ILogin>('/api/Auth/login', {
     method: 'POST',
-    body: JSON.stringify(values),
+    body: JSON.stringify({
+      ...values,
+      portalType,
+    }),
     tenantSlug, // الـ fetchApi هيتعامل ويحطه في هيدر X-Tenant
     cache: 'no-store', // عشان نضمن إن الريكويست ميتعملوش كاش بالغلط
   })
@@ -26,12 +35,41 @@ export async function loginAction(values: LoginInput, tenantSlug: string) {
     const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString())
     const role =
       payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role
+    const tenantType = (payload?.tenantType as string | undefined) || result.data.user.tenantType
 
     // منع المريض من دخول لوحة الموظفين
     if (role === 'Patient') {
       return {
         success: false,
         message: 'هذا الحساب خاص بمريض. يرجى تسجيل الدخول من بوابة المرضى.',
+      }
+    }
+
+    if (portalType === 'Staff' && role === 'Contractor') {
+      return {
+        success: false,
+        message: 'هذا الحساب خاص بالشركاء. يرجى تسجيل الدخول من بوابة الشركاء.',
+      }
+    }
+
+    if (portalType === 'Partner' && role !== 'Contractor') {
+      return {
+        success: false,
+        message: 'هذه البوابة مخصصة لحسابات الشركاء فقط.',
+      }
+    }
+
+    if (portalType === 'Staff' && tenantType && tenantType !== 'Clinic') {
+      return {
+        success: false,
+        message: 'هذا المستأجر ليس من نوع العيادات.',
+      }
+    }
+
+    if (portalType === 'Partner' && tenantType && tenantType !== 'Partner') {
+      return {
+        success: false,
+        message: 'هذا المستأجر ليس من نوع الشركاء.',
       }
     }
   } catch {

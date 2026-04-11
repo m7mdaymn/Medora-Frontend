@@ -31,9 +31,18 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { IPartnerOrder, PartnerOrderStatus, PartnerType } from '@/types/partner'
-import { CalendarClock, CheckCircle2, Clock3, FileText, UserRound } from 'lucide-react'
+import {
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  FilterX,
+  TrendingUp,
+  UserRound,
+} from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
 
@@ -100,6 +109,11 @@ function partnerTypeLabel(partnerType: PartnerType): string {
   }
 }
 
+function formatCurrency(amount?: number | null): string {
+  if (amount == null) return 'غير محددة'
+  return `${amount.toLocaleString('ar-EG')} ج.م`
+}
+
 function toDateTimeLocal(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
@@ -143,7 +157,24 @@ export default function PartnerOrdersPage() {
     }),
   )
 
-  const orders = ordersRes?.data?.items || []
+  const orders = useMemo(() => ordersRes?.data?.items ?? [], [ordersRes?.data?.items])
+
+  const orderSummary = useMemo(() => {
+    return {
+      total: orders.length,
+      sent: orders.filter((order) => order.status === 'Sent').length,
+      active: orders.filter((order) => order.status === 'Accepted' || order.status === 'InProgress')
+        .length,
+      completed: orders.filter((order) => order.status === 'Completed').length,
+    }
+  }, [orders])
+
+  const hasActiveFilters = Boolean(statusFilter || partnerTypeFilter)
+
+  const clearFilters = () => {
+    setStatusFilter('')
+    setPartnerTypeFilter('')
+  }
 
   const runOrderAction = async (
     orderId: string,
@@ -290,49 +321,103 @@ export default function PartnerOrdersPage() {
         text='متابعة دورة الطلبات الخارجية من الإرسال وحتى رفع النتيجة'
       />
 
-      <Card className='rounded-2xl border-border/50 p-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
-        <div className='space-y-2'>
-          <Label>الحالة</Label>
-          <Select
-            value={statusFilter || 'all'}
-            onValueChange={(value) =>
-              setStatusFilter(value === 'all' ? '' : (value as PartnerOrderStatus))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder='كل الحالات' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>كل الحالات</SelectItem>
-              {FILTER_STATUSES.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {statusLabel(status)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <Card className='relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-sky-50 via-background to-emerald-50 p-5'>
+        <div className='absolute -top-20 -left-10 h-44 w-44 rounded-full bg-sky-200/30 blur-3xl' />
+        <div className='absolute -bottom-14 -right-8 h-40 w-40 rounded-full bg-emerald-200/30 blur-3xl' />
 
-        <div className='space-y-2'>
-          <Label>نوع الشريك</Label>
-          <Select
-            value={partnerTypeFilter || 'all'}
-            onValueChange={(value) =>
-              setPartnerTypeFilter(value === 'all' ? '' : (value as PartnerType))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder='كل الأنواع' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>كل الأنواع</SelectItem>
-              {FILTER_PARTNER_TYPES.map((partnerType) => (
-                <SelectItem key={partnerType} value={partnerType}>
-                  {partnerTypeLabel(partnerType)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className='relative grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          <div className='rounded-2xl border border-border/50 bg-background/75 p-4'>
+            <p className='text-xs text-muted-foreground'>إجمالي الطلبات</p>
+            <div className='mt-2 flex items-center gap-2'>
+              <Building2 className='h-4 w-4 text-primary' />
+              <p className='text-2xl font-black'>{orderSummary.total}</p>
+            </div>
+          </div>
+
+          <div className='rounded-2xl border border-border/50 bg-background/75 p-4'>
+            <p className='text-xs text-muted-foreground'>طلبات جديدة</p>
+            <div className='mt-2 flex items-center gap-2'>
+              <Clock3 className='h-4 w-4 text-amber-600' />
+              <p className='text-2xl font-black'>{orderSummary.sent}</p>
+            </div>
+          </div>
+
+          <div className='rounded-2xl border border-border/50 bg-background/75 p-4'>
+            <p className='text-xs text-muted-foreground'>قيد التنفيذ</p>
+            <div className='mt-2 flex items-center gap-2'>
+              <TrendingUp className='h-4 w-4 text-sky-600' />
+              <p className='text-2xl font-black'>{orderSummary.active}</p>
+            </div>
+          </div>
+
+          <div className='rounded-2xl border border-border/50 bg-background/75 p-4'>
+            <p className='text-xs text-muted-foreground'>طلبات مكتملة</p>
+            <div className='mt-2 flex items-center gap-2'>
+              <CheckCircle2 className='h-4 w-4 text-emerald-600' />
+              <p className='text-2xl font-black'>{orderSummary.completed}</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card className='rounded-3xl border border-border/60 p-4'>
+        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3'>
+          <div className='space-y-2'>
+            <Label>الحالة</Label>
+            <Select
+              value={statusFilter || 'all'}
+              onValueChange={(value) =>
+                setStatusFilter(value === 'all' ? '' : (value as PartnerOrderStatus))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='كل الحالات' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>كل الحالات</SelectItem>
+                {FILTER_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {statusLabel(status)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='space-y-2'>
+            <Label>نوع الشريك</Label>
+            <Select
+              value={partnerTypeFilter || 'all'}
+              onValueChange={(value) =>
+                setPartnerTypeFilter(value === 'all' ? '' : (value as PartnerType))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='كل الأنواع' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>كل الأنواع</SelectItem>
+                {FILTER_PARTNER_TYPES.map((partnerType) => (
+                  <SelectItem key={partnerType} value={partnerType}>
+                    {partnerTypeLabel(partnerType)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex items-end'>
+            <Button
+              type='button'
+              variant='outline'
+              className='w-full gap-2'
+              onClick={clearFilters}
+              disabled={!hasActiveFilters}
+            >
+              <FilterX className='h-4 w-4' />
+              مسح الفلاتر
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -342,42 +427,53 @@ export default function PartnerOrdersPage() {
           <Skeleton className='h-40 w-full rounded-2xl' />
         </div>
       ) : orders.length === 0 ? (
-        <Card className='rounded-2xl p-10 text-center text-muted-foreground'>
+        <Card className='rounded-3xl border border-dashed p-10 text-center text-muted-foreground'>
           لا توجد طلبات شريك مطابقة للفلتر الحالي.
         </Card>
       ) : (
-        <div className='grid gap-3'>
+        <div className='grid gap-4'>
           {orders.map((order) => {
             const isClosed = order.status === 'Completed' || order.status === 'Cancelled'
             const isBusy = workingOrderId === order.id || isDialogSaving
+            const isCompleted = order.status === 'Completed'
+
+            const cardTone = isCompleted
+              ? 'border-emerald-200/80 bg-emerald-50/40'
+              : order.status === 'Cancelled'
+                ? 'border-rose-200/80 bg-rose-50/40'
+                : 'border-border/60 bg-card'
 
             return (
-              <Card key={order.id} className='rounded-2xl p-4 border-border/50 space-y-3'>
-                <div className='flex items-start justify-between gap-3'>
-                  <div>
+              <Card key={order.id} className={`rounded-3xl border p-4 space-y-3 ${cardTone}`}>
+                <div className='flex flex-wrap items-start justify-between gap-3'>
+                  <div className='space-y-1'>
                     <p className='text-base font-bold'>{order.serviceNameSnapshot || 'خدمة خارجية'}</p>
                     <p className='text-xs text-muted-foreground'>
                       {order.partnerName} • {partnerTypeLabel(order.partnerType)}
                     </p>
                   </div>
-                  <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <Badge variant='outline'>{formatCurrency(order.finalCost ?? order.estimatedCost ?? order.servicePrice)}</Badge>
+                    <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+                  </div>
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-2 text-xs'>
-                  <div className='rounded-lg bg-muted/30 p-2 flex items-center gap-2'>
-                    <UserRound className='w-3.5 h-3.5 text-muted-foreground' />
+                <div className='grid grid-cols-1 gap-2 text-xs md:grid-cols-3'>
+                  <div className='rounded-xl border border-border/50 bg-background/70 p-2 flex items-center gap-2'>
+                    <UserRound className='h-3.5 w-3.5 text-muted-foreground' />
                     <span>{order.patientName || 'مريض غير محدد'}</span>
                   </div>
-                  <div className='rounded-lg bg-muted/30 p-2 flex items-center gap-2'>
-                    <CalendarClock className='w-3.5 h-3.5 text-muted-foreground' />
+                  <div className='rounded-xl border border-border/50 bg-background/70 p-2 flex items-center gap-2'>
+                    <CalendarClock className='h-3.5 w-3.5 text-muted-foreground' />
                     <span>
                       {order.scheduledAt
                         ? new Date(order.scheduledAt).toLocaleString('ar-EG')
                         : 'بدون موعد حتى الآن'}
                     </span>
                   </div>
-                  <div className='rounded-lg bg-muted/30 p-2 flex items-center gap-2'>
-                    <Clock3 className='w-3.5 h-3.5 text-muted-foreground' />
+                  <div className='rounded-xl border border-border/50 bg-background/70 p-2 flex items-center gap-2'>
+                    <Clock3 className='h-3.5 w-3.5 text-muted-foreground' />
                     <span>
                       {order.resultUploadedAt
                         ? `النتيجة: ${new Date(order.resultUploadedAt).toLocaleString('ar-EG')}`
@@ -392,6 +488,12 @@ export default function PartnerOrdersPage() {
                     <span>{order.resultSummary}</span>
                   </div>
                 )}
+
+                {order.notes ? (
+                  <div className='rounded-xl border border-border/40 bg-muted/20 p-2 text-xs text-muted-foreground'>
+                    {order.notes}
+                  </div>
+                ) : null}
 
                 <div className='flex flex-wrap gap-2'>
                   {order.status === 'Sent' && (

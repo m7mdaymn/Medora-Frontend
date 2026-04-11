@@ -2,6 +2,7 @@ import { ClinicImage } from '@/components/shared/clinic-image'
 import { fetchApi } from '@/lib/fetchApi'
 import { IPublicClinic } from '../../../types/public'
 import { LoginForm } from './login-form'
+import { redirect } from 'next/navigation'
 
 export default async function LoginPage({ params }: { params: Promise<{ tenantSlug: string }> }) {
   const { tenantSlug } = await params
@@ -14,7 +15,9 @@ export default async function LoginPage({ params }: { params: Promise<{ tenantSl
     clinic = response?.data || null
   } catch {}
 
-  console.log(clinic)
+  if (clinic?.tenantType === 'Partner') {
+    redirect(`/${tenantSlug}/partner/login`)
+  }
 
   return (
     <div className='min-h-screen w-full grid grid-cols-1 lg:grid-cols-2'>

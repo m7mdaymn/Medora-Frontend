@@ -1,9 +1,5 @@
-import {
-  getClinicOverviewReportAction,
-  getClinicServicesReportAction,
-} from '@/actions/reports/clinic-reports'
+import { getClinicOverviewReportAction } from '@/actions/reports/clinic-reports'
 import { PeriodFilter } from '@/components/shared/period-filter'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -13,7 +9,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { ActivityIcon, ReceiptIcon, WalletIcon } from 'lucide-react'
 
 export async function OverviewTab({
   tenantSlug,
@@ -24,229 +19,207 @@ export async function OverviewTab({
   from?: string
   to?: string
 }) {
-  const [overviewResponse, servicesResponse] = await Promise.all([
-    getClinicOverviewReportAction(tenantSlug, { from, to }),
-    getClinicServicesReportAction(tenantSlug, { from, to }),
-  ])
+  const today = new Date()
+  const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate())
+  const actualFrom = from || lastYear.toISOString().split('T')[0]
+  const actualTo = to || today.toISOString().split('T')[0]
 
-  const report = overviewResponse.success ? overviewResponse.data : null
-  const servicesReport = servicesResponse.success ? servicesResponse.data : null
-  const serviceRows = report?.servicesSold?.length
-    ? report.servicesSold
-    : servicesReport?.rows || []
-  const topSoldService = report?.topSoldService || serviceRows[0] || null
+  const response = await getClinicOverviewReportAction(tenantSlug, {
+    from: actualFrom,
+    to: actualTo,
+  })
+  const report = response?.data
 
   if (!report) {
     return (
-      <div className='p-8 text-center border rounded-xl text-muted-foreground bg-muted/20'>
-        لا توجد بيانات مالية لهذه الفترة.
+      <div className='flex flex-col items-center justify-center py-20 text-muted-foreground border border-dashed rounded-xl bg-muted/10'>
+        <p className='text-sm font-medium'>لا توجد بيانات مالية لهذه الفترة المحددة.</p>
       </div>
     )
   }
 
-  const isPositiveCashflow = report.netCashflow >= 0
+  const isProfit = report.netCashflow >= 0
 
   return (
-    <div className='space-y-8 animate-in fade-in duration-500'>
-      <div className='flex items-center justify-between'>
-        <h3 className='text-lg font-black tracking-tight'>ملخص الأداء المالي والتشغيلي</h3>
+    <div className='space-y-10 animate-in fade-in duration-500'>
+      {/* Header Area */}
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4'>
+        <div >
+          <h3 className='text-lg font-black tracking-tight'>نظرة عامة على الأداء</h3>
+        </div>
         <PeriodFilter />
       </div>
 
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
-            <CardTitle className='text-sm font-bold text-muted-foreground'>
-              إجمالي التحصيل
-            </CardTitle>
-            <ActivityIcon className='w-4 h-4 text-muted-foreground' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-black'>{report.totalCollected.toLocaleString('ar-EG')} ج.م</div>
-            <p className='text-xs text-muted-foreground mt-1'>إجمالي ما تم تحصيله في الفترة</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
-            <CardTitle className='text-sm font-bold text-muted-foreground'>
+      {/* 1. Metric Blocks (Stripe-like Minimalist Grid) */}
+      <div className='border rounded-xl bg-card overflow-hidden shadow-sm'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-border/60'>
+          {/* Revenue */}
+          <div className='p-6 flex flex-col gap-2'>
+            <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>
               إجمالي الفواتير
-            </CardTitle>
-            <WalletIcon className='w-4 h-4 text-primary' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-black text-primary'>{report.totalInvoiced.toLocaleString('ar-EG')} ج.م</div>
-            <p className='text-xs text-muted-foreground mt-1'>إجمالي قيمة الزيارات المسعرة</p>
-          </CardContent>
-        </Card>
+            </span>
+            <div className='flex items-baseline gap-1'>
+              <span className='text-2xl font-black font-mono tracking-tight text-foreground'>
+                {report.totalInvoiced.toLocaleString()}
+              </span>
+              <span className='text-xs font-semibold text-muted-foreground'>ج.م</span>
+            </div>
+            <span className='text-xs text-muted-foreground mt-1'>قبل التحصيل والخصومات</span>
+          </div>
 
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
-            <CardTitle className='text-sm font-bold text-muted-foreground'>
-              المصروفات الخارجة
-            </CardTitle>
-            <ReceiptIcon className='w-4 h-4 text-destructive' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-black text-destructive'>{report.totalExpenses.toLocaleString('ar-EG')} ج.م</div>
-            <p className='text-xs text-muted-foreground mt-1'>مصروفات التشغيل في الفترة</p>
-          </CardContent>
-        </Card>
+          {/* Cash Collected */}
+          <div className='p-6 flex flex-col gap-2'>
+            <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>
+              المحصل الفعلي
+            </span>
+            <div className='flex items-baseline gap-1'>
+              <span className='text-2xl font-black font-mono tracking-tight text-foreground'>
+                {report.totalCollected.toLocaleString()}
+              </span>
+              <span className='text-xs font-semibold text-muted-foreground'>ج.م</span>
+            </div>
+            <span className='text-xs text-muted-foreground mt-1'>
+              من إجمالي <span className='font-bold text-foreground'>{report.totalVisits}</span> زيارة
+            </span>
+          </div>
 
-        <Card
-          className={cn(
-            'border-2',
-            isPositiveCashflow
-              ? 'border-primary/50 bg-primary/5'
-              : 'border-destructive/50 bg-destructive/5',
-          )}
-        >
-          <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
-            <CardTitle
-              className={cn(
-                'text-sm font-black',
-                isPositiveCashflow ? 'text-primary' : 'text-destructive',
-              )}
-            >
-              صافي التدفق النقدي
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Expenses */}
+          <div className='p-6 flex flex-col gap-2'>
+            <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>
+              المصروفات التشغيلية
+            </span>
+            <div className='flex items-baseline gap-1'>
+              <span className='text-2xl font-black font-mono tracking-tight text-foreground'>
+                {report.totalExpenses.toLocaleString()}
+              </span>
+              <span className='text-xs font-semibold text-muted-foreground'>ج.م</span>
+            </div>
+            <span className='text-xs text-muted-foreground mt-1'>مصروفات الفترة المحددة</span>
+          </div>
+
+          {/* Net Profit (Dynamic Color Accent) */}
+          <div
+            className={cn(
+              'p-6 flex flex-col gap-2 relative overflow-hidden',
+              isProfit ? 'bg-emerald-500/5' : 'bg-rose-500/5',
+            )}
+          >
+            {/* Accent Line */}
             <div
               className={cn(
-                'text-3xl font-black',
-                isPositiveCashflow ? 'text-primary' : 'text-destructive',
+                'absolute top-0 bottom-0 right-0 w-1',
+                isProfit ? 'bg-emerald-500' : 'bg-rose-500',
+              )}
+            />
+
+            <span
+              className={cn(
+                'text-[10px] font-bold uppercase tracking-wider',
+                isProfit
+                  ? 'text-emerald-700 dark:text-emerald-500'
+                  : 'text-rose-700 dark:text-rose-500',
               )}
             >
-              {report.netCashflow.toLocaleString('ar-EG')} ج.م
+              صافي الربح
+            </span>
+            <div className='flex items-baseline gap-1'>
+              <span
+                className={cn(
+                  'text-3xl font-black font-mono tracking-tight',
+                  isProfit
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400',
+                )}
+              >
+                {isProfit ? '+' : ''}
+                {report.netCashflow.toLocaleString()}
+              </span>
+              <span
+                className={cn(
+                  'text-xs font-bold',
+                  isProfit ? 'text-emerald-600/70' : 'text-rose-600/70',
+                )}
+              >
+                ج.م
+              </span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-sm font-bold'>تفصيل مصادر الزيارات</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='grid gap-3 md:grid-cols-3 lg:grid-cols-6 text-sm'>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>إجمالي الزيارات</p>
-              <p className='font-black text-lg'>{report.totalVisits}</p>
-            </div>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>كشف</p>
-              <p className='font-black text-lg'>{report.examVisits}</p>
-            </div>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>استشارة</p>
-              <p className='font-black text-lg'>{report.consultationVisits}</p>
-            </div>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>من الحجز</p>
-              <p className='font-black text-lg'>{report.bookingVisits}</p>
-            </div>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>حضور مباشر</p>
-              <p className='font-black text-lg'>{report.walkInVisits}</p>
-            </div>
-            <div className='rounded-md border p-3'>
-              <p className='text-muted-foreground text-xs'>من التطبيق</p>
-              <p className='font-black text-lg'>{report.selfServiceVisits}</p>
-            </div>
+            <span className='text-xs font-medium text-muted-foreground mt-1'>
+              صافي التدفق النقدي بعد المصروفات
+            </span>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className='space-y-4'>
-        <h3 className='text-lg font-black tracking-tight'>نسب مساهمة الأطباء في التحصيل</h3>
-        <div className='overflow-hidden border rounded-md'>
-          <Table dir='rtl'>
-            <TableHeader className='bg-muted/50 h-12'>
-              <TableRow>
-                <TableHead className='font-bold text-right'>اسم الطبيب</TableHead>
-                <TableHead className='font-bold text-right'>التحصيل</TableHead>
-                <TableHead className='font-bold text-right'>النسبة من تحصيل العيادة</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {report.doctorsPercentages.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={3}
-                    className='h-24 text-center text-muted-foreground font-medium'
-                  >
-                    لا توجد كشوفات مسجلة في هذه الفترة
-                  </TableCell>
-                </TableRow>
-              ) : (
-                report.doctorsPercentages.map((doc) => (
-                  <TableRow key={doc.doctorId}>
-                    <TableCell className='font-bold'>{doc.doctorName}</TableCell>
-                    <TableCell className='text-primary font-black'>
-                      {doc.collectedAmount.toLocaleString('ar-EG')} ج.م
-                    </TableCell>
-                    <TableCell className='font-bold'>
-                      {doc.percentageOfClinicCollection.toLocaleString('ar-EG')}%
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
         </div>
       </div>
 
-      <div className='space-y-4'>
-        <h3 className='text-lg font-black tracking-tight'>الخدمات الأكثر بيعاً</h3>
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-sm font-bold'>الأكثر طلباً</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!topSoldService ? (
-              <p className='text-sm text-muted-foreground'>لا توجد خدمات مباعة في هذه الفترة.</p>
-            ) : (
-              <div className='text-sm'>
-                <p className='font-bold text-base'>{topSoldService.serviceName}</p>
-                <p className='text-muted-foreground'>
-                  الكمية: {topSoldService.quantity} •
-                  {` ${topSoldService.grossAmount.toLocaleString('ar-EG')} ج.م`}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2'>
+        <div className='rounded-lg border p-3 text-xs'>كشف: <b>{report.examVisits}</b></div>
+        <div className='rounded-lg border p-3 text-xs'>استشارة: <b>{report.consultationVisits}</b></div>
+        <div className='rounded-lg border p-3 text-xs'>حجوزات: <b>{report.bookingVisits}</b></div>
+        <div className='rounded-lg border p-3 text-xs'>حضور مباشر: <b>{report.walkInVisits}</b></div>
+        <div className='rounded-lg border p-3 text-xs'>خدمة ذاتية: <b>{report.selfServiceVisits}</b></div>
+      </div>
 
-        <div className='overflow-hidden border rounded-md'>
-          <Table dir='rtl'>
-            <TableHeader className='bg-muted/50 h-12'>
-              <TableRow>
-                <TableHead className='font-bold text-right'>الخدمة</TableHead>
-                <TableHead className='font-bold text-right'>الكمية</TableHead>
-                <TableHead className='font-bold text-right'>إجمالي البيع</TableHead>
-                <TableHead className='font-bold text-right'>عدد الفواتير</TableHead>
+      {/* 2. Doctor Performance Table (Clean UI) */}
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <h3 className='text-sm font-bold uppercase tracking-wider text-muted-foreground'>
+            أداء الأطباء
+          </h3>
+        </div>
+
+        <div className='border rounded-xl overflow-hidden shadow-sm'>
+          <Table>
+            <TableHeader className='bg-muted/30'>
+              <TableRow className='hover:bg-transparent border-border/40'>
+                <TableHead className='h-10 text-xs font-semibold text-muted-foreground'>
+                  اسم الطبيب
+                </TableHead>
+                <TableHead className='h-10 text-xs font-semibold text-muted-foreground text-center'>
+                  الكشوفات
+                </TableHead>
+                <TableHead className='h-10 text-xs font-semibold text-muted-foreground text-left'>
+                  المحصل
+                </TableHead>
+                <TableHead className='h-10 text-xs font-semibold text-muted-foreground text-left'>
+                  نمط التعاقد
+                </TableHead>
+                <TableHead className='h-10 text-xs font-semibold text-muted-foreground text-left'>
+                  المستحق التقديري
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {serviceRows.length === 0 ? (
+              {report.doctors.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
-                    className='h-24 text-center text-muted-foreground font-medium'
+                    colSpan={5}
+                    className='h-24 text-center text-xs text-muted-foreground font-medium'
                   >
-                    لا توجد خدمات مباعة في هذه الفترة
+                    لا توجد بيانات مسجلة للأطباء في هذه الفترة
                   </TableCell>
                 </TableRow>
               ) : (
-                serviceRows.slice(0, 10).map((service) => (
-                  <TableRow key={service.serviceName}>
-                    <TableCell className='font-bold'>{service.serviceName}</TableCell>
-                    <TableCell>{service.quantity}</TableCell>
-                    <TableCell className='font-bold'>
-                      {service.grossAmount.toLocaleString('ar-EG')} ج.م
+                report.doctors.map((doc) => (
+                  <TableRow
+                    key={doc.doctorId}
+                    className='hover:bg-muted/10 border-border/30 transition-colors'
+                  >
+                    <TableCell className='py-3 font-semibold text-sm text-foreground'>
+                      د. {doc.doctorName}
                     </TableCell>
-                    <TableCell>{service.invoicesCount}</TableCell>
+                    <TableCell className='py-3 text-center'>
+                      <span className='inline-flex items-center justify-center px-2 py-1 text-xs font-mono font-bold bg-muted rounded-md'>
+                        {doc.visitsCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className='py-3 text-left font-mono font-medium text-sm text-muted-foreground'>
+                      {doc.collectedAmount.toLocaleString()} ج.م
+                    </TableCell>
+                    <TableCell className='py-3 text-left text-xs text-muted-foreground'>
+                      {doc.compensationMode} ({doc.compensationValue})
+                    </TableCell>
+                    <TableCell className='py-3 text-left font-mono font-bold text-sm text-foreground'>
+                      {doc.estimatedCompensationAmount.toLocaleString()} ج.م
+                    </TableCell>
                   </TableRow>
                 ))
               )}

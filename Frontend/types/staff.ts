@@ -1,14 +1,8 @@
 export type WorkerMode = 'LoginBased' | 'PayrollOnly'
 
-export interface IAssignedStaffBranch {
-  id: string
-  name: string
-  isPrimary: boolean
-}
-
 export interface IStaff {
   id: string
-  userId: string
+  userId: string | null
   name: string
   username: string
   phone: string | null
@@ -16,9 +10,7 @@ export interface IStaff {
   salary: number | null
   workerMode: WorkerMode
   hireDate: string | null
-  notes: string | null
+  notes: string | null // 👈 ناقصة عندك
   isEnabled: boolean
-  assignedBranchIds: string[]
-  assignedBranches: IAssignedStaffBranch[]
   createdAt: string
 }

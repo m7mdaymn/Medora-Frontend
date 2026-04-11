@@ -35,7 +35,7 @@ export const UpdateSettingsSchema = v.object({
   description: v.optional(v.pipe(v.string(), v.maxLength(3000, 'الوصف طويل جداً'))),
   socialLinks: v.optional(
     v.object({
-      address: v.optional(v.string()),
+      website: v.optional(v.string()),
       facebook: v.optional(v.string()),
       instagram: v.optional(v.string()),
       x: v.optional(v.string()),
@@ -44,6 +44,7 @@ export const UpdateSettingsSchema = v.object({
     }),
   ),
   bookingEnabled: v.boolean('يجب تحديد حالة الحجز'),
+  retainCreditOnNoShow: v.boolean('يجب تحديد إعداد الاحتفاظ بالرصيد'),
   cancellationWindowHours: v.pipe(
     v.number('يجب إدخال عدد الساعات'),
     v.integer('يجب أن يكون رقماً صحيحاً'),

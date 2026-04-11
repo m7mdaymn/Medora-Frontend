@@ -7,57 +7,64 @@ export type TicketStatus =
   | 'NoShow'
   | 'Cancelled'
 
-export type QueueVisitType = 'Exam' | 'Consultation' | string
-export type QueueVisitSource =
+export type VisitSource =
   | 'WalkInTicket'
   | 'Booking'
   | 'ConsultationBooking'
   | 'PatientSelfServiceTicket'
   | 'PatientSelfServiceBooking'
-  | string
+
+export type QueueVisitType = 'Exam' | 'Consultation'
 
 export interface IQueueTicket {
   id: string
   sessionId: string
   branchId?: string | null
+
+  // 🔥 الكنز اللي الباك إند ضافه (الربط المباشر بالزيارة والفاتورة)
   visitId?: string | null
   invoiceId?: string | null
+
   patientId: string
   patientName: string
   doctorId: string
   doctorName: string
-  source: QueueVisitSource
+  source?: VisitSource
   visitType?: QueueVisitType | null
   isFromBooking?: boolean
   isFromWalkIn?: boolean
   isFromSelfService?: boolean
   doctorServiceId?: string | null
   serviceName?: string | null
-  invoiceAmount?: number | null
-  paidAmount?: number | null
-  remainingAmount?: number | null
-  invoiceStatus?: string | null
+
+  // 🔥 حقول الفلوس الجديدة اللي رجعت في التذكرة
+  invoiceAmount?: number
+  paidAmount?: number
+  remainingAmount?: number
+  invoiceStatus?: 'Paid' | 'Unpaid' | 'PartiallyPaid' |'Refunded' | string
+
   ticketNumber: number
   status: TicketStatus
   isUrgent: boolean
-  urgentAccepted?: boolean // <-- جديد
+  urgentAccepted?: boolean
   issuedAt: string
   calledAt?: string | null
   visitStartedAt?: string | null
   completedAt?: string | null
   notes?: string | null
 
-  // <-- حقول الـ Rich Status الجديدة -->
-  myQueueNumber?: number
-  currentServingNumber?: number
-  patientsAheadCount?: number
-  estimatedWaitMinutes?: number
-  estimatedWaitText?: string
+  // حقول الـ Rich Status
+  myQueueNumber?: number | null
+  currentServingNumber?: number | null
+  patientsAheadCount?: number | null
+  estimatedWaitMinutes?: number | null
+  estimatedWaitText?: string | null
 }
 
 export interface IQueueSession {
   id: string
   doctorId: string
+  branchId?: string | null
   doctorName: string
   startedAt: string
   closedAt: string | null
@@ -72,6 +79,7 @@ export interface IQueueSession {
 export interface IQueueBoardSession {
   sessionId: string
   doctorId?: string
+  branchId?: string | null
   doctorName: string
   isActive: boolean
   waitingCount: number

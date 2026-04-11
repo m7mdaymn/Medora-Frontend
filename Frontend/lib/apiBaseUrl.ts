@@ -1,4 +1,4 @@
-const LOCAL_BACKEND_URL = 'http://localhost:5094'
+const DEFAULT_BACKEND_URL = 'https://eliteclinicphase2.runasp.net'
 
 function normalizeBaseUrl(url: string): string {
   return url.replace(/\/$/, '')
@@ -7,17 +7,12 @@ function normalizeBaseUrl(url: string): string {
 export function getApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim()
 
-  // In local development, always target the local backend unless explicitly overridden.
-  if (process.env.NODE_ENV !== 'production') {
-    const localOverride = process.env.NEXT_PUBLIC_LOCAL_API_URL?.trim()
-    return normalizeBaseUrl(localOverride || LOCAL_BACKEND_URL)
-  }
-
+  // Always honor explicit API configuration first (including local development).
   if (configured) {
     return normalizeBaseUrl(configured)
   }
 
-  return normalizeBaseUrl(LOCAL_BACKEND_URL)
+  return normalizeBaseUrl(DEFAULT_BACKEND_URL)
 }
 
 export function buildApiUrl(path: string): string {

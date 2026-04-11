@@ -10,6 +10,8 @@ export interface ISubProfile {
 export interface IPatient {
   id: string
   userId: string
+  branchId: string | null
+  branchName: string | null
   name: string
   phone: string
   dateOfBirth: string
