@@ -1,16 +1,39 @@
 'use client'
 
+import {
+  listPartnerContractsAction,
+  listPartnersAction,
+  listPartnerServicesAction,
+} from '@/actions/partner/workflow'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { IPrescription, IVisit } from '@/types/visit'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ExternalLink, Loader2, Pill, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import useSWR from 'swr'
 
 import {
   AlertDialog,
@@ -47,6 +70,85 @@ const quickChips = {
 export function PrescriptionTab({ visit, tenantSlug, isClosed }: PrescriptionTabProps) {
   // تحديد الحقول اللي مسموح ليها تظهر اقتراحات
   const [activeField, setActiveField] = useState<keyof typeof quickChips | null>(null)
+  const [partnerDialogPrescriptionId, setPartnerDialogPrescriptionId] = useState<string | null>(null)
+  const [selectedPartnerId, setSelectedPartnerId] = useState('')
+  const [selectedContractId, setSelectedContractId] = useState('')
+  const [selectedServiceId, setSelectedServiceId] = useState('')
+  const [estimatedCostInput, setEstimatedCostInput] = useState('')
+  const [partnerNotes, setPartnerNotes] = useState('')
+  const [isSubmittingPartnerOrder, setIsSubmittingPartnerOrder] = useState(false)
+
+  const selectedPrescription = partnerDialogPrescriptionId
+    ? visit.prescriptions?.find((item) => item.id === partnerDialogPrescriptionId) ?? null
+    : null
+
+  const { data: partnersRes, isLoading: partnersLoading } = useSWR(
+    partnerDialogPrescriptionId ? ['visit-prescription-partner-options', tenantSlug] : null,
+    () =>
+      listPartnersAction(tenantSlug, {
+        type: 'Pharmacy',
+        activeOnly: true,
+        pageNumber: 1,
+        pageSize: 200,
+      }),
+  )
+
+  const { data: contractsRes, isLoading: contractsLoading } = useSWR(
+    partnerDialogPrescriptionId && selectedPartnerId
+      ? ['visit-prescription-partner-contracts', tenantSlug, selectedPartnerId]
+      : null,
+    () =>
+      listPartnerContractsAction(tenantSlug, {
+        partnerId: selectedPartnerId,
+        activeOnly: true,
+      }),
+  )
+
+  const { data: servicesRes, isLoading: servicesLoading } = useSWR(
+    partnerDialogPrescriptionId && selectedPartnerId
+      ? ['visit-prescription-partner-services', tenantSlug, selectedPartnerId]
+      : null,
+    () =>
+      listPartnerServicesAction(tenantSlug, {
+        partnerId: selectedPartnerId,
+        activeOnly: true,
+      }),
+  )
+
+  const partners = useMemo(() => partnersRes?.data?.items ?? [], [partnersRes?.data?.items])
+  const contracts = useMemo(() => contractsRes?.data ?? [], [contractsRes?.data])
+  const services = useMemo(() => servicesRes?.data ?? [], [servicesRes?.data])
+
+  useEffect(() => {
+    if (!partnerDialogPrescriptionId) return
+
+    setSelectedPartnerId('')
+    setSelectedContractId('')
+    setSelectedServiceId('')
+    setEstimatedCostInput('')
+    setPartnerNotes('')
+  }, [partnerDialogPrescriptionId])
+
+  useEffect(() => {
+    if (partners.length === 1 && !selectedPartnerId) {
+      setSelectedPartnerId(partners[0].id)
+    }
+  }, [partners, selectedPartnerId])
+
+  useEffect(() => {
+    setSelectedContractId('')
+    setSelectedServiceId('')
+    setEstimatedCostInput('')
+  }, [selectedPartnerId])
+
+  useEffect(() => {
+    if (!selectedServiceId) return
+
+    const selectedService = services.find((item) => item.id === selectedServiceId)
+    if (!selectedService) return
+
+    setEstimatedCostInput(selectedService.price.toString())
+  }, [selectedServiceId, services])
 
   const form = useForm<PrescriptionFormInput>({
     resolver: valibotResolver(prescriptionSchema),
@@ -78,34 +180,59 @@ export function PrescriptionTab({ visit, tenantSlug, isClosed }: PrescriptionTab
     else toast.error(res.message)
   }
 
-  const handleCreatePartnerOrder = async (prescriptionId: string) => {
-    const partnerId = window.prompt('أدخل Partner ID لإرسال الطلب:')?.trim()
-    if (!partnerId) return
+  const openPartnerOrderDialog = (prescription: IPrescription) => {
+    setPartnerDialogPrescriptionId(prescription.id)
+  }
 
-    const partnerContractId = window.prompt('Partner Contract ID (اختياري):')?.trim() || undefined
-    const partnerServiceCatalogItemId =
-      window.prompt('Partner Service Catalog Item ID (اختياري):')?.trim() || undefined
-    const estimatedCostInput = window.prompt('التكلفة التقديرية (اختياري):')?.trim() || ''
-    const notes = window.prompt('ملاحظات (اختياري):')?.trim() || undefined
+  const closePartnerOrderDialog = () => {
+    if (isSubmittingPartnerOrder) return
+    setPartnerDialogPrescriptionId(null)
+  }
 
-    const estimatedCost = estimatedCostInput ? Number(estimatedCostInput) : undefined
-    if (estimatedCostInput && Number.isNaN(estimatedCost)) {
-      toast.error('قيمة التكلفة التقديرية غير صحيحة')
+  const handleCreatePartnerOrder = async () => {
+    if (!partnerDialogPrescriptionId) return
+
+    if (!selectedPartnerId) {
+      toast.error('اختر الصيدلية أولاً')
       return
     }
 
-    const res = await createPrescriptionPartnerOrderAction(tenantSlug, visit.id, prescriptionId, {
-      partnerId,
-      partnerContractId,
-      partnerServiceCatalogItemId,
-      estimatedCost,
-      notes,
-    })
+    const normalizedCost = estimatedCostInput.trim()
+    let estimatedCost: number | undefined
 
-    if (res.success) {
-      toast.success('تم إرسال الطلب للشريك بنجاح')
-    } else {
-      toast.error(res.message || 'فشل إرسال الطلب للشريك')
+    if (normalizedCost.length > 0) {
+      const parsedCost = Number(normalizedCost)
+      if (Number.isNaN(parsedCost) || parsedCost < 0) {
+        toast.error('قيمة التكلفة التقديرية غير صحيحة')
+        return
+      }
+
+      estimatedCost = parsedCost
+    }
+
+    setIsSubmittingPartnerOrder(true)
+    try {
+      const res = await createPrescriptionPartnerOrderAction(
+        tenantSlug,
+        visit.id,
+        partnerDialogPrescriptionId,
+        {
+          partnerId: selectedPartnerId,
+          partnerContractId: selectedContractId || undefined,
+          partnerServiceCatalogItemId: selectedServiceId || undefined,
+          estimatedCost,
+          notes: partnerNotes.trim() || undefined,
+        },
+      )
+
+      if (res.success) {
+        toast.success('تم إرسال الطلب للشريك بنجاح')
+        setPartnerDialogPrescriptionId(null)
+      } else {
+        toast.error(res.message || 'فشل إرسال الطلب للشريك')
+      }
+    } finally {
+      setIsSubmittingPartnerOrder(false)
     }
   }
 
@@ -310,7 +437,7 @@ export function PrescriptionTab({ visit, tenantSlug, isClosed }: PrescriptionTab
                     variant='ghost'
                     size='icon'
                     className='h-6 w-6'
-                    onClick={() => void handleCreatePartnerOrder(p.id)}
+                    onClick={() => openPartnerOrderDialog(p)}
                     title='إرسال لشريك'
                   >
                     <ExternalLink className='h-3.5 w-3.5 text-muted-foreground/60 hover:text-primary' />
@@ -343,6 +470,136 @@ export function PrescriptionTab({ visit, tenantSlug, isClosed }: PrescriptionTab
           ))
         )}
       </div>
+
+      <Dialog open={Boolean(partnerDialogPrescriptionId)} onOpenChange={(open) => !open && closePartnerOrderDialog()}>
+        <DialogContent className='sm:max-w-xl' showCloseButton={!isSubmittingPartnerOrder}>
+          <DialogHeader>
+            <DialogTitle className='text-base font-bold'>إرسال وصفة إلى صيدلية شريك</DialogTitle>
+            <DialogDescription>
+              {selectedPrescription
+                ? `الدواء: ${selectedPrescription.medicationName}`
+                : 'اختر بيانات الصيدلية قبل الإرسال'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <Label>الصيدلية</Label>
+              <Select
+                value={selectedPartnerId || undefined}
+                onValueChange={(value) => setSelectedPartnerId(value)}
+                disabled={partnersLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={partnersLoading ? 'جاري تحميل الصيدليات...' : 'اختر الصيدلية'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {partners.map((partner) => (
+                    <SelectItem key={partner.id} value={partner.id}>
+                      {partner.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!partnersLoading && partners.length === 0 && (
+                <p className='text-xs text-muted-foreground'>لا توجد صيدليات شركاء نشطة حالياً.</p>
+              )}
+            </div>
+
+            <div className='space-y-2'>
+              <Label>العقد (اختياري)</Label>
+              <Select
+                value={selectedContractId || 'none'}
+                onValueChange={(value) => setSelectedContractId(value === 'none' ? '' : value)}
+                disabled={!selectedPartnerId || contractsLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='بدون عقد محدد' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='none'>بدون عقد</SelectItem>
+                  {contracts.map((contract) => (
+                    <SelectItem key={contract.id} value={contract.id}>
+                      {contract.serviceScope || 'عقد شريك'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-2'>
+              <Label>الخدمة (اختياري)</Label>
+              <Select
+                value={selectedServiceId || 'none'}
+                onValueChange={(value) => setSelectedServiceId(value === 'none' ? '' : value)}
+                disabled={!selectedPartnerId || servicesLoading || isSubmittingPartnerOrder}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='اختر خدمة من كتالوج الصيدلية' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='none'>بدون خدمة محددة</SelectItem>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.serviceName} - {service.price.toLocaleString('ar-EG')} ج.م
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-2'>
+              <Label>التكلفة التقديرية (اختياري)</Label>
+              <Input
+                type='number'
+                min='0'
+                step='0.01'
+                value={estimatedCostInput}
+                onChange={(event) => setEstimatedCostInput(event.target.value)}
+                placeholder='مثال: 180'
+                disabled={isSubmittingPartnerOrder}
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label>ملاحظات (اختياري)</Label>
+              <Textarea
+                value={partnerNotes}
+                onChange={(event) => setPartnerNotes(event.target.value)}
+                placeholder='أي تفاصيل إضافية للصيدلية...'
+                disabled={isSubmittingPartnerOrder}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={closePartnerOrderDialog}
+              disabled={isSubmittingPartnerOrder}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type='button'
+              onClick={() => void handleCreatePartnerOrder()}
+              disabled={isSubmittingPartnerOrder || !selectedPartnerId}
+            >
+              {isSubmittingPartnerOrder ? (
+                <>
+                  <Loader2 className='ml-2 h-4 w-4 animate-spin' />
+                  جاري الإرسال...
+                </>
+              ) : (
+                'إرسال الطلب'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

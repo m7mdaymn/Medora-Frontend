@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { SendDoctorNoteModal } from "../../../../components/SendDoctorNoteModal"
+import { DoctorNavbar } from '../../../../components/doctor-navbar'
 import { getUserRole } from "../../../../lib/get-user-role"
 
 interface DoctorLayoutProps {
@@ -17,8 +18,10 @@ export default async function DoctorLayout({ children, params }: DoctorLayoutPro
   }
 
   return (
-    <div className='relative min-h-screen'>
-      <main>{children}</main>
+    <div className='relative min-h-screen flex flex-col bg-background'>
+      <DoctorNavbar tenantSlug={tenantSlug} />
+
+      <main className='flex-1'>{children}</main>
 
       {/* الدايرة الصغيرة المحشورة في الزاوية */}
       <div className='fixed bottom-6 right-6 z-50'>

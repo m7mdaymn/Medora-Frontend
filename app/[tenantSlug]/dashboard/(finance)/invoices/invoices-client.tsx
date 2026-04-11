@@ -101,7 +101,7 @@ export function InvoicesClient({ initialInvoices, tenantSlug, pagination }: Invo
                     {inv.invoiceNumber}
                   </TableCell>
                   <TableCell className='text-sm whitespace-nowrap'>
-                    {new Date(inv.createdAt).toLocaleDateString('ar-EG')}
+                    {new Date(inv.createdAt).toLocaleDateString('en')}
                   </TableCell>
                   <TableCell className='font-bold'>{inv.patientName}</TableCell>
                   <TableCell className='font-bold'>{inv.amount} ج.م</TableCell>
@@ -118,33 +118,28 @@ export function InvoicesClient({ initialInvoices, tenantSlug, pagination }: Invo
                           <MoreHorizontal className='h-4 w-4' />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end' className='w-48' >
+                      <DropdownMenuContent align='end' className='w-48'>
                         <DropdownMenuLabel className='text-xs'>خيارات الفاتورة</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-
                         <InvoiceDetailsAction invoiceId={inv.id} tenantSlug={tenantSlug} />
 
                         <DropdownMenuItem
                           onClick={() => setAdjustingInvoice(inv)}
                           className='cursor-pointer'
                         >
-                          <Calculator className='h-4 w-4 ml-2 text-primary' /> تسوية 
+                          <Calculator className='h-4 w-4' /> الرسوم الإضافية
                         </DropdownMenuItem>
 
                         {inv.status !== 'Paid' && (
-                          <DropdownMenuItem
-                            onClick={() => setPayingInvoice(inv)}
-                            className='cursor-pointer font-bold text-primary focus:text-primary/80 focus:bg-primary/10'
-                          >
-                            <Plus className='h-4 w-4 ml-2' /> تسجيل دفعة
+                          <DropdownMenuItem onClick={() => setPayingInvoice(inv)}>
+                            <Plus className='h-4 w-4' /> تسجيل دفعة
                           </DropdownMenuItem>
                         )}
 
-                        {/* 👈 زرار الـ Refund اللي كان ناقص (يظهر لو فيه مبلغ مدفوع) */}
                         {inv.paidAmount > 0 && (
                           <DropdownMenuItem
                             onClick={() => setRefundingInvoice(inv)}
-                            className='cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10'
+                            variant='destructive'
                           >
                             <Undo2 className='h-4 w-4 ml-2' /> استرداد مبلغ
                           </DropdownMenuItem>
@@ -216,15 +211,5 @@ function StatusBadge({ status }: { status: string }) {
 
   if (status === 'PartiallyPaid') return <Badge variant='secondary'>دفع جزئي</Badge>
   if (status === 'Refunded') return <Badge variant='secondary'>مرتجع</Badge>
-  return (
-    <Badge
-      variant='destructive'
-    >
-      غير مدفوعة
-    </Badge>
-  )
-
-
-
-  
+  return <Badge variant='destructive'>غير مدفوعة</Badge>
 }

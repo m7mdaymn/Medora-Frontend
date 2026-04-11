@@ -39,25 +39,27 @@ interface Props {
   ) => void
 }
 
-function getVisitTypeLabel(type?: string | null): string {
-  if (!type) return 'غير محدد'
-  if (type === 'Exam') return 'كشف'
-  if (type === 'Consultation') return 'استشارة'
-  return type
-}
-
-function getSourceLabel(ticket: IQueueTicket): string {
-  if (ticket.isFromBooking) return 'من حجز'
-  if (ticket.isFromWalkIn) return 'من تذكرة'
-  if (ticket.isFromSelfService) return 'من طلب ذاتي'
-  return ticket.source || 'غير محدد'
-}
-
 export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, onAction }: Props) {
   const router = useRouter()
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
   const [isReturning, setIsReturning] = useState(false)
+
+  const getVisitTypeLabel = (value?: string | null) => {
+    if (value === 'Consultation') return 'استشارة'
+    if (value === 'Exam') return 'كشف'
+    return null
+  }
+
+  const getSourceLabel = (value?: string | null) => {
+    if (!value) return null
+    if (value === 'Booking' || value === 'ConsultationBooking') return 'حجز'
+    if (value === 'PatientSelfServiceTicket' || value === 'PatientSelfServiceBooking') {
+      return 'خدمة ذاتية'
+    }
+    if (value === 'WalkInTicket') return 'حضور مباشر'
+    return null
+  }
 
   const handleReturnToVisit = async () => {
     if (!currentTicket) return
@@ -77,7 +79,7 @@ export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, o
       } else {
         toast.error('فشل في جلب بيانات الزيارة.')
       }
-    } catch {
+    } catch (error) {
       toast.error('حدث خطأ أثناء محاولة العودة للكشف.')
     } finally {
       setIsReturning(false)
@@ -104,23 +106,25 @@ export function CurrentPatientCard({ currentTicket, waitingTickets, isPending, o
                     <Stethoscope className='w-4 h-4 opacity-70' />
                     {currentTicket.serviceName || 'كشف عام'}
                   </span>
-                  <span className='hidden sm:inline opacity-40'>•</span>
-                  <span className='text-xs font-bold text-foreground/80'>
-                    {getVisitTypeLabel(currentTicket.visitType)}
-                  </span>
-                  <span className='hidden sm:inline opacity-40'>•</span>
-                  <span className='text-xs font-bold text-foreground/80'>
-                    {getSourceLabel(currentTicket)}
-                  </span>
+                  {getVisitTypeLabel(currentTicket.visitType) && (
+                    <>
+                      <span className='hidden sm:inline opacity-40'>•</span>
+                      <span>{getVisitTypeLabel(currentTicket.visitType)}</span>
+                    </>
+                  )}
+                  {getSourceLabel(currentTicket.source) && (
+                    <>
+                      <span className='hidden sm:inline opacity-40'>•</span>
+                      <span>{getSourceLabel(currentTicket.source)}</span>
+                    </>
+                  )}
                   <span className='hidden sm:inline opacity-40'>•</span>
                   <span className='flex items-center gap-1.5'>
                     <Clock className='w-4 h-4 opacity-70' />
-                    {currentTicket.calledAt
-                      ? new Date(currentTicket.calledAt).toLocaleTimeString('ar-EG', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : '--'}
+                    {new Date(currentTicket.calledAt!).toLocaleTimeString('ar-EG', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </span>
                 </div>
               </div>

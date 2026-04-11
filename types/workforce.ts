@@ -14,6 +14,24 @@ export interface IAttendanceRecord {
   createdAt: string
 }
 
+export interface IDoctorCompensationRule {
+  id: string
+  doctorId: string
+  mode: string | number
+  value: number
+  effectiveFrom: string
+  effectiveTo: string | null
+  isActive: boolean
+  createdAt: string
+}
+
+export interface ICreateDoctorCompensationRuleRequest {
+  mode: string | number
+  value: number
+  effectiveFrom: string
+  effectiveTo?: string | null
+}
+
 export interface IAbsenceRecord {
   id: string
   employeeId: string | null

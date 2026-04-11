@@ -1,67 +1,35 @@
 'use server'
 
-import { fetchApi } from '@/lib/fetchApi'
-import { BaseApiResponse } from '@/types/api'
+import { fetchApi } from '@/lib/fetchApi' // 👈 عدل المسار حسب مكان الملف الأسطوري بتاعك
+import { BaseApiResponse, IPaginatedData } from '@/types/api'
 import { IVisit } from '@/types/visit'
 
-type PaginatedVisits = {
-  items: IVisit[]
-}
-
-type MyVisitsFetchOptions = {
+export interface MyVisitsFilters {
+  fromDate?: string
+  toDate?: string
+  source?: string
+  visitType?: string
+  status?: string
   pageNumber?: number
   pageSize?: number
 }
 
-function toQueryString(options: MyVisitsFetchOptions): string {
-  const search = new URLSearchParams()
-  if (options.pageNumber) search.set('pageNumber', String(options.pageNumber))
-  if (options.pageSize) search.set('pageSize', String(options.pageSize))
-  const query = search.toString()
-  return query ? `?${query}` : ''
-}
-
-export async function getMyVisitsAction(
-  tenantSlug: string,
-  options: MyVisitsFetchOptions = { pageNumber: 1, pageSize: 200 },
-): Promise<BaseApiResponse<IVisit[]>> {
-  const result = await fetchApi<PaginatedVisits>(
-    `/api/clinic/visits/my${toQueryString(options)}`,
-    {
-      method: 'GET',
-      tenantSlug,
-      cache: 'no-store',
-    },
-  )
-
-  if (!result.success) {
-    return {
-      ...result,
-      data: null,
-    }
-  }
-
-  return {
-    ...result,
-    data: result.data?.items || [],
-  }
-}
-
 export async function getMyTodayVisitsAction(
   tenantSlug: string,
-): Promise<BaseApiResponse<IVisit[]>> {
-  const allVisitsRes = await getMyVisitsAction(tenantSlug, { pageNumber: 1, pageSize: 200 })
-  if (!allVisitsRes.success || !allVisitsRes.data) {
-    return {
-      ...allVisitsRes,
-      data: null,
-    }
-  }
+  filters: MyVisitsFilters = {},
+): Promise<BaseApiResponse<IPaginatedData<IVisit>>> {
+  const params = new URLSearchParams()
+  if (filters.fromDate) params.set('fromDate', filters.fromDate)
+  if (filters.toDate) params.set('toDate', filters.toDate)
+  if (filters.source) params.set('source', filters.source)
+  if (filters.visitType) params.set('visitType', filters.visitType)
+  if (filters.status) params.set('status', filters.status)
+  params.set('pageNumber', String(filters.pageNumber ?? 1))
+  params.set('pageSize', String(filters.pageSize ?? 100))
 
-  const today = new Date().toISOString().slice(0, 10)
-  const todayVisits = allVisitsRes.data.filter((visit) => visit.startedAt.slice(0, 10) === today)
-  return {
-    ...allVisitsRes,
-    data: todayVisits,
-  }
+  return await fetchApi<IPaginatedData<IVisit>>(`/api/clinic/visits/my?${params.toString()}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store', // عشان يجيب داتا لايف دايماً
+  })
 }

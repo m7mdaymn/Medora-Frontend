@@ -4,11 +4,13 @@ import { fetchApi } from '@/lib/fetchApi'
 import { IPaginatedData } from '@/types/api'
 import { revalidatePath } from 'next/cache'
 import {
+  ICreateVisitPartnerOrderPayload,
   ICreatePartnerContractPayload,
   ICreatePartnerServicePayload,
   ICreatePartnerPayload,
   IPartner,
   IPartnerContract,
+  IPartnerOrderKpiSummary,
   IPartnerOrder,
   IPartnerServiceCatalogItem,
   IPartnerUser,
@@ -23,6 +25,7 @@ type PartnerOrderListParams = {
   status?: string
   partnerType?: string
   partnerId?: string
+  visitId?: string
   branchId?: string
   fromDate?: string
   toDate?: string
@@ -43,6 +46,7 @@ function toQueryString(params: PartnerOrderListParams): string {
   if (params.status) search.set('status', params.status)
   if (params.partnerType) search.set('partnerType', params.partnerType)
   if (params.partnerId) search.set('partnerId', params.partnerId)
+  if (params.visitId) search.set('visitId', params.visitId)
   if (params.branchId) search.set('branchId', params.branchId)
   if (params.fromDate) search.set('fromDate', params.fromDate)
   if (params.toDate) search.set('toDate', params.toDate)
@@ -188,12 +192,45 @@ export async function listPartnerOrdersAction(
   })
 }
 
+export async function getPartnerOrdersKpiAction(
+  tenantSlug: string,
+  params: Omit<PartnerOrderListParams, 'pageNumber' | 'pageSize'> = {},
+) {
+  const query = toQueryString(params)
+
+  return await fetchApi<IPartnerOrderKpiSummary>(`/api/clinic/partner-orders/kpis${query}`, {
+    method: 'GET',
+    tenantSlug,
+    cache: 'no-store',
+  })
+}
+
 export async function getPartnerOrderByIdAction(tenantSlug: string, orderId: string) {
   return await fetchApi<IPartnerOrder>(`/api/clinic/partner-orders/${orderId}`, {
     method: 'GET',
     tenantSlug,
     cache: 'no-store',
   })
+}
+
+export async function createVisitPartnerOrderAction(
+  tenantSlug: string,
+  visitId: string,
+  payload: ICreateVisitPartnerOrderPayload,
+) {
+  const response = await fetchApi<IPartnerOrder>(`/api/clinic/partner-orders/visits/${visitId}`, {
+    method: 'POST',
+    tenantSlug,
+    body: JSON.stringify(payload),
+  })
+
+  if (response.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/doctor/visits/${visitId}`)
+    revalidatePath(`/${tenantSlug}/dashboard/partner-orders`)
+    revalidatePath(`/${tenantSlug}/dashboard/contractor/orders`)
+  }
+
+  return response
 }
 
 export async function updatePartnerOrderStatusAction(
@@ -214,6 +251,25 @@ export async function updatePartnerOrderStatusAction(
 
   if (response.success) {
     revalidatePath(`/${tenantSlug}/dashboard/contracts`)
+    revalidatePath(`/${tenantSlug}/dashboard/contractor/orders`)
+  }
+
+  return response
+}
+
+export async function addPartnerOrderCommentAction(
+  tenantSlug: string,
+  orderId: string,
+  payload: { comment: string; notifyPatient?: boolean },
+) {
+  const response = await fetchApi<IPartnerOrder>(`/api/clinic/partner-orders/${orderId}/comment`, {
+    method: 'POST',
+    tenantSlug,
+    body: JSON.stringify(payload),
+  })
+
+  if (response.success) {
+    revalidatePath(`/${tenantSlug}/dashboard/partner-orders`)
     revalidatePath(`/${tenantSlug}/dashboard/contractor/orders`)
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { Ban, CheckCircle, Loader2, MoreVertical, PauseCircle, Settings2 } from 'lucide-react'
+import { Ban, CheckCircle, Loader2, MessageSquare, MoreVertical, PauseCircle, Settings2 } from 'lucide-react'
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
@@ -20,6 +21,7 @@ import {
   suspendTenantAction,
 } from '../../../../../actions/platform/tenant-actions'
 import { ManageTenantSheet } from '../../../../../components/admin/manage-tenant-sheet'
+import { useAuthStore } from '../../../../../store/useAuthStore'
 import { BaseApiResponse } from '../../../../../types/api' // لازم تستخدم دي
 import { ITenant } from '../../../../../types/platform'
 
@@ -28,9 +30,15 @@ interface TenantActionsProps {
 }
 
 export function TenantActions({ tenant }: TenantActionsProps) {
+  const currentRole = useAuthStore((state) => state.user?.role)
   const [isPending, startTransition] = useTransition()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const canManageStatus = currentRole === 'SuperAdmin'
+
+  if (currentRole !== 'SuperAdmin' && currentRole !== 'Worker') {
+    return null
+  }
 
   // التعديل الجوهري: شيلنا any واستخدمنا ITenant لأن دي الداتا اللي الـ Action بيرجعها
   const handleAction = (
@@ -61,36 +69,43 @@ export function TenantActions({ tenant }: TenantActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-56'>
-          <DropdownMenuLabel>إجراءات العيادة</DropdownMenuLabel>
+          <DropdownMenuLabel>إجراءات المنشأة</DropdownMenuLabel>
 
           <DropdownMenuItem onClick={() => setIsSheetOpen(true)} className='cursor-pointer'>
             <Settings2 className='ml-2 h-4 w-4' />
-            إدارة الخواص والاشتراك
+            إدارة الخواص والاشتراك والشبكة
+          </DropdownMenuItem>
+
+          <DropdownMenuItem asChild className='cursor-pointer'>
+            <Link href={`/admin/support?tenantId=${tenant.id}`}>
+              <MessageSquare className='ml-2 h-4 w-4' />
+              فتح محادثة الدعم
+            </Link>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
-          {tenant.status !== 'Active' && (
+          {canManageStatus && tenant.status !== 'Active' && (
             <DropdownMenuItem
-              onClick={() => handleAction(activateTenantAction, 'تم تفعيل العيادة بنجاح')}
+              onClick={() => handleAction(activateTenantAction, 'تم تفعيل المنشأة بنجاح')}
               className='text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer'
             >
               <CheckCircle className='ml-2 h-4 w-4' /> تفعيل
             </DropdownMenuItem>
           )}
 
-          {tenant.status === 'Active' && (
+          {canManageStatus && tenant.status === 'Active' && (
             <DropdownMenuItem
-              onClick={() => handleAction(suspendTenantAction, 'تم إيقاف العيادة مؤقتاً')}
+              onClick={() => handleAction(suspendTenantAction, 'تم إيقاف المنشأة مؤقتاً')}
               className='text-yellow-600 focus:text-yellow-600 focus:bg-yellow-50 cursor-pointer'
             >
               <PauseCircle className='ml-2 h-4 w-4' /> إيقاف مؤقت
             </DropdownMenuItem>
           )}
 
-          {tenant.status !== 'Blocked' && (
+          {canManageStatus && tenant.status !== 'Blocked' && (
             <DropdownMenuItem
-              onClick={() => handleAction(blockTenantAction, 'تم حظر العيادة نهائياً')}
+              onClick={() => handleAction(blockTenantAction, 'تم حظر المنشأة نهائياً')}
               className='text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer'
             >
               <Ban className='ml-2 h-4 w-4' /> حظر نهائي

@@ -21,8 +21,11 @@ export interface IPartnerOrder {
   visitId: string
   patientId: string
   patientName: string
+  patientPhone: string | null
   doctorId: string
   doctorName: string
+  visitComplaint: string | null
+  visitDiagnosis: string | null
   labRequestId: string | null
   prescriptionId: string | null
   partnerServiceCatalogItemId: string | null
@@ -42,6 +45,8 @@ export interface IPartnerOrder {
   settlementTarget: PartnerSettlementTarget | null
   settlementPercentage: number | null
   clinicDoctorSharePercentage: number | null
+  patientDiscountPercentage: number | null
+  doctorFixedPayoutAmount: number | null
   doctorPayoutAmount: number | null
   clinicRevenueAmount: number | null
   resultSummary: string | null
@@ -51,6 +56,60 @@ export interface IPartnerOrder {
   notes: string | null
   statusHistory: IPartnerOrderStatusHistory[]
   createdAt: string
+}
+
+export interface IPartnerOrderTypeKpi {
+  partnerType: PartnerType
+  totalOrders: number
+  completedOrders: number
+  completionRate: number
+  totalSettledAmount: number
+  clinicRevenueAmount: number
+}
+
+export interface IPartnerOrderKpiSummary {
+  totalOrders: number
+  sentOrders: number
+  acceptedOrders: number
+  inProgressOrders: number
+  completedOrders: number
+  cancelledOrders: number
+  completionRate: number
+  totalEstimatedAmount: number
+  totalSettledAmount: number
+  totalClinicRevenue: number
+  totalDoctorPayout: number
+  averageCompletionHours: number | null
+  periodFrom: string | null
+  periodTo: string | null
+  byPartnerType: IPartnerOrderTypeKpi[]
+}
+
+export interface IPartnerOrderTypeKpi {
+  partnerType: PartnerType
+  totalOrders: number
+  completedOrders: number
+  completionRate: number
+  totalSettledAmount: number
+  clinicRevenueAmount: number
+}
+
+export interface IPartnerOrderKpiSummary {
+  totalOrders: number
+  sentOrders: number
+  acceptedOrders: number
+  inProgressOrders: number
+  completedOrders: number
+  cancelledOrders: number
+  completionRate: number
+  totalEstimatedAmount: number
+  totalSettledAmount: number
+  totalClinicRevenue: number
+  totalDoctorPayout: number
+  averageCompletionHours: number | null
+  periodFrom: string | null
+  periodTo: string | null
+  byPartnerType: IPartnerOrderTypeKpi[]
 }
 
 export interface IPartnerServiceCatalogItem {
@@ -63,6 +122,8 @@ export interface IPartnerServiceCatalogItem {
   settlementTarget: PartnerSettlementTarget
   settlementPercentage: number
   clinicDoctorSharePercentage: number | null
+  patientDiscountPercentage: number | null
+  doctorFixedPayoutAmount: number | null
   isActive: boolean
   notes: string | null
   createdAt: string
@@ -76,6 +137,8 @@ export interface ICreatePartnerServicePayload {
   settlementTarget: PartnerSettlementTarget
   settlementPercentage: number
   clinicDoctorSharePercentage?: number
+  patientDiscountPercentage?: number
+  doctorFixedPayoutAmount?: number
   notes?: string
 }
 
@@ -86,7 +149,20 @@ export interface IUpdatePartnerServicePayload {
   settlementTarget: PartnerSettlementTarget
   settlementPercentage: number
   clinicDoctorSharePercentage?: number
+  patientDiscountPercentage?: number
+  doctorFixedPayoutAmount?: number
   isActive: boolean
+  notes?: string
+}
+
+export interface ICreateVisitPartnerOrderPayload {
+  partnerId: string
+  partnerContractId?: string
+  partnerServiceCatalogItemId?: string
+  requestedServiceName?: string
+  clinicalNotes?: string
+  estimatedCost?: number
+  externalReference?: string
   notes?: string
 }
 
@@ -177,7 +253,13 @@ export interface IPartnerTimelineItem {
   visitId: string
   partnerId: string
   partnerName: string
+  partnerContactName: string | null
+  partnerContactPhone: string | null
+  partnerAddress: string | null
   partnerType: PartnerType
+  doctorName: string
+  visitComplaint: string | null
+  visitDiagnosis: string | null
   serviceName: string | null
   status: PartnerOrderStatus
   orderedAt: string
@@ -188,8 +270,11 @@ export interface IPartnerTimelineItem {
   completedAt: string | null
   price: number | null
   finalCost: number | null
+  patientDiscountPercentage: number | null
+  doctorFixedPayoutAmount: number | null
   doctorPayoutAmount: number | null
   clinicRevenueAmount: number | null
   resultSummary: string | null
+  externalReference: string | null
   notes: string | null
 }

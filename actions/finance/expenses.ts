@@ -4,7 +4,7 @@ import { fetchApi } from '@/lib/fetchApi'
 import { BaseApiResponse, IPaginatedData } from '@/types/api'
 import { revalidatePath } from 'next/cache'
 import { IExpense } from '../../types/expense'
-import { ExpenseInput } from '../../validation/expense'
+import { CreateExpenseInput, ExpenseInput } from '../../validation/expense'
 
 export async function getExpensesAction(
   tenantSlug: string,
@@ -28,7 +28,7 @@ export async function getExpensesAction(
 
 export async function addExpenseAction(
   tenantSlug: string,
-  payload: ExpenseInput,
+  payload: CreateExpenseInput,
 ): Promise<BaseApiResponse<IExpense>> {
   const result = await fetchApi<IExpense>('/api/clinic/expenses', {
     method: 'POST',

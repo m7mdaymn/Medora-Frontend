@@ -31,7 +31,20 @@ export const UpdateSettingsSchema = v.object({
   address: v.optional(v.pipe(v.string(), v.maxLength(500, 'العنوان طويل جداً'))),
   city: v.optional(v.pipe(v.string(), v.maxLength(100, 'اسم المدينة لا يجب أن يتجاوز 100 حرف'))),
   logoUrl: v.optional(v.string()),
+  imgUrl: v.optional(v.string()),
+  description: v.optional(v.pipe(v.string(), v.maxLength(3000, 'الوصف طويل جداً'))),
+  socialLinks: v.optional(
+    v.object({
+      website: v.optional(v.string()),
+      facebook: v.optional(v.string()),
+      instagram: v.optional(v.string()),
+      x: v.optional(v.string()),
+      youtube: v.optional(v.string()),
+      tiktok: v.optional(v.string()),
+    }),
+  ),
   bookingEnabled: v.boolean('يجب تحديد حالة الحجز'),
+  retainCreditOnNoShow: v.boolean('يجب تحديد إعداد الاحتفاظ بالرصيد'),
   cancellationWindowHours: v.pipe(
     v.number('يجب إدخال عدد الساعات'),
     v.integer('يجب أن يكون رقماً صحيحاً'),

@@ -34,12 +34,27 @@ interface DoctorQueueCardProps {
 }
 
 export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
-  // 1. الداتا بتتعرض زي ما الباك إند باعتها بدون أي تلاعب في الترتيب
   const waitlist = session.waitingTickets || []
-  // 2. متغيرات حالة الطابور عشان الـ Force Close
+
+  const getVisitTypeLabel = (value?: string | null) => {
+    if (value === 'Consultation') return 'استشارة'
+    if (value === 'Exam') return 'كشف'
+    return null
+  }
+
+  const getSourceLabel = (value?: string | null) => {
+    if (!value) return null
+    if (value === 'Booking' || value === 'ConsultationBooking') return 'حجز'
+    if (value === 'PatientSelfServiceTicket' || value === 'PatientSelfServiceBooking') {
+      return 'خدمة ذاتية'
+    }
+    if (value === 'WalkInTicket') return 'حضور مباشر'
+    return null
+  }
+
   const isPatientInVisit = !!session.currentTicket
   const hasWaitingPatients = waitlist.length > 0
-  
+
   const handleCloseSession = async () => {
     // الإنهاء الإجباري بيتبعت بس لو فيه مريض لسه بيكشف جوه الأوضة
     const res = await closeQueueSession(tenantSlug, session.sessionId)
@@ -50,17 +65,17 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
       toast.error(res.message)
     }
   }
-  
+
   const handleUrgent = async (ticketId: string) => {
     const res = await markTicketUrgent(tenantSlug, ticketId)
     if (res.success) {
-      toast.success('تم رفع الحالة لطوارئ')
+      toast.success('تم رفع الحالة للاستعجال')
       await mutate(['queueBoard', tenantSlug])
     } else {
       toast.error(res.message)
     }
   }
-  
+
   const handleCancel = async (ticketId: string) => {
     const res = await cancelTicket(tenantSlug, ticketId)
     if (res.success) {
@@ -70,18 +85,14 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
       toast.error(res.message)
     }
   }
-  
 
   return (
     <div className='flex flex-col h-full'>
       {/* Header */}
       <div className='flex items-center justify-between p-4 border-b bg-card'>
         <div className='flex items-center gap-3'>
-          <div className='h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold'>
-            {session.doctorName?.charAt(0) || '?'}
-          </div>
           <div>
-            <h2 className='font-semibold'>
+            <h2 className='font-black px-5'>
               {session.doctorName ? `د. ${session.doctorName}` : 'طبيب غير محدد'}
             </h2>
           </div>
@@ -111,10 +122,7 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>إلغاء</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleCloseSession}
-                variant={isPatientInVisit ? 'destructive' : 'default'}
-              >
+              <AlertDialogAction onClick={handleCloseSession} variant={'destructive'}>
                 {isPatientInVisit ? 'تأكيد الإنهاء الإجباري' : 'تأكيد الإغلاق'}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -136,6 +144,18 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                 </span>
                 <span>•</span>
                 <span>{session.currentTicket.serviceName || 'كشف'}</span>
+                {getVisitTypeLabel(session.currentTicket.visitType) && (
+                  <>
+                    <span>•</span>
+                    <span>{getVisitTypeLabel(session.currentTicket.visitType)}</span>
+                  </>
+                )}
+                {getSourceLabel(session.currentTicket.source) && (
+                  <>
+                    <span>•</span>
+                    <span>{getSourceLabel(session.currentTicket.source)}</span>
+                  </>
+                )}
               </div>
               {session.currentTicket.isUrgent && (
                 <Badge variant='destructive' className='mt-2'>
@@ -173,12 +193,16 @@ export function DoctorQueueCard({ tenantSlug, session }: DoctorQueueCardProps) {
                         {ticket.patientName}
                         {ticket.isUrgent && (
                           <Badge variant='destructive' className='mr-2 text-[10px] h-4 px-1'>
-                            طوارئ
+                            استعجال
                           </Badge>
                         )}
                       </p>
                       <p className='text-xs text-muted-foreground mt-1'>
                         {ticket.serviceName || 'كشف عام'}
+                        {getVisitTypeLabel(ticket.visitType)
+                          ? ` • ${getVisitTypeLabel(ticket.visitType)}`
+                          : ''}
+                        {getSourceLabel(ticket.source) ? ` • ${getSourceLabel(ticket.source)}` : ''}
                       </p>
                     </div>
                   </div>

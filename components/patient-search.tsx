@@ -60,6 +60,7 @@ export function PatientSearch({ tenantSlug, onSelect, selectedPatientId }: Patie
         <PopoverTrigger asChild>
           <Button
             variant='outline'
+            type='button'
             role='combobox'
             className='w-full justify-between h-11 text-right font-normal bg-background min-w-0 overflow-hidden px-3'
           >
@@ -104,6 +105,7 @@ export function PatientSearch({ tenantSlug, onSelect, selectedPatientId }: Patie
                   <p className='text-xs text-muted-foreground mb-3'>لم يتم العثور على نتائج</p>
                   <Button
                     size='sm'
+                    type='button'
                     variant='secondary'
                     className='h-8 text-xs'
                     onClick={() => {

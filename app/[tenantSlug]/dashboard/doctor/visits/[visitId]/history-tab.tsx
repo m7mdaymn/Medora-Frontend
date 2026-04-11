@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import { Eye, Stethoscope, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { IPatientSummary } from '../../../../../../actions/patient/get-patient-summary'
+import { IPatientSummary } from '../../../../../../types/patient-app'
 
 interface HistoryTabProps {
   summary: IPatientSummary | null
@@ -28,16 +28,7 @@ export function HistoryTab({ summary, tenantSlug, currentVisitId }: HistoryTabPr
 
   return (
     <div className='space-y-6'>
-      {/* ❌ شيلنا الهيدر الضخم خالص وحطينا هيدر صغير شيك جداً للتايم لاين */}
-      <div className='flex items-center justify-between border-b pb-2'>
-        <h3 className='text-sm font-semibold text-foreground flex items-center gap-2'>
-          <Clock className='w-4 h-4 text-muted-foreground' />
-          السجل التاريخي
-        </h3>
-        <Badge variant='secondary' className='text-[10px] font-normal px-2'>
-          {previousVisits.length} زيارات سابقة
-        </Badge>
-      </div>
+
 
       {previousVisits.length === 0 ? (
         <div className='flex flex-col items-center justify-center py-10 text-muted-foreground opacity-60'>

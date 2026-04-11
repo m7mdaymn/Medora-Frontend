@@ -8,7 +8,7 @@ export default async function DashboardServerLayout({ children }: LayoutProps) {
   // // 1. بنجيب الرول على السيرفر في 0ms
   // const role = await getUserRole()
 
-  // // 2. لو دكتور: ارسمله الـ UI المخصوص بتاعه (بدون سايدبار)
+  // 2. لو دكتور: ارسمله الـ UI المخصوص بتاعه (بدون سايدبار)
   // if (role === 'Doctor') {
   //   return (
   //     <div className="flex min-h-screen flex-col bg-muted/10">

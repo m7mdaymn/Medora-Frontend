@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { fetchApi } from '@/lib/fetchApi'
+import { BaseApiResponse } from '../../types/api'
 
 // بناءً على هيكلة الـ Swagger بتاعك
 export interface IRefreshTokenResponse {
@@ -13,16 +13,31 @@ export async function refreshAccessToken(tenantSlug?: string): Promise<string | 
   const cookieStore = await cookies()
   const refreshToken = cookieStore.get('refreshToken')?.value
 
-  // لو مفيش refresh token من الأساس، مفيش داعي للريفرش
+  // لو مفيش توكن من الأساس، مفيش داعي للريفرش
   if (!refreshToken) return null
 
   try {
-    const result = await fetchApi<IRefreshTokenResponse>(`/api/auth/refresh`, {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/Auth/refresh`
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+    if (tenantSlug) {
+      headers['X-Tenant'] = tenantSlug
+    }
+
+    const res = await fetch(url, {
       method: 'POST',
-      tenantSlug,
+      headers,
       body: JSON.stringify({ refreshToken }),
       cache: 'no-store',
     })
+
+    if (!res.ok) {
+      return null
+    }
+
+    const result = (await res.json()) as BaseApiResponse<IRefreshTokenResponse>
 
     if (!result.success || !result.data) {
       return null
@@ -48,7 +63,7 @@ export async function refreshAccessToken(tenantSlug?: string): Promise<string | 
     })
 
     return newTokens.token
-  } catch {
+  } catch (error) {
     return null
   }
 }

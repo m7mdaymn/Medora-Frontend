@@ -73,7 +73,7 @@ export function AppointmentsView({ paginatedData, currentView }: AppointmentsVie
 
   // 🔴 2. هندلة الغرض من العملية (كشف / استشارة / موعد قادم / في الطابور)
   const getOperationalBadge = (purpose: string) => {
-    const config: Record<string, { label: string}> = {
+    const config: Record<string, { label: string }> = {
       FutureAppointment: {
         label: 'موعد قادم',
       },
@@ -194,14 +194,12 @@ export function AppointmentsView({ paginatedData, currentView }: AppointmentsVie
         </div>
 
         {paginatedData && paginatedData.totalPages > 1 && (
-          <div className='p-4 border-t bg-muted/10 mt-4 rounded-xl border'>
-            <GenericPagination
-              currentPage={paginatedData.pageNumber}
-              totalPages={paginatedData.totalPages}
-              hasNextPage={paginatedData.hasNextPage}
-              hasPreviousPage={paginatedData.hasPreviousPage}
-            />
-          </div>
+          <GenericPagination
+            currentPage={paginatedData.pageNumber}
+            totalPages={paginatedData.totalPages}
+            hasNextPage={paginatedData.hasNextPage}
+            hasPreviousPage={paginatedData.hasPreviousPage}
+          />
         )}
       </TabsContent>
 

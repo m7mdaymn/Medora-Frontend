@@ -2,6 +2,7 @@
 
 import { fetchApi } from '@/lib/fetchApi'
 import { BaseApiResponse } from '@/types/api'
+import { IPatientSummary } from '../../types/patient-app'
 
 export interface IRecentVisit {
   id: string
@@ -12,15 +13,7 @@ export interface IRecentVisit {
   completedAt: string | null
 }
 
-export interface IPatientSummary {
-  patientId: string
-  name: string
-  phone: string
-  dateOfBirth: string | null
-  gender: string
-  totalVisits: number
-  recentVisits: IRecentVisit[]
-}
+
 
 export async function getPatientSummaryAction(
   tenantSlug: string,

@@ -52,8 +52,10 @@ export async function getPublicServicesAction(slug: string): Promise<BaseApiResp
 
 export async function getPublicPaymentOptionsAction(
   slug: string,
+  branchId?: string,
 ): Promise<BaseApiResponse<IPublicPaymentOptions>> {
-  return await fetchApi<IPublicPaymentOptions>(`/api/public/${slug}/payment-options`, {
+  const query = branchId ? `?branchId=${encodeURIComponent(branchId)}` : ''
+  return await fetchApi<IPublicPaymentOptions>(`/api/public/${slug}/payment-options${query}`, {
     method: 'GET',
     cache: 'no-store',
   })

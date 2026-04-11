@@ -31,11 +31,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-
 import { createDoctorAction } from '@/actions/doctor/create-doctor'
 import { uploadDoctorPhotoAction } from '@/actions/doctor/upload-photo'
 import { ClinicImage } from '@/components/shared/clinic-image'
 import { MEDICAL_SPECIALTIES } from '@/constants/specialties'
+import { DoctorCompensationMode } from '@/types/doctor'
 import { CreateDoctorInput, CreateDoctorSchema } from '@/validation/doctor'
 
 export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
@@ -54,15 +54,14 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
       password: '',
       phone: '',
       specialty: '',
-      urgentInsertAfterCount: 0,
+      urgentInsertAfterCount: 0, // 👈 التعديل هنا
       avgVisitDurationMinutes: 15,
-      compensationMode: 'Percentage',
+      compensationMode: DoctorCompensationMode.Percentage,
       compensationValue: 0,
+      compensationEffectiveFrom: new Date().toISOString().split('T')[0],
       bio: '',
     },
   })
-
-  const selectedCompensationMode = form.watch('compensationMode')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -106,7 +105,7 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
       } else {
         toast.error(res.message || 'فشل إنشاء الحساب')
       }
-    } catch {
+    } catch (error) {
       toast.error('حدث خطأ غير متوقع')
     } finally {
       setIsSubmitting(false)
@@ -284,13 +283,14 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name='urgentInsertAfterCount'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='flex items-center gap-2'>
-                      <AlertCircle className='w-4 h-4 text-destructive' /> نظام إدراج الطوارئ
+                      <AlertCircle className='w-4 h-4 text-destructive' /> نظام إدراج الكشف المستعجل
                     </FormLabel>
                     <Select
                       onValueChange={(val) => field.onChange(Number(val))}
@@ -312,49 +312,66 @@ export function AddDoctorDialog({ tenantSlug }: { tenantSlug: string }) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name='compensationMode'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>نظام التعاقد</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      defaultValue={String(field.value)}
+                    >
                       <FormControl>
                         <SelectTrigger className='h-11 bg-background'>
-                          <SelectValue placeholder='اختر نظام التعاقد' />
+                          <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value='Percentage'>نسبة من الكشف</SelectItem>
-                        <SelectItem value='Salary'>راتب ثابت</SelectItem>
-                        <SelectItem value='FixedPerVisit'>قيمة ثابتة لكل كشف</SelectItem>
+                        <SelectItem value={String(DoctorCompensationMode.Percentage)}>
+                          نسبة
+                        </SelectItem>
+                        <SelectItem value={String(DoctorCompensationMode.Salary)}>
+                          راتب ثابت
+                        </SelectItem>
+                        <SelectItem value={String(DoctorCompensationMode.FixedPerVisit)}>
+                          مبلغ لكل كشف
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name='compensationValue'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {selectedCompensationMode === 'Percentage'
-                        ? 'قيمة النسبة %'
-                        : selectedCompensationMode === 'FixedPerVisit'
-                          ? 'قيمة كل كشف'
-                          : 'قيمة الراتب'}
-                    </FormLabel>
+                    <FormLabel>قيمة التعاقد</FormLabel>
                     <FormControl>
                       <Input
                         type='number'
-                        step='0.01'
-                        min='0'
                         className='h-11 bg-background'
                         value={(field.value as number) ?? ''}
-                        onChange={(event) => field.onChange(event.target.valueAsNumber || 0)}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='compensationEffectiveFrom'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>سريان التعاقد من</FormLabel>
+                    <FormControl>
+                      <Input type='date' className='h-11 bg-background' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,12 +1,13 @@
 export type UserRole =
   | 'SuperAdmin'
+  | 'Worker'
   | 'ClinicOwner'
   | 'ClinicManager'
   | 'Receptionist'
-  | 'Doctor'
   | 'Nurse'
-  | 'Patient'
+  | 'Doctor'
   | 'Contractor'
+  | 'Patient'
 
 export interface BaseApiResponse<T> {
   success: boolean

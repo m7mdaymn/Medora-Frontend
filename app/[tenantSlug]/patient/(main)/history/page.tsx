@@ -1,8 +1,11 @@
 'use client'
 
 import {
+  addPatientPartnerOrderCommentAppAction,
+  confirmPatientPartnerOrderArrivalAppAction,
   getPatientPartnerOrdersAppAction,
   getPatientVisitsAppAction,
+  uploadPatientPartnerOrderResultDocumentAppAction,
 } from '@/actions/patient-app/profile'
 import { ProfileSwitcher } from '@/components/patient/profile-switcher'
 import {
@@ -12,25 +15,67 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { usePatientAuthStore } from '@/store/usePatientAuthStore'
 import {
   Calendar,
   CircleCheck,
   Clock3,
+  MapPin,
+  MessageSquareText,
   Pill,
+  Phone,
   SearchX,
   Stethoscope,
-  TestTube
+  TestTube,
+  UploadCloud,
 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import useSWR from 'swr'
+
+type PartnerComment = {
+  actorLabel: string
+  message: string
+}
+
+const COMMENT_PREFIXES: Array<{ prefix: string; actorLabel: string }> = [
+  { prefix: 'Doctor comment:', actorLabel: 'تعليق الطبيب' },
+  { prefix: 'Contractor comment:', actorLabel: 'تعليق المتعاقد' },
+  { prefix: 'Patient comment:', actorLabel: 'تعليق المريض' },
+  { prefix: 'Team comment:', actorLabel: 'تعليق الفريق' },
+]
+
+function extractPartnerComments(notes: string | null | undefined): PartnerComment[] {
+  if (!notes) return []
+
+  return notes
+    .split('|')
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .flatMap((token) => {
+      const matched = COMMENT_PREFIXES.find((entry) => token.startsWith(entry.prefix))
+      if (!matched) return []
+
+      const message = token.slice(matched.prefix.length).trim()
+      if (!message) return []
+
+      return [{ actorLabel: matched.actorLabel, message }]
+    })
+}
 
 export default function PatientHistoryPage() {
   const params = useParams()
   const tenantSlug = params.tenantSlug as string
   const [page, setPage] = useState(1)
+  const [arrivingOrderId, setArrivingOrderId] = useState<string | null>(null)
+  const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null)
+  const [commentingOrderId, setCommentingOrderId] = useState<string | null>(null)
+  const [selectedFilesByOrderId, setSelectedFilesByOrderId] = useState<Record<string, File | null>>({})
+  const [uploadNotesByOrderId, setUploadNotesByOrderId] = useState<Record<string, string>>({})
 
   const authData = usePatientAuthStore((state) => state.tenants[tenantSlug])
   const activeProfileId = authData?.activeProfileId
@@ -41,13 +86,100 @@ export default function PatientHistoryPage() {
     () => getPatientVisitsAppAction(tenantSlug, activeProfileId!, page, 10),
   )
 
-  const { data: partnerOrdersRes, isLoading: partnerOrdersLoading } = useSWR(
+  const {
+    data: partnerOrdersRes,
+    isLoading: partnerOrdersLoading,
+    mutate: mutatePartnerOrders,
+  } = useSWR(
     activeProfileId ? ['patientPartnerOrders', tenantSlug, activeProfileId] : null,
     () => getPatientPartnerOrdersAppAction(tenantSlug, activeProfileId!),
   )
 
   const visits = historyRes?.data?.items || []
   const partnerOrders = partnerOrdersRes?.data || []
+
+  const confirmArrivalAtPartner = async (orderId: string) => {
+    if (!activeProfileId) return
+
+    setArrivingOrderId(orderId)
+    try {
+      const response = await confirmPatientPartnerOrderArrivalAppAction(
+        tenantSlug,
+        activeProfileId,
+        orderId,
+      )
+
+      if (!response.success) {
+        toast.error(response.message || 'تعذر تأكيد الحضور حالياً')
+        return
+      }
+
+      toast.success('تم تأكيد ذهابك للشريك بنجاح')
+      await mutatePartnerOrders()
+    } finally {
+      setArrivingOrderId(null)
+    }
+  }
+
+  const sendPartnerOrderComment = async (orderId: string) => {
+    if (!activeProfileId) return
+
+    const comment = window.prompt('اكتب تعليقك أو استفسارك للطبيب حول هذا الطلب:')
+    if (!comment || !comment.trim()) return
+
+    setCommentingOrderId(orderId)
+    try {
+      const response = await addPatientPartnerOrderCommentAppAction(
+        tenantSlug,
+        activeProfileId,
+        orderId,
+        comment,
+      )
+
+      if (!response.success) {
+        toast.error(response.message || 'تعذر إرسال التعليق حالياً')
+        return
+      }
+
+      toast.success('تم إرسال تعليقك للطبيب')
+      await mutatePartnerOrders()
+    } finally {
+      setCommentingOrderId(null)
+    }
+  }
+
+  const uploadFallbackResult = async (orderId: string, visitId: string, partnerType: string) => {
+    if (!activeProfileId) return
+
+    const file = selectedFilesByOrderId[orderId]
+    if (!file) {
+      toast.error('اختر ملف النتيجة أولاً')
+      return
+    }
+
+    setUploadingOrderId(orderId)
+    try {
+      const response = await uploadPatientPartnerOrderResultDocumentAppAction(tenantSlug, activeProfileId, {
+        orderId,
+        visitId,
+        partnerType,
+        file,
+        notes: uploadNotesByOrderId[orderId],
+      })
+
+      if (!response.success) {
+        toast.error(response.message || 'فشل رفع النتيجة')
+        return
+      }
+
+      toast.success('تم رفع النتيجة، وسيتم إشعار الطبيب للمراجعة')
+      setSelectedFilesByOrderId((current) => ({ ...current, [orderId]: null }))
+      setUploadNotesByOrderId((current) => ({ ...current, [orderId]: '' }))
+      await mutatePartnerOrders()
+    } finally {
+      setUploadingOrderId(null)
+    }
+  }
 
   if (!activeProfileId) return null
 
@@ -228,12 +360,20 @@ export default function PatientHistoryPage() {
                 key={item.id}
                 className='rounded-2xl border border-border/40 bg-background p-3 shadow-sm space-y-2'
               >
+                {(() => {
+                  const comments = extractPartnerComments(item.notes)
+
+                  return (
+                    <>
                 <div className='flex items-start justify-between gap-2'>
                   <div>
                     <p className='text-sm font-bold text-foreground'>{item.partnerName}</p>
                     <p className='text-[10px] text-muted-foreground'>
                       {item.serviceName || 'خدمة خارجية'}
                     </p>
+                    {item.doctorName && (
+                      <p className='text-[10px] text-muted-foreground'>الطبيب المتابع: {item.doctorName}</p>
+                    )}
                   </div>
                   <span className='text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-bold'>
                     {item.status === 'Completed'
@@ -262,13 +402,123 @@ export default function PatientHistoryPage() {
                     </div>
                   )}
 
+                  {item.partnerContactPhone && (
+                    <div className='flex items-center gap-1.5'>
+                      <Phone className='w-3 h-3' />
+                      هاتف الشريك: {item.partnerContactPhone}
+                    </div>
+                  )}
+
+                  {item.partnerAddress && (
+                    <div className='flex items-start gap-1.5'>
+                      <MapPin className='w-3 h-3 mt-0.5' />
+                      <span>{item.partnerAddress}</span>
+                    </div>
+                  )}
+
+                  {(item.price !== null || item.finalCost !== null) && (
+                    <div>
+                      التكلفة: {item.finalCost ?? item.price} ج.م
+                      {item.patientDiscountPercentage !== null &&
+                        ` (خصم متوقع ${item.patientDiscountPercentage}%)`}
+                    </div>
+                  )}
+
+                  {item.externalReference && <div>مرجع خارجي: {item.externalReference}</div>}
+
+                  {item.visitDiagnosis && <div>تشخيص الزيارة: {item.visitDiagnosis}</div>}
+
                   {item.resultSummary && (
                     <div className='flex items-start gap-1.5 text-foreground'>
                       <CircleCheck className='w-3 h-3 mt-0.5 text-emerald-600' />
                       <span>{item.resultSummary}</span>
                     </div>
                   )}
+
+                  {item.notes && <div>{item.notes}</div>}
                 </div>
+
+                {comments.length > 0 && (
+                  <div className='rounded-xl border border-primary/20 bg-primary/5 p-2.5 space-y-1'>
+                    <p className='text-[10px] font-bold text-primary'>تعليقات المتابعة</p>
+                    {comments.map((comment, index) => (
+                      <p key={`${item.id}-comment-${index}`} className='text-[10px] text-foreground'>
+                        <span className='font-semibold'>{comment.actorLabel}: </span>
+                        {comment.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <div className='pt-1 flex flex-wrap gap-2'>
+                  {(item.status === 'Sent' || item.status === 'Accepted') && !item.patientArrivedAt && (
+                    <Button
+                      size='sm'
+                      variant='outline'
+                      onClick={() => void confirmArrivalAtPartner(item.id)}
+                      disabled={arrivingOrderId === item.id}
+                    >
+                      {arrivingOrderId === item.id ? 'جارٍ التأكيد...' : 'تأكيد الذهاب للشريك'}
+                    </Button>
+                  )}
+
+                  <Button
+                    size='sm'
+                    variant='secondary'
+                    onClick={() => void sendPartnerOrderComment(item.id)}
+                    disabled={commentingOrderId === item.id}
+                  >
+                    <MessageSquareText className='w-3 h-3 ml-1' />
+                    {commentingOrderId === item.id ? 'جارٍ...' : 'تعليق للطبيب'}
+                  </Button>
+                </div>
+
+                {!item.resultUploadedAt && (
+                  <div className='rounded-xl border border-dashed border-border/60 p-2.5 space-y-2'>
+                    <p className='text-[10px] text-muted-foreground'>
+                      لو الشريك ما رفعش النتيجة، تقدر ترفع الملف هنا عشان الطبيب يراجعه.
+                    </p>
+
+                    <input
+                      type='file'
+                      accept='.pdf,.jpg,.jpeg,.png,.webp'
+                      className='block w-full text-[11px]'
+                      onChange={(event) =>
+                        setSelectedFilesByOrderId((current) => ({
+                          ...current,
+                          [item.id]: event.target.files?.[0] || null,
+                        }))
+                      }
+                    />
+
+                    <Textarea
+                      value={uploadNotesByOrderId[item.id] || ''}
+                      onChange={(event) =>
+                        setUploadNotesByOrderId((current) => ({
+                          ...current,
+                          [item.id]: event.target.value,
+                        }))
+                      }
+                      placeholder='ملاحظات إضافية للطبيب (اختياري)'
+                      className='min-h-[68px] text-[11px]'
+                    />
+
+                    <Button
+                      size='sm'
+                      variant='outline'
+                      onClick={() =>
+                        void uploadFallbackResult(item.id, item.visitId, item.partnerType)
+                      }
+                      disabled={uploadingOrderId === item.id}
+                    >
+                      <UploadCloud className='w-3 h-3 ml-1' />
+                      {uploadingOrderId === item.id ? 'جارٍ الرفع...' : 'رفع نتيجة بديلة'}
+                    </Button>
+                  </div>
+                )}
+                    </>
+                  )
+                })()}
               </div>
             ))}
           </div>

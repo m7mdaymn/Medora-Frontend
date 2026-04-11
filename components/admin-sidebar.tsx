@@ -16,10 +16,13 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
-import { SUPER_ADMIN_NAV_ITEMS } from '@/config/platform-nav'
+import { SUPER_ADMIN_NAV_ITEMS, WORKER_NAV_ITEMS } from '@/config/platform-nav'
+import { useAuthStore } from '@/store/useAuthStore'
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const user = useAuthStore((state) => state.user)
+  const navItems = user?.role === 'Worker' ? WORKER_NAV_ITEMS : SUPER_ADMIN_NAV_ITEMS
 
   return (
     <Sidebar collapsible='icon' side='right'>
@@ -36,7 +39,7 @@ export function AdminSidebar() {
           <SidebarGroupLabel>التحكم المركزي</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {SUPER_ADMIN_NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isActive =
                   item.href === '/admin' ? pathname === item.href : pathname.startsWith(item.href)
 

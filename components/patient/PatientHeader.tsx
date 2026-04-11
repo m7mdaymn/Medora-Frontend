@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { GlobalSupportDrawer } from '@/components/support/global-support-drawer'
 import { User } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { usePatientAuthStore } from '../../store/usePatientAuthStore'
@@ -52,6 +53,16 @@ export function PatientHeader() {
       </div>
 
       <div className='flex items-center gap-3'>
+        <GlobalSupportDrawer
+          links={[
+            { label: 'طلب زيارة أو مساعدة', href: `/${tenantSlug}/patient/request` },
+            { label: 'حجوزاتي', href: `/${tenantSlug}/patient/bookings` },
+            { label: 'العودة للموقع', href: `/${tenantSlug}` },
+          ]}
+          supportPhone={config?.supportPhoneNumber || config?.phone || null}
+          supportWhatsApp={config?.supportWhatsAppNumber || null}
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className='h-8 w-8 cursor-pointer border border-primary/20 hover:ring-2 hover:ring-primary/50 transition-all'>

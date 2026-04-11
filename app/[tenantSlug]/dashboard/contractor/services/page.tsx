@@ -38,6 +38,8 @@ export default function ContractorServicesPage() {
   const [settlementTarget, setSettlementTarget] = useState<'Doctor' | 'Clinic'>('Clinic')
   const [settlementPercentage, setSettlementPercentage] = useState('')
   const [clinicDoctorSharePercentage, setClinicDoctorSharePercentage] = useState('')
+  const [patientDiscountPercentage, setPatientDiscountPercentage] = useState('')
+  const [doctorFixedPayoutAmount, setDoctorFixedPayoutAmount] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -50,6 +52,8 @@ export default function ContractorServicesPage() {
     setSettlementTarget('Clinic')
     setSettlementPercentage('')
     setClinicDoctorSharePercentage('')
+    setPatientDiscountPercentage('')
+    setDoctorFixedPayoutAmount('')
     setIsActive(true)
   }
 
@@ -66,6 +70,12 @@ export default function ContractorServicesPage() {
         ? String(service.clinicDoctorSharePercentage)
         : '',
     )
+    setPatientDiscountPercentage(
+      service.patientDiscountPercentage !== null ? String(service.patientDiscountPercentage) : '',
+    )
+    setDoctorFixedPayoutAmount(
+      service.doctorFixedPayoutAmount !== null ? String(service.doctorFixedPayoutAmount) : '',
+    )
     setIsActive(service.isActive)
   }
 
@@ -76,6 +86,10 @@ export default function ContractorServicesPage() {
     const parsedSettlementPercentage = Number(settlementPercentage)
     const parsedClinicDoctorShare =
       clinicDoctorSharePercentage.trim().length > 0 ? Number(clinicDoctorSharePercentage) : undefined
+    const parsedPatientDiscount =
+      patientDiscountPercentage.trim().length > 0 ? Number(patientDiscountPercentage) : undefined
+    const parsedDoctorFixedPayout =
+      doctorFixedPayoutAmount.trim().length > 0 ? Number(doctorFixedPayoutAmount) : undefined
 
     if (!serviceName.trim()) {
       toast.error('اسم الخدمة مطلوب')
@@ -97,6 +111,19 @@ export default function ContractorServicesPage() {
       return
     }
 
+    if (
+      parsedPatientDiscount !== undefined &&
+      (Number.isNaN(parsedPatientDiscount) || parsedPatientDiscount < 0 || parsedPatientDiscount > 100)
+    ) {
+      toast.error('نسبة خصم المريض يجب أن تكون بين 0 و100')
+      return
+    }
+
+    if (parsedDoctorFixedPayout !== undefined && (Number.isNaN(parsedDoctorFixedPayout) || parsedDoctorFixedPayout < 0)) {
+      toast.error('المبلغ الثابت للطبيب غير صحيح')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const partnerIdForRequest = partnerIdInput.trim() || defaultPartnerId
@@ -110,6 +137,8 @@ export default function ContractorServicesPage() {
             settlementPercentage: parsedSettlementPercentage,
             clinicDoctorSharePercentage:
               settlementTarget === 'Clinic' ? parsedClinicDoctorShare : undefined,
+            patientDiscountPercentage: parsedPatientDiscount,
+            doctorFixedPayoutAmount: parsedDoctorFixedPayout,
             isActive,
           })
         : await createPartnerServiceAction(tenantSlug, {
@@ -121,6 +150,8 @@ export default function ContractorServicesPage() {
             settlementPercentage: parsedSettlementPercentage,
             clinicDoctorSharePercentage:
               settlementTarget === 'Clinic' ? parsedClinicDoctorShare : undefined,
+            patientDiscountPercentage: parsedPatientDiscount,
+            doctorFixedPayoutAmount: parsedDoctorFixedPayout,
           })
 
       if (!editingServiceId && !partnerIdForRequest) {
@@ -221,6 +252,24 @@ export default function ContractorServicesPage() {
             </div>
           )}
 
+          <div className='space-y-2'>
+            <Label>خصم المريض (%)</Label>
+            <Input
+              value={patientDiscountPercentage}
+              onChange={(e) => setPatientDiscountPercentage(e.target.value)}
+              placeholder='10 (اختياري)'
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <Label>مبلغ ثابت للطبيب</Label>
+            <Input
+              value={doctorFixedPayoutAmount}
+              onChange={(e) => setDoctorFixedPayoutAmount(e.target.value)}
+              placeholder='50 (اختياري)'
+            />
+          </div>
+
           {editingServiceId && (
             <label className='inline-flex items-center gap-2 text-sm'>
               <input
@@ -277,6 +326,12 @@ export default function ContractorServicesPage() {
                 </p>
                 {service.settlementTarget === 'Clinic' && service.clinicDoctorSharePercentage !== null && (
                   <p>حصة الطبيب من حصة العيادة: {service.clinicDoctorSharePercentage}%</p>
+                )}
+                {service.patientDiscountPercentage !== null && (
+                  <p>خصم المريض: {service.patientDiscountPercentage}%</p>
+                )}
+                {service.doctorFixedPayoutAmount !== null && (
+                  <p>مبلغ ثابت للطبيب: {service.doctorFixedPayoutAmount} ج.م</p>
                 )}
               </div>
 

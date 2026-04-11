@@ -89,7 +89,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={i}>
                     <SidebarMenuButton disabled className='flex items-center gap-2'>
                       <Skeleton className='h-4 w-4 shrink-0' />
-                      <Skeleton className='h-4 w-full max-w-[120px] group-data-[collapsible=icon]:hidden' />
+                      <Skeleton className='h-4 w-full max-w-30 group-data-[collapsible=icon]:hidden' />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

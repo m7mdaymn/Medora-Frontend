@@ -5,6 +5,7 @@ import { ICreateTicketResponse, IQueueBoardSession, IQueueTicket } from '@/types
 import { AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
+import { toast } from 'sonner' // 👈 متنساش دي
 import useSWR from 'swr'
 import { Card, CardContent } from '../../../../../components/ui/card'
 import { BaseApiResponse } from '../../../../../types/api'
@@ -13,7 +14,6 @@ import { OpenMySessionButton } from './open-my-session-button'
 import { WaitingQueueList } from './waiting-queue-list'
 
 interface Props {
-  // عدلنا النوع عشان يقبل null في البداية
   initialData: IQueueBoardSession | null
   tenantSlug: string
 }
@@ -22,7 +22,6 @@ export function DoctorTerminalView({ initialData, tenantSlug }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // الـ SWR ده بقى شغال 24 ساعة، سواء العيادة مقفولة أو مفتوحة
   const { data: queueData, mutate } = useSWR(
     ['doctorQueue', tenantSlug],
     async ([, slug]) => {
@@ -32,17 +31,15 @@ export function DoctorTerminalView({ initialData, tenantSlug }: Props) {
     },
     {
       fallbackData: initialData,
-      refreshInterval: 10000, // كل 10 ثواني هيسأل
+      refreshInterval: 10000,
       revalidateOnFocus: true,
       keepPreviousData: true,
       refreshWhenHidden: false,
     },
   )
 
-  // بنعتمد على الداتا اللي جاية من SWR (ولو لسه بتحمل، بناخد الـ initial)
   const currentData = queueData !== undefined ? queueData : initialData
 
-  // 🔴 السحر هنا: الشاشة بتتغير أوتوماتيك لو مفيش داتا أو العيادة مش نشطة
   if (!currentData || !currentData.isActive) {
     return (
       <div className='max-w-2xl mx-auto mt-10'>
@@ -60,24 +57,44 @@ export function DoctorTerminalView({ initialData, tenantSlug }: Props) {
     )
   }
 
-  // 🟢 لو فيه داتا (العيادة اتفتحت)، هنرسم الطابور العادي
   const { currentTicket, waitingTickets, waitingCount } = currentData
 
   const handleAction = (
     actionFn: (
       tenantSlug: string,
       ticketId: string,
-    ) => Promise<BaseApiResponse<IQueueTicket | ICreateTicketResponse>>,
+    ) => Promise<BaseApiResponse<IQueueTicket | ICreateTicketResponse>>, // 👈 خليناها any عشان نقبل إن الـ data تكون null عادي
     ticketId: string,
   ) => {
     startTransition(async () => {
-      const result = await actionFn(tenantSlug, ticketId)
-      if (result.success) {
-        await mutate()
-        if (result.data && 'visitId' in result.data) {
-          const visitId = (result.data as ICreateTicketResponse).visitId
-          router.push(`/${tenantSlug}/dashboard/doctor/visits/${visitId}`)
+      try {
+        const result = await actionFn(tenantSlug, ticketId)
+
+        if (!result) {
+          toast.error('لم يتم تلقي استجابة من الخادم')
+          return
         }
+
+        if (result.success) {
+          await mutate() // نحدث الطابور
+
+          // 👈 لو فيه visitId (زي حالة بدء الكشف) هنوديه عليها
+          if (result.data && 'visitId' in result.data) {
+            const visitId = result.data.visitId
+            if (visitId) {
+              router.push(`/${tenantSlug}/dashboard/doctor/visits/${visitId}`)
+              return
+            }
+          }
+
+          // لو أكشن تاني (إنهاء/نداء/تخطي) والداتا null بس success true، ده صح 100%
+          toast.success(result.message || 'تم الإجراء بنجاح')
+        } else {
+          // 🔥 هنا السر: الباك إند هيقولك ليه رافض ينهي الزيارة!
+          toast.error(result.message || 'لا يمكن إتمام هذا الإجراء الآن')
+        }
+      } catch (error) {
+        toast.error('حدث خطأ أثناء الاتصال')
       }
     })
   }

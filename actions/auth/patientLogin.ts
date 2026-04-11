@@ -12,7 +12,10 @@ export async function patientLoginAction(
 ): Promise<BaseApiResponse<ILogin>> {
   const result = await fetchApi<ILogin>('/api/Auth/patient/login', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      portalType: 'Patient',
+    }),
     tenantSlug,
     cache: 'no-store', // أمان إضافي لمنع Next.js من كاش الريكويست ده
   })

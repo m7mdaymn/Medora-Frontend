@@ -10,7 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus } from 'lucide-react'
+import { CreatePayrollWorkerForm } from './create-payroll-worker-form'
 import { CreateStaffForm } from './create-staff-form'
 
 interface Props {
@@ -31,10 +33,25 @@ export function AddStaffDialog({ tenantSlug }: Props) {
       <DialogContent className='sm:max-w-150 max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>إضافة موظف جديد</DialogTitle>
-          <DialogDescription>بيانات الدخول وصلاحيات الموظف على السيستم.</DialogDescription>
+          <DialogDescription>
+            اختر إذا كان العامل يحتاج حساب دخول أو إضافته كعامل رواتب فقط.
+          </DialogDescription>
         </DialogHeader>
 
-        <CreateStaffForm tenantSlug={tenantSlug} onSuccess={() => setOpen(false)} />
+        <Tabs defaultValue='with-account' dir='rtl' className='space-y-4'>
+          <TabsList className='grid w-full grid-cols-2'>
+            <TabsTrigger value='with-account'>بحساب دخول</TabsTrigger>
+            <TabsTrigger value='payroll-only'>بدون حساب</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='with-account' className='mt-0'>
+            <CreateStaffForm tenantSlug={tenantSlug} onSuccess={() => setOpen(false)} />
+          </TabsContent>
+
+          <TabsContent value='payroll-only' className='mt-0'>
+            <CreatePayrollWorkerForm tenantSlug={tenantSlug} onSuccess={() => setOpen(false)} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   )

@@ -27,9 +27,9 @@ export interface IPublicClinic {
   address: string | null
   city: string | null
   logoUrl: string | null
-  imgUrl?: string | null
-  description?: string | null
-  socialLinks?: Record<string, string>
+  imgUrl: string | null
+  description: string | null
+  socialLinks: Record<string, string> | null
   bookingEnabled: boolean
   tenantSlug: string
   isActive: boolean
@@ -39,7 +39,7 @@ export interface IPublicService {
   id: string
   serviceName: string
   price: number
-  durationMinutes: number | null
+  durationMinutes: number
 }
 
 export interface IPublicDoctor {
@@ -58,51 +58,4 @@ export interface IPublicWorkingHour {
   startTime: string
   endTime: string
   isActive: boolean
-}
-
-export interface IPublicPaymentMethod {
-  id: string
-  methodName: string
-  providerName: string | null
-  accountName: string | null
-  accountNumber: string | null
-  iban: string | null
-  walletNumber: string | null
-  instructions: string | null
-  isActive: boolean
-  displayOrder: number
-}
-
-export interface IPublicPaymentOptions {
-  selfServicePaymentPolicy: string
-  selfServiceRequestExpiryHours: number
-  methods: IPublicPaymentMethod[]
-}
-
-export interface IPublicMarketplaceItem {
-  id: string
-  branchId: string
-  name: string
-  description: string | null
-  skuCode: string
-  itemType: string
-  unit: string
-  salePrice: number
-  quantityOnHand: number
-  showInLanding: boolean
-  images: Array<{ id: string; imageUrl: string; displayOrder: number }>
-}
-
-export interface IPublicLanding {
-  clinic: IPublicClinic
-  featuredServices: IPublicService[]
-  featuredProducts: IPublicMarketplaceItem[]
-  doctorsAvailableNow: IPublicDoctor[]
-  branches: Array<{
-    id: string
-    name: string
-    address: string | null
-    phone: string | null
-  }>
-  paymentMethods: IPublicPaymentMethod[]
 }

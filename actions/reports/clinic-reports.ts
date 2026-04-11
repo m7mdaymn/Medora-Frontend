@@ -12,6 +12,7 @@ type ReportFilters = {
   doctorId?: string
   visitType?: string
   source?: string
+  scope?: 'selected' | 'all'
 }
 
 function toQueryString(filters: ReportFilters): string {
@@ -38,6 +39,7 @@ export async function getClinicOverviewReportAction(
     method: 'GET',
     tenantSlug,
     cache: 'no-store',
+    skipBranchSelection: filters.scope === 'all',
   })
 }
 
@@ -49,6 +51,7 @@ export async function getClinicServicesReportAction(
     method: 'GET',
     tenantSlug,
     cache: 'no-store',
+    skipBranchSelection: filters.scope === 'all',
   })
 }
 

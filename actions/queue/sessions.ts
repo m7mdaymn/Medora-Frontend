@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { fetchApi } from '../../lib/fetchApi'
-import { BaseApiResponse } from '../../types/api'
+import { BaseApiResponse, IPaginatedData } from '../../types/api'
 import { IQueueSession, IQueueTicket } from '../../types/queue'
 import { OpenSessionInput } from '../../validation/queue'
 
@@ -26,11 +26,16 @@ export async function openQueueSession(
 export async function closeQueueSession(
   tenantSlug: string,
   sessionId: string,
+  force: boolean = false,
 ): Promise<BaseApiResponse<IQueueSession>> {
-  const response = await fetchApi<IQueueSession>(`/api/clinic/queue/sessions/${sessionId}/close`, {
-    method: 'POST',
-    tenantSlug,
-  })
+  const query = force ? '?force=true' : ''
+  const response = await fetchApi<IQueueSession>(
+    `/api/clinic/queue/sessions/${sessionId}/close${query}`,
+    {
+      method: 'POST',
+      tenantSlug,
+    },
+  )
   if (response.success) {
     revalidatePath(`/${tenantSlug}/dashboard/queue`)
     revalidatePath(`/${tenantSlug}/dashboard/doctor/queue`)
@@ -40,12 +45,12 @@ export async function closeQueueSession(
 
 export async function closeAllQueueSessions(
   tenantSlug: string,
-  notes?: string,
-): Promise<BaseApiResponse<{ closedCount: number }>> {
-  const response = await fetchApi<{ closedCount: number }>(`/api/clinic/queue/sessions/close-all`, {
+  date?: string,
+): Promise<BaseApiResponse<number>> {
+  const query = date ? `?date=${encodeURIComponent(date)}` : ''
+  const response = await fetchApi<number>(`/api/clinic/queue/sessions/close-all${query}`, {
     method: 'POST',
     tenantSlug,
-    body: JSON.stringify({ notes: notes || null }),
   })
 
   if (response.success) {
@@ -58,10 +63,11 @@ export async function closeAllQueueSessions(
 
 export async function getQueueSessionsAction(
   tenantSlug: string,
-  doctorId?: string,
-): Promise<BaseApiResponse<IQueueSession[]>> {
-  const query = doctorId ? `?doctorId=${doctorId}` : ''
-  return await fetchApi<IQueueSession[]>(`/api/clinic/queue/sessions${query}`, {
+  pageNumber: number = 1,
+  pageSize: number = 10,
+): Promise<BaseApiResponse<IPaginatedData<IQueueSession>>> {
+  const query = `?pageNumber=${pageNumber}&pageSize=${pageSize}`
+  return await fetchApi<IPaginatedData<IQueueSession>>(`/api/clinic/queue/sessions${query}`, {
     method: 'GET',
     tenantSlug,
     cache: 'no-store',

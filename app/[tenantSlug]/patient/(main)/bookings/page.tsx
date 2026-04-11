@@ -1,12 +1,26 @@
 'use client'
 
-import { getPatientBookingsAppAction } from '@/actions/patient-app/profile'
+import {
+  getPatientBookingsAppAction,
+  getPatientSelfServiceRequestsAppAction,
+} from '@/actions/patient-app/profile'
 import { ProfileSwitcher } from '@/components/patient/profile-switcher'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePatientAuthStore } from '@/store/usePatientAuthStore'
-import { Calendar, CalendarX, CheckCircle2, ChevronLeft, Clock, Timer } from 'lucide-react'
+import {
+  Calendar,
+  CalendarX,
+  CheckCircle2,
+  ChevronLeft,
+  Clock,
+  Hourglass,
+  ShieldCheck,
+  Timer,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import useSWR from 'swr'
 
@@ -23,7 +37,13 @@ export default function PatientBookingsPage() {
     () => getPatientBookingsAppAction(tenantSlug, activeProfileId!),
   )
 
+  const { data: selfServiceRes, isLoading: loadingSelfService } = useSWR(
+    activeProfileId ? ['patientSelfServiceRequests', tenantSlug, activeProfileId] : null,
+    () => getPatientSelfServiceRequestsAppAction(tenantSlug, activeProfileId!),
+  )
+
   const bookings = bookingsRes?.data || []
+  const selfServiceRequests = selfServiceRes?.data || []
 
   if (!activeProfileId) return null
 
@@ -43,6 +63,12 @@ export default function PatientBookingsPage() {
         <div className='shrink-0'>
           <ProfileSwitcher tenantSlug={tenantSlug} />
         </div>
+      </div>
+
+      <div className='flex justify-end'>
+        <Button asChild size='sm' className='rounded-full'>
+          <Link href={`/${tenantSlug}/patient/request`}>طلب جديد بالدفع الذاتي</Link>
+        </Button>
       </div>
 
       {/* قائمة الحجوزات */}
@@ -124,7 +150,81 @@ export default function PatientBookingsPage() {
               <p className='text-[10px] text-muted-foreground/60 max-w-50'>
                 ابدأ بحجز موعد جديد من خلال التواصل مع العيادة
               </p>
+              <Button asChild size='sm' variant='outline' className='mt-3'>
+                <Link href={`/${tenantSlug}/patient/request`}>ابدأ طلب حجز بالدفع الذاتي</Link>
+              </Button>
             </div>
+          </div>
+        )}
+      </div>
+
+      <div className='space-y-3'>
+        <div className='flex items-center justify-between gap-2'>
+          <div className='flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider'>
+            <ShieldCheck className='w-3.5 h-3.5' />
+            متابعة تأكيدات الدفع الذاتي
+          </div>
+          <Button asChild size='sm' variant='outline'>
+            <Link href={`/${tenantSlug}/patient/request`}>طلب جديد</Link>
+          </Button>
+        </div>
+
+        {loadingSelfService ? (
+          <div className='space-y-2'>
+            <Skeleton className='h-20 w-full rounded-2xl' />
+            <Skeleton className='h-20 w-full rounded-2xl' />
+          </div>
+        ) : selfServiceRequests.length > 0 ? (
+          <div className='grid gap-3'>
+            {selfServiceRequests.map((request) => (
+              <Card key={request.id} className='rounded-2xl border-border/40 shadow-sm'>
+                <CardContent className='p-4 space-y-2'>
+                  <div className='flex items-start justify-between gap-2'>
+                    <div>
+                      <p className='text-sm font-bold'>د. {request.doctorName}</p>
+                      <p className='text-[11px] text-muted-foreground'>
+                        {request.serviceName || 'خدمة غير محددة'}
+                      </p>
+                    </div>
+                    <SelfServiceStatusBadge status={request.status} />
+                  </div>
+
+                  <div className='grid grid-cols-2 gap-2 text-[11px] text-muted-foreground'>
+                    <div className='flex items-center gap-1.5'>
+                      <Calendar className='w-3.5 h-3.5 text-primary' />
+                      {new Date(request.requestedDate).toLocaleDateString('ar-EG')}
+                    </div>
+                    <div className='flex items-center gap-1.5'>
+                      <Clock className='w-3.5 h-3.5 text-orange-500' />
+                      {request.requestedTime || '--'}
+                    </div>
+                    <div className='flex items-center gap-1.5'>
+                      <Hourglass className='w-3.5 h-3.5 text-muted-foreground' />
+                      ينتهي: {new Date(request.expiresAt).toLocaleDateString('ar-EG')}
+                    </div>
+                    <div className='font-bold text-foreground'>
+                      المدفوع:{' '}
+                      {(request.adjustedPaidAmount ?? request.declaredPaidAmount ?? 0).toLocaleString(
+                        'ar-EG',
+                      )}{' '}
+                      ج.م
+                    </div>
+                  </div>
+
+                  {(request.convertedQueueTicketId || request.convertedBookingId) && (
+                    <div className='rounded-lg bg-primary/5 border border-primary/10 px-3 py-2 text-[11px] font-bold text-primary'>
+                      {request.convertedQueueTicketId
+                        ? 'تم تحويل الطلب إلى تذكرة عيادة.'
+                        : 'تم تحويل الطلب إلى حجز مؤكد.'}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className='rounded-2xl border border-dashed border-border/60 p-4 text-center text-[11px] text-muted-foreground'>
+            لا توجد طلبات دفع ذاتي حتى الآن.
           </div>
         )}
       </div>
@@ -158,6 +258,74 @@ function StatusBadge({ status }: { status: string }) {
           variant='outline'
           className='bg-muted text-muted-foreground border-border/50 text-[10px] font-bold rounded-full px-2'
         >
+          {status}
+        </Badge>
+      )
+  }
+}
+
+function SelfServiceStatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case 'PendingPaymentReview':
+      return (
+        <Badge variant='outline' className='text-[10px] font-bold'>
+          قيد مراجعة الدفع
+        </Badge>
+      )
+    case 'PaymentApproved':
+      return (
+        <Badge
+          variant='outline'
+          className='bg-emerald-500/5 text-emerald-600 border-emerald-500/20 text-[10px] font-bold'
+        >
+          تم اعتماد الدفع
+        </Badge>
+      )
+    case 'ReuploadRequested':
+      return (
+        <Badge
+          variant='outline'
+          className='bg-amber-500/5 text-amber-600 border-amber-500/20 text-[10px] font-bold'
+        >
+          مطلوب إعادة الإثبات
+        </Badge>
+      )
+    case 'ConvertedToQueueTicket':
+      return (
+        <Badge
+          variant='outline'
+          className='bg-primary/5 text-primary border-primary/20 text-[10px] font-bold'
+        >
+          تحول إلى تذكرة
+        </Badge>
+      )
+    case 'ConvertedToBooking':
+      return (
+        <Badge
+          variant='outline'
+          className='bg-primary/5 text-primary border-primary/20 text-[10px] font-bold'
+        >
+          تحول إلى حجز
+        </Badge>
+      )
+    case 'Rejected':
+      return (
+        <Badge
+          variant='outline'
+          className='bg-destructive/5 text-destructive border-destructive/20 text-[10px] font-bold'
+        >
+          مرفوض
+        </Badge>
+      )
+    case 'Expired':
+      return (
+        <Badge variant='outline' className='text-[10px] font-bold'>
+          منتهي الصلاحية
+        </Badge>
+      )
+    default:
+      return (
+        <Badge variant='outline' className='text-[10px] font-bold'>
           {status}
         </Badge>
       )

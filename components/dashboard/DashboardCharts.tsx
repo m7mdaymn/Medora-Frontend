@@ -26,8 +26,8 @@ interface DashboardChartsProps {
 }
 
 const barChartConfig = {
-  revenue: { label: 'الإيرادات', color: 'var(--chart-1)' },
-  paid: { label: 'المحصل', color: 'var(--chart-2)' },
+  paid: { label: 'الإيرادات', color: 'var(--chart-2)' },
+  revenue: { label: 'المحصل', color: 'var(--chart-1)' },
 } satisfies ChartConfig
 
 const pieChartConfig = {
@@ -68,7 +68,9 @@ export function DashboardCharts({ yearlyData, doctorsData }: DashboardChartsProp
       {/* التريكة هنا في min-w-0 عشان تمنع الـ Grid Blowout على الموبايل */}
       <Card className='col-span-1 lg:col-span-4 shadow-sm border-border/50 min-w-0'>
         <CardHeader>
-          <CardTitle className='text-lg md:text-xl'>تحليل الإيرادات ({yearlyData.year})</CardTitle>
+          <CardTitle className='text-lg md:text-xl'>
+            تحليل الإيرادات لسنة {yearlyData.year}
+          </CardTitle>
           <CardDescription className='text-xs md:text-sm'>
             مقارنة بين إجمالي الإيرادات والمبالغ المحصلة فعلياً
           </CardDescription>

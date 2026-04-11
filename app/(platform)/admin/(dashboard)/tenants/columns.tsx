@@ -15,6 +15,40 @@ export const columns: ColumnDef<ITenant>[] = [
     cell: ({ row }) => <div className='font-bold'>{row.getValue('name')}</div>,
   },
   {
+    accessorKey: 'tenantType',
+    header: 'نوع الكيان',
+    cell: ({ row }) => {
+      const tenantType = row.getValue('tenantType') as ITenant['tenantType']
+      if (tenantType === 'Partner') {
+        const partnerCategory = row.original.partnerCategory
+        const partnerLabel =
+          partnerCategory === 'Laboratory'
+            ? 'معمل'
+            : partnerCategory === 'Radiology'
+              ? 'أشعة'
+              : partnerCategory === 'Pharmacy'
+                ? 'صيدلية'
+                : 'شريك'
+
+        return <Badge className='bg-blue-500 text-white'>{partnerLabel}</Badge>
+      }
+
+      return <Badge className='bg-emerald-600 text-white'>عيادة</Badge>
+    },
+  },
+  {
+    accessorKey: 'hasBranches',
+    header: 'الفروع',
+    cell: ({ row }) => {
+      const hasBranches = row.getValue('hasBranches') as boolean
+      return hasBranches ? (
+        <Badge variant='secondary'>متعدد الفروع</Badge>
+      ) : (
+        <Badge variant='outline'>بدون فروع</Badge>
+      )
+    },
+  },
+  {
     accessorKey: 'slug',
     header: 'المعرف (Slug)',
     cell: ({ row }) => (

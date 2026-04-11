@@ -42,8 +42,8 @@ interface Props {
   tenantSlug: string
   doctorId: string
   catalogServices: IClinicService[]
-  existingLink?: IDoctorServiceLink // لو مبعوتة يبقى إحنا في وضع التعديل
-  children?: React.ReactNode // عشان نقدر نغير شكل الزرار من بره
+  existingLink?: IDoctorServiceLink 
+  children?: React.ReactNode 
 }
 
 export function LinkServiceModal({

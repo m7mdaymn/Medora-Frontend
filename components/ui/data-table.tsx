@@ -39,7 +39,9 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   searchKey: string
   filterColumn?: string
-  filterOptions?: string[]
+  filterOptions?: Array<string | { value: string; label: string }>
+  filterPlaceholder?: string
+  filterAllLabel?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -48,6 +50,8 @@ export function DataTable<TData, TValue>({
   searchKey,
   filterColumn,
   filterOptions,
+  filterPlaceholder = 'تصفية',
+  filterAllLabel = 'الكل',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -97,15 +101,20 @@ export function DataTable<TData, TValue>({
               }
             >
               <SelectTrigger className='w-45'>
-                <SelectValue placeholder='تصفية بالتخصص' />
+                <SelectValue placeholder={filterPlaceholder} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>كل التخصصات</SelectItem>
-                {filterOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
+                <SelectItem value='all'>{filterAllLabel}</SelectItem>
+                {filterOptions.map((option) => {
+                  const value = typeof option === 'string' ? option : option.value
+                  const label = typeof option === 'string' ? option : option.label
+
+                  return (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
           )}

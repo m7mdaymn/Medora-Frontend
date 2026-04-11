@@ -5,8 +5,8 @@ import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import { AlertCircle, CalendarIcon, Loader2, User, Users } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
+import { getBranchesAction } from '@/actions/branch/branches'
 import { createBookingAction } from '@/actions/booking/create-booking'
+import { IBranch } from '@/types/branch'
 import { IDoctor } from '@/types/doctor'
 import { IPatient } from '@/types/patient'
 import { CreateBookingInput, createBookingSchema } from '@/validation/booking'
@@ -55,6 +57,9 @@ export function BookingModal({ doctors = [] }: Props) {
 
   const safeDoctors = doctors.filter((doctor) => doctor.isEnabled) || []
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null)
+  const [transferReceiptFile, setTransferReceiptFile] = useState<File | null>(null)
+  const [branches, setBranches] = useState<IBranch[]>([])
+  const [isBranchesLoading, setIsBranchesLoading] = useState(false)
 
   // 🔥 ستيت حفظ الأكونت لعرض أفراد العائلة
   const [selectedAccount, setSelectedAccount] = useState<IPatient | null>(null)
@@ -63,31 +68,124 @@ export function BookingModal({ doctors = [] }: Props) {
     resolver: valibotResolver(createBookingSchema),
     defaultValues: {
       patientId: '',
+      branchId: '',
       doctorId: '',
       doctorServiceId: '',
       notes: '',
       bookingTime: '09:00',
       bookingDate: new Date(),
+      paymentMethod: 'none',
+      paidAmount: '',
+      paymentReference: '',
+      paymentNotes: '',
     },
   })
 
   const activeDoctor = safeDoctors.find((d) => d.id === selectedDoctorId)
   const hasServices = activeDoctor && (activeDoctor.services?.length ?? 0) > 0
+  const selectedPaymentMethod = useWatch({ control: form.control, name: 'paymentMethod' })
+  const requiresTransferReceipt =
+    selectedPaymentMethod === 'Transfer' || selectedPaymentMethod === 'Receipt'
+
+  useEffect(() => {
+    if (!open) return
+
+    let active = true
+
+    const loadBranches = async () => {
+      setIsBranchesLoading(true)
+      try {
+        const response = await getBranchesAction(tenantSlug as string, false)
+        if (!active) return
+
+        if (!response.success) {
+          setBranches([])
+          return
+        }
+
+        const activeBranches = (response.data ?? []).filter((branch) => branch.isActive)
+        setBranches(activeBranches)
+
+        const currentBranchId = form.getValues('branchId')
+        const hasCurrentBranch = currentBranchId
+          ? activeBranches.some((branch) => branch.id === currentBranchId)
+          : false
+
+        if (!hasCurrentBranch) {
+          form.setValue('branchId', activeBranches[0]?.id ?? '', { shouldDirty: false })
+        }
+      } finally {
+        if (active) {
+          setIsBranchesLoading(false)
+        }
+      }
+    }
+
+    void loadBranches()
+
+    return () => {
+      active = false
+    }
+  }, [open, tenantSlug, form])
 
   const onSubmit = async (values: CreateBookingInput) => {
+    if (!values.branchId?.trim()) {
+      toast.error('اختر الفرع أولاً')
+      return
+    }
+
     if (!hasServices) {
       toast.error('لا يمكن الحجز لدكتور ليس لديه خدمات معرفة')
       return
     }
 
+    const hasPaidAmount = Boolean(values.paidAmount?.trim())
+    const paidAmount = hasPaidAmount ? Number(values.paidAmount) : 0
+    if (hasPaidAmount && Number.isNaN(paidAmount)) {
+      toast.error('صيغة مبلغ الدفع غير صحيحة')
+      return
+    }
+
+    const effectivePaymentMethod = values.paymentMethod === 'none' ? '' : values.paymentMethod
+
+    if (hasPaidAmount && paidAmount > 0 && !effectivePaymentMethod) {
+      toast.error('اختر طريقة الدفع: كاش أو إيصال')
+      return
+    }
+
+    if (
+      (effectivePaymentMethod === 'Transfer' || effectivePaymentMethod === 'Receipt') &&
+      hasPaidAmount &&
+      paidAmount > 0 &&
+      !transferReceiptFile
+    ) {
+      toast.error('ارفع صورة إيصال التحويل قبل تأكيد الحجز')
+      return
+    }
+
+    const payloadPaymentMethod: CreateBookingInput['paymentMethod'] =
+      effectivePaymentMethod === 'Cash' ||
+      effectivePaymentMethod === 'Receipt' ||
+      effectivePaymentMethod === 'Transfer'
+        ? effectivePaymentMethod
+        : 'none'
+
     try {
-      const result = await createBookingAction(values, tenantSlug as string)
+      const result = await createBookingAction(
+        {
+          ...values,
+          paymentMethod: payloadPaymentMethod,
+        },
+        tenantSlug as string,
+        transferReceiptFile,
+      )
       if (result.success) {
         toast.success(result.message)
         setOpen(false)
         form.reset()
         setSelectedDoctorId(null)
         setSelectedAccount(null)
+        setTransferReceiptFile(null)
       } else {
         toast.error(result.message)
       }
@@ -104,6 +202,7 @@ export function BookingModal({ doctors = [] }: Props) {
         if (!isOpen) {
           form.reset()
           setSelectedAccount(null)
+          setTransferReceiptFile(null)
         }
       }}
     >
@@ -190,6 +289,37 @@ export function BookingModal({ doctors = [] }: Props) {
                       </div>
                     )}
                 </div>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='branchId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>الفرع</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                    disabled={isBranchesLoading || branches.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className='text-right h-11'>
+                        <SelectValue
+                          placeholder={isBranchesLoading ? 'جاري تحميل الفروع...' : 'اختر الفرع'}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.id} className='text-right'>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
@@ -324,7 +454,123 @@ export function BookingModal({ doctors = [] }: Props) {
               />
             </div>
 
-            {/* 5. ملاحظات */}
+            {/* 5. الدفع الاختياري */}
+            <div className='rounded-lg border border-border/60 p-3 space-y-3 bg-muted/10'>
+              <div className='text-sm font-semibold'>الدفع عند الحجز (اختياري)</div>
+              <p className='text-xs text-muted-foreground'>
+                يمكنك تحصيل مبلغ الآن (كاش/إيصال) لإنشاء الفاتورة مباشرة. يتطلب ذلك موعد اليوم وشِفت مفتوح للطبيب.
+              </p>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                <FormField
+                  control={form.control}
+                  name='paymentMethod'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>طريقة الدفع</FormLabel>
+                      <Select value={field.value || 'none'} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className='h-11 text-right'>
+                            <SelectValue placeholder='بدون دفع الآن' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value='none'>بدون دفع الآن</SelectItem>
+                          <SelectItem value='Cash'>كاش</SelectItem>
+                          <SelectItem value='Transfer'>تحويل (مع إيصال)</SelectItem>
+                          <SelectItem value='Receipt'>إيصال</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='paidAmount'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>المبلغ المحصل</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min='0'
+                          step='0.01'
+                          value={field.value || ''}
+                          onChange={(event) => field.onChange(event.target.value)}
+                          placeholder='0.00'
+                          className='h-11 text-right'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {requiresTransferReceipt && (
+                  <FormField
+                    control={form.control}
+                    name='paymentReference'
+                    render={({ field }) => (
+                      <FormItem className='md:col-span-2'>
+                        <FormLabel>مرجع العملية (اختياري)</FormLabel>
+                        <FormControl>
+                          <Input
+                            value={field.value || ''}
+                            onChange={(event) => field.onChange(event.target.value)}
+                            placeholder='REF-12345'
+                            className='h-11 text-right'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {requiresTransferReceipt && (
+                  <div className='md:col-span-2 space-y-2'>
+                    <FormLabel>صورة إيصال التحويل</FormLabel>
+                    <Input
+                      type='file'
+                      accept='image/*'
+                      className='h-11 file:ml-3 file:rounded file:border-0 file:bg-primary/10 file:px-3 file:py-1 file:text-primary'
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] || null
+                        setTransferReceiptFile(file)
+                      }}
+                    />
+                    {transferReceiptFile && (
+                      <p className='text-xs text-muted-foreground'>
+                        تم اختيار الملف: {transferReceiptFile.name}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <FormField
+                  control={form.control}
+                  name='paymentNotes'
+                  render={({ field }) => (
+                    <FormItem className='md:col-span-2'>
+                      <FormLabel>ملاحظات الدفع (اختياري)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder='أي ملاحظات متعلقة بالدفع'
+                          value={field.value || ''}
+                          onChange={(event) => field.onChange(event.target.value)}
+                          className='text-right resize-none'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* 6. ملاحظات الحجز */}
             <FormField
               control={form.control}
               name='notes'

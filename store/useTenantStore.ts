@@ -4,6 +4,10 @@ import { persist } from 'zustand/middleware'
 export interface TenantConfig {
   name: string
   logoUrl: string | null
+  tenantType?: 'Clinic' | 'Partner' | null
+  phone?: string | null
+  supportWhatsAppNumber?: string | null
+  supportPhoneNumber?: string | null
 }
 
 interface TenantState {

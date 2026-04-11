@@ -1,7 +1,7 @@
 'use server'
 
 import { fetchApi } from '@/lib/fetchApi'
-import { IClinicSettings } from '@/types/settings'
+import { IClinicPaymentOptions, IClinicSettings } from '@/types/settings'
 import { BaseApiResponse } from '../../types/api'
 
 export async function getClinicSettings(
@@ -15,8 +15,10 @@ export async function getClinicSettings(
 
 export async function getClinicPaymentOptionsAction(
   tenantSlug: string,
-): Promise<BaseApiResponse<Record<string, unknown>>> {
-  return await fetchApi<Record<string, unknown>>(`/api/clinic/settings/payment-options`, {
+  branchId?: string,
+): Promise<BaseApiResponse<IClinicPaymentOptions>> {
+  const query = branchId ? `?branchId=${encodeURIComponent(branchId)}` : ''
+  return await fetchApi<IClinicPaymentOptions>(`/api/clinic/settings/payment-options${query}`, {
     method: 'GET',
     tenantSlug,
     cache: 'no-store',

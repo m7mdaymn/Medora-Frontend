@@ -20,9 +20,9 @@ export default function WorkingHoursSection({
   )
 
   return (
-    <section className='py-24 md:py-32 relative overflow-hidden bg-background' dir='rtl'>
+    <section className='py-15 relative overflow-hidden bg-background' dir='rtl'>
       <motion.div
-        className='container px-4 md:px-6 max-w-2xl mx-auto relative z-10'
+        className='container px-4 md:px-6 max-w-5xl mx-auto relative z-10'
         variants={staggerContainer}
         initial='hidden'
         whileInView='visible'

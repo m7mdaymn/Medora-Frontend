@@ -25,7 +25,6 @@ export default function DoctorsSection({ doctors }: { doctors: IPublicDoctor[] }
       dir='rtl'
     >
       {/* إضاءة خلفية ناعمة */}
-      <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-primary/5 rounded-full blur-[120px] pointer-events-none' />
 
       <motion.div
         className='container mx-auto px-4 md:px-6'
@@ -60,9 +59,9 @@ export default function DoctorsSection({ doctors }: { doctors: IPublicDoctor[] }
         <motion.div variants={fadeInUp} className='max-w-7xl mx-auto w-full relative'>
           <Carousel
             opts={{
-              align: 'start',
-              direction: 'rtl',
-              loop: false,
+              align: 'center',
+              loop: true,
+              direction:"rtl"
             }}
             className='w-full'
           >

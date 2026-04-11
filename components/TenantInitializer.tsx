@@ -12,6 +12,10 @@ export function TenantInitializer({ clinic }: { clinic: IPublicClinic }) {
     setConfig({
       name: clinic.clinicName,
       logoUrl: clinic.logoUrl, // أو حسب اسم الحقل عندك في الـ API
+      tenantType: clinic.tenantType || null,
+      phone: clinic.phone,
+      supportPhoneNumber: clinic.supportPhoneNumber,
+      supportWhatsAppNumber: clinic.supportWhatsAppNumber,
     })
   }, [clinic, setConfig])
 

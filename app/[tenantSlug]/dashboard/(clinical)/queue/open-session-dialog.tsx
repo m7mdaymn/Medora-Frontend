@@ -1,7 +1,7 @@
 'use client'
 
 import { valibotResolver } from '@hookform/resolvers/valibot'
-import { Loader2, PlayCircle } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -77,10 +77,7 @@ export function OpenSessionDialog({ tenantSlug, doctors, activeSessions }: OpenS
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant='outline'>
-          <PlayCircle className='h-5 w-5' />
-          فتح شفت
-        </Button>
+        <Button variant='soft'>فتح شفت</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -139,7 +136,7 @@ export function OpenSessionDialog({ tenantSlug, doctors, activeSessions }: OpenS
               className='w-full'
               disabled={isSubmitting || availableDoctors.length === 0}
             >
-              {isSubmitting ? <Loader2 className='animate-spin' /> : 'بدء الشفت الآن'}
+              {isSubmitting ? <Loader2 className='animate-spin' /> : 'بدء الشفت'}
             </Button>
           </form>
         </Form>

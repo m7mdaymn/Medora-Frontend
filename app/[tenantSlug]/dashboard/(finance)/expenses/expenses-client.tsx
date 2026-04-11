@@ -32,15 +32,15 @@ export function ExpensesClient({ initialExpenses, tenantSlug, pagination }: Prop
         <AddExpenseDialog tenantSlug={tenantSlug} />
       </div>
 
-      <div className='rounded-xl border bg-background overflow-hidden shadow-sm'>
+      <div className='border rounded-md overflow-hidden shadow-sm '>
         <Table dir='rtl'>
-          <TableHeader className='bg-muted/30'>
+          <TableHeader className='bg-muted/50 h-12'>
             <TableRow>
-              <TableHead className='font-bold text-right'>التاريخ</TableHead>
-              <TableHead className='font-bold text-right'>البند</TableHead>
-              <TableHead className='font-bold text-right'>المبلغ</TableHead>
-              <TableHead className='font-bold text-right'>بواسطة</TableHead>
-              <TableHead className='font-bold text-left'>الإجراءات</TableHead>
+              <TableHead className='font-bold text-muted-foreground'>التاريخ</TableHead>
+              <TableHead className='font-bold text-muted-foreground'>البند</TableHead>
+              <TableHead className='font-bold text-muted-foreground'>المبلغ</TableHead>
+              <TableHead className='font-bold text-muted-foreground'>بواسطة</TableHead>
+              <TableHead className='font-bold text-muted-foreground text-right'>الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,12 +57,12 @@ export function ExpensesClient({ initialExpenses, tenantSlug, pagination }: Prop
                     {new Date(exp.expenseDate).toLocaleDateString('ar-EG')}
                   </TableCell>
                   <TableCell className='font-bold'>{exp.category}</TableCell>
-                  <TableCell className='text-lg'>
+                  <TableCell className='text-lg font-bold'>
                     {exp.amount.toLocaleString()}
                     <span className='text-[10px] font-sans'>ج.م</span>
                   </TableCell>
                   <TableCell className='text-xs font-medium'>{exp.recordedByName}</TableCell>
-                  <TableCell className='text-left'>
+                  <TableCell className='text-right'>
                     <ExpenseRowActions exp={exp} tenantSlug={tenantSlug} />
                   </TableCell>
                 </TableRow>
@@ -72,7 +72,6 @@ export function ExpensesClient({ initialExpenses, tenantSlug, pagination }: Prop
         </Table>
       </div>
 
-      {/* 🔴 الباجينيشن بيتحط هنا بره بوكس الجدول */}
       {pagination.totalPages > 1 && (
         <div className='flex justify-center pt-4'>
           <GenericPagination
